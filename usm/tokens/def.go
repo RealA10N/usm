@@ -3,7 +3,7 @@ package tokens
 type DefToken struct {
 }
 
-func (token DefToken) String() string {
+func (DefToken) String() string {
 	return "<Def>"
 }
 

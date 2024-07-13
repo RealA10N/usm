@@ -34,6 +34,8 @@ var tokenizers = []tokens.Tokenizer{
 	tokens.RegisterTokenizer{},
 	tokens.TypeTokenizer{},
 	tokens.GlobalTokenizer{},
+	tokens.LcurlTokenizer{},
+	tokens.RcurlTokenizer{},
 }
 
 func (parser Parser) parseToken(word string) (tokens.Token, error) {
