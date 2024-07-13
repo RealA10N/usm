@@ -8,3 +8,7 @@ build:
 .PHONY: run
 run: build
 	$(TARGET)
+
+.PHONY: test
+test:
+	go test $(MODULE_DIR)/...
