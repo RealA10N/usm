@@ -1,5 +1,6 @@
 MODULE_DIR := usm
 TARGET := build/usm
+COVERAGE_TARGET := coverage.out
 
 .PHONY: build
 build:
@@ -11,4 +12,4 @@ run: build
 
 .PHONY: test
 test:
-	go test $(MODULE_DIR)/...
+	go test -coverprofile=$(COVERAGE_TARGET) $(MODULE_DIR)/...
