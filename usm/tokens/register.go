@@ -1,11 +1,26 @@
 package tokens
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type RegisterToken struct {
 	name string
 }
 
-func (tkn RegisterToken) String() string {
-	return fmt.Sprintf("<Register %v>", tkn.name)
+func (token RegisterToken) String() string {
+	return fmt.Sprintf("<Register %v>", token.name)
+}
+
+type RegisterTokenizer struct {
+}
+
+func (RegisterTokenizer) Tokenize(word string) (Token, error) {
+	name, ok := strings.CutPrefix(word, "%")
+	if ok {
+		return RegisterToken{name}, nil
+	} else {
+		return nil, ErrTokenNotMatched{word}
+	}
 }
