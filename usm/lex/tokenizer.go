@@ -10,6 +10,7 @@ import (
 var wordTokenizers = []base.WordTokenizer{
 	tokens.RegTokenizer{}, // %
 	tokens.TypTokenizer{}, // $
+	tokens.LblTokenizer{}, // .
 	tokens.GlbTokenizer{}, // @
 	tokens.ImmTokenizer{}, // #
 	tokens.LcrTokenizer{}, // {
