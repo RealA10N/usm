@@ -16,7 +16,7 @@ type EqlTokenizer struct {
 
 func (EqlTokenizer) Tokenize(word string) (base.Token, error) {
 	if word == "=" {
-		return RcrToken{}, nil
+		return EqlToken{}, nil
 	} else {
 		return nil, base.ErrTokenNotMatched{Word: word}
 	}

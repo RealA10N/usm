@@ -11,7 +11,7 @@ type GlbToken struct {
 }
 
 func (token GlbToken) String() string {
-	return fmt.Sprintf("<Glb %v>", token.Name)
+	return fmt.Sprintf("<Glb @%v>", token.Name)
 }
 
 type GlbTokenizer struct {

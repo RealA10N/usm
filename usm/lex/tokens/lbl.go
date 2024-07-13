@@ -7,5 +7,5 @@ type LblToken struct {
 }
 
 func (token LblToken) String() string {
-	return fmt.Sprintf("<Lbl %v>", token.Name)
+	return fmt.Sprintf("<Lbl .%v>", token.Name)
 }

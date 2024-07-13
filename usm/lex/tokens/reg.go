@@ -11,7 +11,7 @@ type RegToken struct {
 }
 
 func (token RegToken) String() string {
-	return fmt.Sprintf("<Reg %v>", token.Name)
+	return fmt.Sprintf("<Reg %%%v>", token.Name)
 }
 
 type RegTokenizer struct {

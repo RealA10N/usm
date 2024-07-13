@@ -11,7 +11,7 @@ type TypToken struct {
 }
 
 func (token TypToken) String() string {
-	return fmt.Sprintf("<Typ %v>", token.Name)
+	return fmt.Sprintf("<Typ $%v>", token.Name)
 }
 
 type TypTokenizer struct {
