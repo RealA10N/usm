@@ -11,6 +11,7 @@ var wordTokenizers = []base.WordTokenizer{
 	tokens.RegTokenizer{}, // %
 	tokens.TypTokenizer{}, // $
 	tokens.GlbTokenizer{}, // @
+	tokens.ImmTokenizer{}, // #
 	tokens.LcrTokenizer{}, // {
 	tokens.RcrTokenizer{}, // }
 	tokens.EqlTokenizer{}, // =

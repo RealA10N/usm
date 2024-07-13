@@ -28,7 +28,7 @@ func TestAddOne(t *testing.T) {
 		tokens.EqlToken{},
 		tokens.OprToken{Name: "add"},
 		tokens.RegToken{Name: "x"},
-		tokens.ImmToken{Value: 1},
+		tokens.ImmToken{Value: "1"},
 		tokens.OprToken{Name: "ret"},
 		tokens.RegToken{Name: "0"},
 		tokens.RcrToken{},
