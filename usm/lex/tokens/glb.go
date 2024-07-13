@@ -7,11 +7,11 @@ import (
 )
 
 type GlbToken struct {
-	name string
+	Name string
 }
 
 func (token GlbToken) String() string {
-	return fmt.Sprintf("<Glb %v>", token.name)
+	return fmt.Sprintf("<Glb %v>", token.Name)
 }
 
 type GlbTokenizer struct {

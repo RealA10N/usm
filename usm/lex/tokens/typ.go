@@ -7,11 +7,11 @@ import (
 )
 
 type TypToken struct {
-	name string
+	Name string
 }
 
 func (token TypToken) String() string {
-	return fmt.Sprintf("<Typ %v>", token.name)
+	return fmt.Sprintf("<Typ %v>", token.Name)
 }
 
 type TypTokenizer struct {

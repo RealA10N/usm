@@ -7,16 +7,16 @@ import (
 )
 
 type OprToken struct {
-	name string
+	Name string
 }
 
 func (token OprToken) String() string {
-	return fmt.Sprintf("<Opr %v>", token.name)
+	return fmt.Sprintf("<Opr %v>", token.Name)
 }
 
 type OprTokenizer struct {
 }
 
 func (OprTokenizer) Tokenize(word string) (base.Token, error) {
-	return OprToken{name: strings.ToLower(word)}, nil
+	return OprToken{Name: strings.ToLower(word)}, nil
 }

@@ -7,11 +7,11 @@ import (
 )
 
 type RegToken struct {
-	name string
+	Name string
 }
 
 func (token RegToken) String() string {
-	return fmt.Sprintf("<Reg %v>", token.name)
+	return fmt.Sprintf("<Reg %v>", token.Name)
 }
 
 type RegTokenizer struct {
