@@ -1,5 +1,9 @@
 package tokens
 
+import (
+	"usm/lex/base"
+)
+
 type DefToken struct {
 }
 
@@ -9,10 +13,10 @@ func (DefToken) String() string {
 
 type DefTokenizer struct{}
 
-func (DefTokenizer) Tokenize(word string) (Token, error) {
+func (DefTokenizer) Tokenize(word string) (base.Token, error) {
 	if word == "def" {
 		return DefToken{}, nil
 	} else {
-		return nil, ErrTokenNotMatched{Word: word}
+		return nil, base.ErrTokenNotMatched{Word: word}
 	}
 }

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"usm/parser"
+	"usm/lex"
 )
 
 func main() {
@@ -13,8 +13,8 @@ func main() {
 	}
 	defer file.Close()
 
-	p := parser.Parser{Reader: file}
-	tokens, err := p.Parse()
+	p := lex.Tokenizer{Reader: file}
+	tokens, err := p.Tokenize()
 	if err != nil {
 		panic(err)
 	}

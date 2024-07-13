@@ -7,6 +7,6 @@ type ImmediateToken struct {
 	value int32
 }
 
-func (tkn ImmediateToken) String() string {
-	return fmt.Sprintf("<Immediate %v>", tkn.value)
+func (token ImmediateToken) String() string {
+	return fmt.Sprintf("<Imm %v>", token.value)
 }
