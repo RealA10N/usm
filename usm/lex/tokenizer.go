@@ -3,7 +3,6 @@ package lex
 import (
 	"bufio"
 	"io"
-	"strings"
 	"usm/lex/base"
 	"usm/lex/tokens"
 )
@@ -28,7 +27,7 @@ func (tokenizer Tokenizer) Tokenize() ([]base.Token, error) {
 	scanner := bufio.NewScanner(tokenizer.Reader)
 	scanner.Split(bufio.ScanWords)
 	for scanner.Scan() {
-		word := strings.ToLower(scanner.Text())
+		word := scanner.Text()
 		token, err := tokenizer.tokenizeWord(word)
 		if err != nil {
 			// TODO: collect multiple errors and report all at once

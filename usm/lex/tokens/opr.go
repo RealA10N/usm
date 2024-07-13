@@ -2,6 +2,7 @@ package tokens
 
 import (
 	"fmt"
+	"strings"
 	"usm/lex/base"
 )
 
@@ -17,5 +18,5 @@ type OprTokenizer struct {
 }
 
 func (OprTokenizer) Tokenize(word string) (base.Token, error) {
-	return OprToken{name: word}, nil
+	return OprToken{name: strings.ToLower(word)}, nil
 }
