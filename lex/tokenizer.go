@@ -19,14 +19,12 @@ var wordTokenizers = []base.WordTokenizer{
 	tokens.OprTokenizer{},
 }
 
-type Tokenizer struct {
-	Reader io.Reader
-}
+type Tokenizer struct{}
 
-func (tokenizer Tokenizer) Tokenize() ([]base.Token, error) {
+func (tokenizer Tokenizer) Tokenize(reader io.Reader) ([]base.Token, error) {
 	tokens := make([]base.Token, 0)
 
-	scanner := bufio.NewScanner(tokenizer.Reader)
+	scanner := bufio.NewScanner(reader)
 	scanner.Split(bufio.ScanWords)
 	for scanner.Scan() {
 		word := scanner.Text()

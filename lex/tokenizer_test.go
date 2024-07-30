@@ -35,8 +35,7 @@ func TestAddOne(t *testing.T) {
 	}
 
 	reader := strings.NewReader(code)
-	tokenizer := lex.Tokenizer{Reader: reader}
-	gotTokens, err := tokenizer.Tokenize()
+	gotTokens, err := lex.Tokenizer{}.Tokenize(reader)
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedTokens, gotTokens)
@@ -139,14 +138,13 @@ func TestPow(t *testing.T) {
 		tokens.RegToken{Name: "res.2"},
 
 		tokens.OprToken{Name: "ret"},
-		tokens.RegToken{"res.3"},
+		tokens.RegToken{Name: "res.3"},
 
 		tokens.RcrToken{},
 	}
 
 	reader := strings.NewReader(code)
-	tokenizer := lex.Tokenizer{Reader: reader}
-	gotTokens, err := tokenizer.Tokenize()
+	gotTokens, err := lex.Tokenizer{}.Tokenize(reader)
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedTokens, gotTokens)

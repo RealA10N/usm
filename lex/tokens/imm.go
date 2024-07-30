@@ -14,8 +14,7 @@ func (token ImmToken) String() string {
 	return fmt.Sprintf("<Imm #%v>", token.Value)
 }
 
-type ImmTokenizer struct {
-}
+type ImmTokenizer struct{}
 
 func (ImmTokenizer) Tokenize(word string) (base.Token, error) {
 	value, ok := strings.CutPrefix(word, "#")

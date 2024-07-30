@@ -14,8 +14,7 @@ func (token GlbToken) String() string {
 	return fmt.Sprintf("<Glb @%v>", token.Name)
 }
 
-type GlbTokenizer struct {
-}
+type GlbTokenizer struct{}
 
 func (GlbTokenizer) Tokenize(word string) (base.Token, error) {
 	name, ok := strings.CutPrefix(word, "@")
