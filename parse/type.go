@@ -11,7 +11,7 @@ type TypeNode struct {
 
 type TypeParser struct{}
 
-func (p TypeParser) Parse(v *TokenView) (node TypeNode, err ParsingError) {
+func (TypeParser) Parse(v *TokenView) (node TypeNode, err ParsingError) {
 	tkn, err := ConsumeToken(v, lex.TypToken)
 	if err != nil {
 		return

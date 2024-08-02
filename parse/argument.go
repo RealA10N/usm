@@ -13,7 +13,7 @@ type ArgumentNode struct {
 
 type ArgumentParser struct{}
 
-func (p ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError) {
+func (ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError) {
 	typ, err := ConsumeToken(v, lex.TypToken)
 	if err != nil {
 		return
