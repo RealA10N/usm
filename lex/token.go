@@ -17,6 +17,7 @@ const (
 	RcrToken
 	EqlToken
 	OprToken
+	SepToken
 )
 
 var tokenNames = map[TokenType]string{
@@ -29,6 +30,7 @@ var tokenNames = map[TokenType]string{
 	RcrToken: "Right Curly Brace",
 	EqlToken: "Equal",
 	OprToken: "Operator",
+	SepToken: "\\n",
 }
 
 func (tkn TokenType) String() string {
@@ -49,5 +51,10 @@ func (tkn Token) String(ctx source.SourceContext) string {
 	if !ok {
 		typeName = "?"
 	}
-	return fmt.Sprintf("<%s \"%s\">", typeName, string(tkn.View.Raw(ctx)))
+
+	if tkn.View.Len() > 0 {
+		return fmt.Sprintf("<%s \"%s\">", typeName, string(tkn.View.Raw(ctx)))
+	} else {
+		return fmt.Sprintf(typeName)
+	}
 }

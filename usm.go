@@ -27,6 +27,9 @@ func main() {
 
 	_, ctx := view.Detach()
 	for _, tkn := range tokens {
-		fmt.Println(tkn.String(ctx))
+		fmt.Printf("%s ", tkn.String(ctx))
+		if tkn.Type == lex.SepToken {
+			fmt.Println()
+		}
 	}
 }

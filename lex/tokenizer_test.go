@@ -37,13 +37,16 @@ func TestAddOne(t *testing.T) {
 		tknDesc{"$i32", lex.TypToken},
 		tknDesc{"%x", lex.RegToken},
 		tknDesc{"{", lex.LcrToken},
+		tknDesc{"", lex.SepToken},
 		tknDesc{"%0", lex.RegToken},
 		tknDesc{"=", lex.EqlToken},
 		tknDesc{"add", lex.OprToken},
 		tknDesc{"%x", lex.RegToken},
 		tknDesc{"#1", lex.ImmToken},
+		tknDesc{"", lex.SepToken},
 		tknDesc{"ret", lex.OprToken},
 		tknDesc{"%0", lex.RegToken},
+		tknDesc{"", lex.SepToken},
 		tknDesc{"}", lex.RcrToken},
 	}
 
@@ -87,24 +90,29 @@ func TestPow(t *testing.T) {
 		tknDesc{"$u32", lex.TypToken},
 		tknDesc{"%exp", lex.RegToken},
 		tknDesc{"{", lex.LcrToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{"jz", lex.OprToken},
 		tknDesc{"%exp", lex.RegToken},
 		tknDesc{".end", lex.LblToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{".recurse", lex.LblToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{"%base.new", lex.RegToken},
 		tknDesc{"=", lex.EqlToken},
 		tknDesc{"mul", lex.OprToken},
 		tknDesc{"%base", lex.RegToken},
 		tknDesc{"%base", lex.RegToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{"%exp.new", lex.RegToken},
 		tknDesc{"=", lex.EqlToken},
 		tknDesc{"shr", lex.OprToken},
 		tknDesc{"%exp", lex.RegToken},
 		tknDesc{"#1", lex.ImmToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{"%res.0", lex.RegToken},
 		tknDesc{"=", lex.EqlToken},
@@ -112,26 +120,32 @@ func TestPow(t *testing.T) {
 		tknDesc{"@pow", lex.GlbToken},
 		tknDesc{"%base.new", lex.RegToken},
 		tknDesc{"%exp.new", lex.RegToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{"%exp.mod2", lex.RegToken},
 		tknDesc{"=", lex.EqlToken},
 		tknDesc{"and", lex.OprToken},
 		tknDesc{"%exp", lex.RegToken},
 		tknDesc{"#1", lex.ImmToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{"jz", lex.OprToken},
 		tknDesc{"%exp.mod2", lex.RegToken},
 		tknDesc{".even_base", lex.LblToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{".odd_base", lex.LblToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{"%res.1", lex.RegToken},
 		tknDesc{"=", lex.EqlToken},
 		tknDesc{"mul", lex.OprToken},
 		tknDesc{"%res.0", lex.RegToken},
 		tknDesc{"%base", lex.RegToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{".even_base", lex.LblToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{"%res.2", lex.RegToken},
 		tknDesc{"=", lex.EqlToken},
@@ -140,8 +154,10 @@ func TestPow(t *testing.T) {
 		tknDesc{"%res.1", lex.RegToken},
 		tknDesc{".recurse", lex.LblToken},
 		tknDesc{"%res.0", lex.RegToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{".end", lex.LblToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{"%res.3", lex.RegToken},
 		tknDesc{"=", lex.EqlToken},
@@ -150,9 +166,11 @@ func TestPow(t *testing.T) {
 		tknDesc{"%base", lex.RegToken},
 		tknDesc{".even_base", lex.LblToken},
 		tknDesc{"%res.2", lex.RegToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{"ret", lex.OprToken},
 		tknDesc{"%res.3", lex.RegToken},
+		tknDesc{"", lex.SepToken},
 
 		tknDesc{"}", lex.RcrToken},
 	}

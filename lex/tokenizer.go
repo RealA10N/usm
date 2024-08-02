@@ -36,7 +36,10 @@ func NewTokenizer() Tokenizer {
 
 func (t tokenizer) Tokenize(view source.SourceView) (tkns []Token, err error) {
 	for {
-		consumeWhitespace(&view)
+		addSep := consumeWhitespace(&view)
+		if addSep {
+			tkns = append(tkns, Token{Type: SepToken})
+		}
 		tkn, err := t.tokenizeWord(&view)
 		if err != nil {
 			break
@@ -71,6 +74,10 @@ func not[T any](f func(item T) bool) func(T) bool {
 	}
 }
 
-func consumeWhitespace(view *source.SourceView) {
-	*view = view.Subview(view.Index(not(unicode.IsSpace)), view.Len())
+// consume white spaces and return true if encounterd a newline.
+func consumeWhitespace(view *source.SourceView) bool {
+	idx := view.Index(not(unicode.IsSpace))
+	before, after := view.Partition(idx)
+	*view = after
+	return before.Contains('\n')
 }
