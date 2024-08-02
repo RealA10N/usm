@@ -1,5 +1,7 @@
 package parse
 
+import "usm/source"
+
 type Node struct {
-	View
+	View source.UnmanagedSourceView
 }

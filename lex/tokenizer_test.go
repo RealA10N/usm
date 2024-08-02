@@ -3,6 +3,7 @@ package lex_test
 import (
 	"testing"
 	"usm/lex"
+	"usm/source"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -12,7 +13,7 @@ type tknDesc struct {
 	typ lex.TokenType
 }
 
-func assertExpectedTokens(t *testing.T, expected []tknDesc, actual []lex.Token, ctx lex.SourceContext) {
+func assertExpectedTokens(t *testing.T, expected []tknDesc, actual []lex.Token, ctx source.SourceContext) {
 	assert.Len(t, actual, len(expected))
 	for i, act := range actual {
 		exp := expected[i]
@@ -46,7 +47,7 @@ func TestAddOne(t *testing.T) {
 		tknDesc{"}", lex.RcrToken},
 	}
 
-	view := lex.NewSourceView(code)
+	view := source.NewSourceView(code)
 	_, ctx := view.Detach()
 	tkns, err := lex.NewTokenizer().Tokenize(view)
 
@@ -156,7 +157,7 @@ func TestPow(t *testing.T) {
 		tknDesc{"}", lex.RcrToken},
 	}
 
-	view := lex.NewSourceView(code)
+	view := source.NewSourceView(code)
 	_, ctx := view.Detach()
 	tkns, err := lex.NewTokenizer().Tokenize(view)
 
