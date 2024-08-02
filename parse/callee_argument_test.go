@@ -42,7 +42,7 @@ func TestArgumentTypEofError(t *testing.T) {
 	_, err := parse.CalleeArgumentParser{}.Parse(&view)
 	assert.NotNil(t, err)
 	assert.EqualValues(t, 0, view.Len())
-	assert.EqualValues(t, "expected <Type> token, but file ended", err.Error(ctx))
+	assert.EqualValues(t, "reached end of file (expected <Type>)", err.Error(ctx))
 }
 
 func TestArgumentRegEofError(t *testing.T) {
@@ -53,5 +53,5 @@ func TestArgumentRegEofError(t *testing.T) {
 	_, err := parse.CalleeArgumentParser{}.Parse(&view)
 	assert.NotNil(t, err)
 	assert.EqualValues(t, 0, view.Len())
-	assert.EqualValues(t, "expected <Register> token, but file ended", err.Error(ctx))
+	assert.EqualValues(t, "reached end of file (expected <Register>)", err.Error(ctx))
 }

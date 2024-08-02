@@ -25,17 +25,25 @@ type NodeParser[T any] interface {
 
 // Parsing Utilities
 
-func ConsumeToken(v *TokenView, typ lex.TokenType) (tkn lex.Token, perr ParsingError) {
+func ConsumeToken(v *TokenView, expectedTypes ...lex.TokenType) (tkn lex.Token, perr ParsingError) {
 	tknView, restView := v.Partition(1)
 	tkn, err := tknView.At(0)
 
 	if err != nil {
-		perr = EofError{Expected: typ}
+		perr = EofError{Expected: expectedTypes}
 		return
 	}
 
-	if tkn.Type != typ {
-		perr = UnexpectedTokenError{Expected: typ, Got: tkn}
+	gotExpected := false
+	for _, expectedType := range expectedTypes {
+		if tkn.Type == expectedType {
+			gotExpected = true
+			break
+		}
+	}
+
+	if !gotExpected {
+		perr = UnexpectedTokenError{Expected: expectedTypes, Actual: tkn}
 		return
 	}
 

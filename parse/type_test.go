@@ -42,7 +42,7 @@ func TestTypeParserEofError(t *testing.T) {
 	_, err := parse.TypeParser{}.Parse(&view)
 	assert.NotNil(t, err)
 	assert.EqualValues(t, 0, view.Len())
-	assert.EqualValues(t, "expected <Type> token, but file ended", err.Error(ctx))
+	assert.EqualValues(t, "reached end of file (expected <Type>)", err.Error(ctx))
 }
 
 func TestTypeParserUnexpectedTokenError(t *testing.T) {
@@ -52,5 +52,5 @@ func TestTypeParserUnexpectedTokenError(t *testing.T) {
 
 	_, err := parse.TypeParser{}.Parse(&tkns)
 	assert.NotNil(t, err)
-	assert.EqualValues(t, "expected <Type> token, but got <Register \"%0\">", err.Error(ctx))
+	assert.EqualValues(t, "got token <Register \"%0\"> (expected <Type>)", err.Error(ctx))
 }

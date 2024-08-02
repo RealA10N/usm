@@ -1,28 +1,52 @@
 package parse
 
 import (
-	"fmt"
 	"usm/lex"
 	"usm/source"
 )
 
 type ParsingError interface {
+	View() source.UnmanagedSourceView
 	Error(source.SourceContext) string
 }
 
 type UnexpectedTokenError struct {
-	Expected lex.TokenType
-	Got      lex.Token
+	Expected []lex.TokenType
+	Actual   lex.Token
 }
 
-func (err UnexpectedTokenError) Error(ctx source.SourceContext) string {
-	return fmt.Sprintf("expected %s token, but got %s", err.Expected.String(), err.Got.String(ctx))
+func (e UnexpectedTokenError) View() source.UnmanagedSourceView {
+	return e.Actual.View
+}
+
+func (e UnexpectedTokenError) Error(ctx source.SourceContext) string {
+	s := "got token " + e.Actual.String(ctx)
+	if len(e.Expected) > 0 {
+		s += " (expected " + stringManyTokenTypes(e.Expected) + ")"
+	}
+	return s
 }
 
 type EofError struct {
-	Expected lex.TokenType
+	Expected []lex.TokenType
 }
 
-func (err EofError) Error(source.SourceContext) string {
-	return fmt.Sprintf("expected %s token, but file ended", err.Expected.String())
+func (e EofError) View() (v source.UnmanagedSourceView) {
+	return // TODO: fix.
+}
+
+func (e EofError) Error(source.SourceContext) string {
+	s := "reached end of file"
+	if len(e.Expected) > 0 {
+		s += " (expected " + stringManyTokenTypes(e.Expected) + ")"
+	}
+	return s
+}
+
+func stringManyTokenTypes(typs []lex.TokenType) (s string) {
+	for i := 0; i < len(typs)-1; i++ {
+		s += typs[i].String() + ", "
+	}
+	s += typs[len(typs)-1].String()
+	return s
 }

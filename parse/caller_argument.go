@@ -23,7 +23,7 @@ func (n CallerArgumentNode) String(ctx source.SourceContext) string {
 type CallerArgumentParser struct{}
 
 func (CallerArgumentParser) Parse(v *TokenView) (node CallerArgumentNode, err ParsingError) {
-	tkn, err := ConsumeToken(v, lex.OprToken)
+	tkn, err := ConsumeToken(v, lex.RegToken, lex.ImmToken, lex.GlbToken)
 	if err != nil {
 		return
 	}
