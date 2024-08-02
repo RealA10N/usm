@@ -12,12 +12,12 @@ graph TD;
     CP[Constant Propagation];
     DCE[Dead Code Elimination];
     RA[Register Allocation];
-    
+
     subgraph "Sparse Conditional Constant Propagation"
         CP
         DCE
     end
-    
+
     LEX --> PRS;
     PRS --> SSA;
     SSA --> CP;
