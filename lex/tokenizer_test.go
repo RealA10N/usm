@@ -1,14 +1,26 @@
 package lex_test
 
 import (
-	"strings"
 	"testing"
 	"usm/lex"
-	"usm/lex/base"
-	"usm/lex/tokens"
 
 	"github.com/stretchr/testify/assert"
 )
+
+type tknDesc struct {
+	txt string
+	typ lex.TokenType
+}
+
+func assertExpectedTokens(t *testing.T, expected []tknDesc, actual []lex.Token, ctx lex.SourceContext) {
+	assert.Len(t, actual, len(expected))
+	for i, act := range actual {
+		exp := expected[i]
+		actStr := string(act.View.Raw(ctx))
+		assert.Equal(t, exp.txt, actStr, "expected '%s' got '%s'", exp.txt, actStr)
+		assert.Equal(t, exp.typ, act.Type, "expected %s got %s", exp.typ, act.Type)
+	}
+}
 
 func TestAddOne(t *testing.T) {
 	code :=
@@ -17,28 +29,29 @@ func TestAddOne(t *testing.T) {
 			ret %0
 		}`
 
-	expectedTokens := []base.Token{
-		tokens.OprToken{Name: "def"},
-		tokens.TypToken{Name: "i32"},
-		tokens.GlbToken{Name: "addOne"},
-		tokens.TypToken{Name: "i32"},
-		tokens.RegToken{Name: "x"},
-		tokens.LcrToken{},
-		tokens.RegToken{Name: "0"},
-		tokens.EqlToken{},
-		tokens.OprToken{Name: "add"},
-		tokens.RegToken{Name: "x"},
-		tokens.ImmToken{Value: "1"},
-		tokens.OprToken{Name: "ret"},
-		tokens.RegToken{Name: "0"},
-		tokens.RcrToken{},
+	expected := []tknDesc{
+		tknDesc{"def", lex.OprToken},
+		tknDesc{"$i32", lex.TypToken},
+		tknDesc{"@addOne", lex.GlbToken},
+		tknDesc{"$i32", lex.TypToken},
+		tknDesc{"%x", lex.RegToken},
+		tknDesc{"{", lex.LcrToken},
+		tknDesc{"%0", lex.RegToken},
+		tknDesc{"=", lex.EqlToken},
+		tknDesc{"add", lex.OprToken},
+		tknDesc{"%x", lex.RegToken},
+		tknDesc{"#1", lex.ImmToken},
+		tknDesc{"ret", lex.OprToken},
+		tknDesc{"%0", lex.RegToken},
+		tknDesc{"}", lex.RcrToken},
 	}
 
-	reader := strings.NewReader(code)
-	gotTokens, err := lex.Tokenizer{}.Tokenize(reader)
+	view := lex.NewSourceView(code)
+	_, ctx := view.Detach()
+	tkns, err := lex.NewTokenizer().Tokenize(view)
 
-	assert.Nil(t, err)
-	assert.Equal(t, expectedTokens, gotTokens)
+	assert.NoError(t, err)
+	assertExpectedTokens(t, expected, tkns, ctx)
 }
 
 func TestPow(t *testing.T) {
@@ -64,88 +77,89 @@ func TestPow(t *testing.T) {
 			ret %res.3
 		}`
 
-	expectedTokens := []base.Token{
-		tokens.OprToken{Name: "def"},
-		tokens.TypToken{Name: "u32"},
-		tokens.GlbToken{Name: "pow"},
-		tokens.TypToken{Name: "u32"},
-		tokens.RegToken{Name: "base"},
-		tokens.TypToken{Name: "u32"},
-		tokens.RegToken{Name: "exp"},
-		tokens.LcrToken{},
+	expected := []tknDesc{
+		tknDesc{"def", lex.OprToken},
+		tknDesc{"$u32", lex.TypToken},
+		tknDesc{"@pow", lex.GlbToken},
+		tknDesc{"$u32", lex.TypToken},
+		tknDesc{"%base", lex.RegToken},
+		tknDesc{"$u32", lex.TypToken},
+		tknDesc{"%exp", lex.RegToken},
+		tknDesc{"{", lex.LcrToken},
 
-		tokens.OprToken{Name: "jz"},
-		tokens.RegToken{Name: "exp"},
-		tokens.LblToken{Name: "end"},
+		tknDesc{"jz", lex.OprToken},
+		tknDesc{"%exp", lex.RegToken},
+		tknDesc{".end", lex.LblToken},
 
-		tokens.LblToken{Name: "recurse"},
+		tknDesc{".recurse", lex.LblToken},
 
-		tokens.RegToken{Name: "base.new"},
-		tokens.EqlToken{},
-		tokens.OprToken{Name: "mul"},
-		tokens.RegToken{Name: "base"},
-		tokens.RegToken{Name: "base"},
+		tknDesc{"%base.new", lex.RegToken},
+		tknDesc{"=", lex.EqlToken},
+		tknDesc{"mul", lex.OprToken},
+		tknDesc{"%base", lex.RegToken},
+		tknDesc{"%base", lex.RegToken},
 
-		tokens.RegToken{Name: "exp.new"},
-		tokens.EqlToken{},
-		tokens.OprToken{Name: "shr"},
-		tokens.RegToken{Name: "exp"},
-		tokens.ImmToken{Value: "1"},
+		tknDesc{"%exp.new", lex.RegToken},
+		tknDesc{"=", lex.EqlToken},
+		tknDesc{"shr", lex.OprToken},
+		tknDesc{"%exp", lex.RegToken},
+		tknDesc{"#1", lex.ImmToken},
 
-		tokens.RegToken{Name: "res.0"},
-		tokens.EqlToken{},
-		tokens.OprToken{Name: "call"},
-		tokens.GlbToken{Name: "pow"},
-		tokens.RegToken{Name: "base.new"},
-		tokens.RegToken{Name: "exp.new"},
+		tknDesc{"%res.0", lex.RegToken},
+		tknDesc{"=", lex.EqlToken},
+		tknDesc{"call", lex.OprToken},
+		tknDesc{"@pow", lex.GlbToken},
+		tknDesc{"%base.new", lex.RegToken},
+		tknDesc{"%exp.new", lex.RegToken},
 
-		tokens.RegToken{Name: "exp.mod2"},
-		tokens.EqlToken{},
-		tokens.OprToken{Name: "and"},
-		tokens.RegToken{Name: "exp"},
-		tokens.ImmToken{Value: "1"},
+		tknDesc{"%exp.mod2", lex.RegToken},
+		tknDesc{"=", lex.EqlToken},
+		tknDesc{"and", lex.OprToken},
+		tknDesc{"%exp", lex.RegToken},
+		tknDesc{"#1", lex.ImmToken},
 
-		tokens.OprToken{Name: "jz"},
-		tokens.RegToken{Name: "exp.mod2"},
-		tokens.LblToken{Name: "even_base"},
+		tknDesc{"jz", lex.OprToken},
+		tknDesc{"%exp.mod2", lex.RegToken},
+		tknDesc{".even_base", lex.LblToken},
 
-		tokens.LblToken{Name: "odd_base"},
+		tknDesc{".odd_base", lex.LblToken},
 
-		tokens.RegToken{Name: "res.1"},
-		tokens.EqlToken{},
-		tokens.OprToken{Name: "mul"},
-		tokens.RegToken{Name: "res.0"},
-		tokens.RegToken{Name: "base"},
+		tknDesc{"%res.1", lex.RegToken},
+		tknDesc{"=", lex.EqlToken},
+		tknDesc{"mul", lex.OprToken},
+		tknDesc{"%res.0", lex.RegToken},
+		tknDesc{"%base", lex.RegToken},
 
-		tokens.LblToken{Name: "even_base"},
+		tknDesc{".even_base", lex.LblToken},
 
-		tokens.RegToken{Name: "res.2"},
-		tokens.EqlToken{},
-		tokens.OprToken{Name: "phi"},
-		tokens.LblToken{Name: "odd_base"},
-		tokens.RegToken{Name: "res.1"},
-		tokens.LblToken{Name: "recurse"},
-		tokens.RegToken{Name: "res.0"},
+		tknDesc{"%res.2", lex.RegToken},
+		tknDesc{"=", lex.EqlToken},
+		tknDesc{"phi", lex.OprToken},
+		tknDesc{".odd_base", lex.LblToken},
+		tknDesc{"%res.1", lex.RegToken},
+		tknDesc{".recurse", lex.LblToken},
+		tknDesc{"%res.0", lex.RegToken},
 
-		tokens.LblToken{Name: "end"},
+		tknDesc{".end", lex.LblToken},
 
-		tokens.RegToken{Name: "res.3"},
-		tokens.EqlToken{},
-		tokens.OprToken{Name: "phi"},
-		tokens.LblToken{Name: ""},
-		tokens.RegToken{Name: "base"},
-		tokens.LblToken{Name: "even_base"},
-		tokens.RegToken{Name: "res.2"},
+		tknDesc{"%res.3", lex.RegToken},
+		tknDesc{"=", lex.EqlToken},
+		tknDesc{"phi", lex.OprToken},
+		tknDesc{".", lex.LblToken},
+		tknDesc{"%base", lex.RegToken},
+		tknDesc{".even_base", lex.LblToken},
+		tknDesc{"%res.2", lex.RegToken},
 
-		tokens.OprToken{Name: "ret"},
-		tokens.RegToken{Name: "res.3"},
+		tknDesc{"ret", lex.OprToken},
+		tknDesc{"%res.3", lex.RegToken},
 
-		tokens.RcrToken{},
+		tknDesc{"}", lex.RcrToken},
 	}
 
-	reader := strings.NewReader(code)
-	gotTokens, err := lex.Tokenizer{}.Tokenize(reader)
+	view := lex.NewSourceView(code)
+	_, ctx := view.Detach()
+	tkns, err := lex.NewTokenizer().Tokenize(view)
 
-	assert.Nil(t, err)
-	assert.Equal(t, expectedTokens, gotTokens)
+	assert.NoError(t, err)
+	assertExpectedTokens(t, expected, tkns, ctx)
 }

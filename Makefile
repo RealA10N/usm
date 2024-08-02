@@ -1,10 +1,12 @@
-MODULE_DIR := usm
 TARGET := build/usm
-COVERAGE_TARGET := coverage.out
+COVERAGE_TARGET := coverage.txt
+
+GOEXPERIMENT := rangefunc
+export GOEXPERIMENT
 
 .PHONY: build
 build:
-	go build -o $(TARGET) $(MODULE_DIR)
+	go build -o $(TARGET)
 
 .PHONY: run
 run: build
@@ -12,4 +14,4 @@ run: build
 
 .PHONY: test
 test:
-	go test -coverprofile=$(COVERAGE_TARGET) $(MODULE_DIR)/...
+	go test -coverprofile=$(COVERAGE_TARGET) ./...

@@ -1,51 +1,75 @@
 package lex
 
 import (
-	"bufio"
-	"io"
-	"usm/lex/base"
-	"usm/lex/tokens"
+	"errors"
+	"unicode"
 )
 
-var wordTokenizers = []base.WordTokenizer{
-	tokens.RegTokenizer{}, // %
-	tokens.TypTokenizer{}, // $
-	tokens.LblTokenizer{}, // .
-	tokens.GlbTokenizer{}, // @
-	tokens.ImmTokenizer{}, // #
-	tokens.LcrTokenizer{}, // {
-	tokens.RcrTokenizer{}, // }
-	tokens.EqlTokenizer{}, // =
-	tokens.OprTokenizer{},
+type WordTokenizer interface {
+	Tokenize(txt *SourceView) (Token, error)
 }
 
-type Tokenizer struct{}
+type Tokenizer interface {
+	Tokenize(SourceView) ([]Token, error)
+}
 
-func (tokenizer Tokenizer) Tokenize(reader io.Reader) ([]base.Token, error) {
-	tokens := make([]base.Token, 0)
+type tokenizer struct {
+	wordTokenizers []WordTokenizer
+}
 
-	scanner := bufio.NewScanner(reader)
-	scanner.Split(bufio.ScanWords)
-	for scanner.Scan() {
-		word := scanner.Text()
-		token, err := tokenizer.tokenizeWord(word)
+func NewTokenizer() Tokenizer {
+	return tokenizer{
+		wordTokenizers: []WordTokenizer{
+			RegTokenizer{},
+			TypTokenizer{},
+			LblTokenizer{},
+			GlbTokenizer{},
+			ImmTokenizer{},
+			LcrTokenizer{},
+			RcrTokenizer{},
+			EqlTokenizer{},
+			OprTokenizer{},
+		},
+	}
+}
+
+func (t tokenizer) Tokenize(view SourceView) (tkns []Token, err error) {
+	for {
+		consumeWhitespace(&view)
+		tkn, err := t.tokenizeWord(&view)
 		if err != nil {
-			// TODO: collect multiple errors and report all at once
-			return nil, err
+			break
 		}
-		tokens = append(tokens, token)
+		tkns = append(tkns, tkn)
 	}
 
-	return tokens, nil
+	if view.Len() != 0 {
+		return tkns, err
+	}
+
+	return tkns, nil
 }
 
-func (Tokenizer) tokenizeWord(word string) (base.Token, error) {
-	for _, tokenParser := range wordTokenizers {
-		token, err := tokenParser.Tokenize(word)
+func (t tokenizer) tokenizeWord(view *SourceView) (tkn Token, err error) {
+	for _, tokenParser := range t.wordTokenizers {
+		tkn, err = tokenParser.Tokenize(view)
 		if err == nil {
-			return token, nil
+			return
 		}
 	}
 
-	return nil, base.ErrUnexpectedToken{Word: word}
+	err = errors.New("unmatched subview")
+	return
+}
+
+// Provided a boolean predicate, returns a new boolean predicate which yields
+// opposite (not) values of the provided predicate.
+func not[T any](f func(item T) bool) func(T) bool {
+	return func(item T) bool {
+		return !f(item)
+	}
+}
+
+func consumeWhitespace(view *SourceView) {
+	*view = view.Subview(view.Index(not(unicode.IsSpace)), view.Len())
 }
