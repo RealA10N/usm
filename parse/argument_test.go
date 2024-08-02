@@ -34,3 +34,27 @@ func TestArgumentNodeParserSimpleCase(t *testing.T) {
 	assert.Equal(t, typTkn, node.Type)
 	assert.Equal(t, regTkn, node.Register)
 }
+
+func TestArgumentNodeTypEofError(t *testing.T) {
+	p := parse.ArgumentNodeParser{}
+	_, ctx := source.NewSourceView("").Detach()
+	tkns := []lex.Token{}
+	view := view.NewView[lex.Token, uint32](tkns)
+
+	_, err := p.Parse(&view)
+	assert.NotNil(t, err)
+	assert.EqualValues(t, 0, view.Len())
+	assert.EqualValues(t, "expected <Type> token, but file ended", err.Error(ctx))
+}
+
+func TestArgumentNodeRegEofError(t *testing.T) {
+	p := parse.ArgumentNodeParser{}
+	v, ctx := source.NewSourceView("$i32").Detach()
+	tkn := lex.Token{Type: lex.TypToken, View: v}
+	view := view.NewView[lex.Token, uint32]([]lex.Token{tkn})
+
+	_, err := p.Parse(&view)
+	assert.NotNil(t, err)
+	assert.EqualValues(t, 0, view.Len())
+	assert.EqualValues(t, "expected <Register> token, but file ended", err.Error(ctx))
+}

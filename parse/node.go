@@ -34,7 +34,7 @@ func ConsumeToken(v *TokenView, typ lex.TokenType) (tkn lex.Token, perr ParsingE
 	tkn, err := tknView.At(0)
 
 	if err != nil {
-		perr = EofError{Expected: lex.TypToken}
+		perr = EofError{Expected: typ}
 		return
 	}
 
