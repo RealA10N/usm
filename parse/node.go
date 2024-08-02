@@ -11,15 +11,10 @@ type TokenView = view.View[lex.Token, uint32]
 type UnmanagedTokenView = view.UnmanagedView[lex.Token, uint32]
 type TokenViewContext = view.ViewContext[lex.Token]
 
-type Node struct {
-	View source.UnmanagedSourceView
-}
-
-func NewNodeFromBoundaryTokens(first, last lex.Token) Node {
-	return Node{
-		View: source.UnmanagedSourceView{
-			Start: first.View.Start,
-			End:   last.View.End},
+func SourceViewFromBoundaryTokens(first, last lex.Token) source.UnmanagedSourceView {
+	return source.UnmanagedSourceView{
+		Start: first.View.Start,
+		End:   last.View.End,
 	}
 }
 

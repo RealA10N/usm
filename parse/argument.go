@@ -2,17 +2,18 @@ package parse
 
 import (
 	"usm/lex"
+	"usm/source"
 )
 
 type ArgumentNode struct {
-	Node
+	View     source.UnmanagedSourceView
 	Type     lex.Token
 	Register lex.Token
 }
 
-type ArgumentNodeParser struct{}
+type ArgumentParser struct{}
 
-func (p ArgumentNodeParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError) {
+func (p ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError) {
 	typ, err := ConsumeToken(v, lex.TypToken)
 	if err != nil {
 		return
@@ -24,7 +25,7 @@ func (p ArgumentNodeParser) Parse(v *TokenView) (node ArgumentNode, err ParsingE
 	}
 
 	node = ArgumentNode{
-		Node:     NewNodeFromBoundaryTokens(typ, reg),
+		View:     SourceViewFromBoundaryTokens(typ, reg),
 		Type:     typ,
 		Register: reg,
 	}
