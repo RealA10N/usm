@@ -13,6 +13,10 @@ func (n TypeNode) View() source.UnmanagedSourceView {
 	return n.view
 }
 
+func (n TypeNode) String(ctx source.SourceContext) string {
+	return string(n.view.Raw(ctx))
+}
+
 type TypeParser struct{}
 
 func (TypeParser) Parse(v *TokenView) (node TypeNode, err ParsingError) {

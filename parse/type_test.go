@@ -10,6 +10,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestTypeNodeStringer(t *testing.T) {
+	typView, ctx := source.NewSourceView("$i32").Detach()
+	typTok := lex.Token{Type: lex.TypToken, View: typView}
+	tkns := view.NewView[lex.Token, uint32]([]lex.Token{typTok})
+	node, err := parse.TypeParser{}.Parse(&tkns)
+	assert.Nil(t, err)
+	assert.Equal(t, "$i32", node.String(ctx))
+}
+
 func TestTypeParserSimpleCase(t *testing.T) {
 	typView, ctx := source.NewSourceView("$i32").Detach()
 	typTkn := lex.Token{Type: lex.TypToken, View: typView}

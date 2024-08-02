@@ -12,7 +12,11 @@ type UnmanagedTokenView = view.UnmanagedView[lex.Token, uint32]
 type TokenViewContext = view.ViewContext[lex.Token]
 
 type Node interface {
+	// Return a reference to the node substring in the source code
 	View() source.UnmanagedSourceView
+
+	// Regenerate ("format") the code to a unique, single representation.
+	String(ctx source.SourceContext) string
 }
 
 type NodeParser[T any] interface {
