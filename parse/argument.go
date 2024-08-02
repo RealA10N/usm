@@ -1,34 +1,35 @@
 package parse
 
 import (
-	"usm/lex"
 	"usm/source"
 )
 
 type ArgumentNode struct {
-	View     source.UnmanagedSourceView
-	Type     lex.Token
-	Register lex.Token
+	Type     TypeNode
+	Register RegisterNode
+}
+
+func (n ArgumentNode) View() source.UnmanagedSourceView {
+	return n.Type.View().Merge(n.Register.View())
 }
 
 type ArgumentParser struct{}
 
 func (ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError) {
-	typ, err := ConsumeToken(v, lex.TypToken)
+	typ, err := TypeParser{}.Parse(v)
 	if err != nil {
 		return
 	}
 
-	reg, err := ConsumeToken(v, lex.RegToken)
+	reg, err := RegisterParser{}.Parse(v)
 	if err != nil {
 		return
 	}
 
 	node = ArgumentNode{
-		View:     SourceViewFromBoundaryTokens(typ, reg),
 		Type:     typ,
 		Register: reg,
 	}
 
-	return node, nil
+	return
 }

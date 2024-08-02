@@ -11,11 +11,8 @@ type TokenView = view.View[lex.Token, uint32]
 type UnmanagedTokenView = view.UnmanagedView[lex.Token, uint32]
 type TokenViewContext = view.ViewContext[lex.Token]
 
-func SourceViewFromBoundaryTokens(first, last lex.Token) source.UnmanagedSourceView {
-	return source.UnmanagedSourceView{
-		Start: first.View.Start,
-		End:   last.View.End,
-	}
+type Node interface {
+	View() source.UnmanagedSourceView
 }
 
 type NodeParser[T any] interface {

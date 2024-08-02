@@ -20,9 +20,9 @@ func TestTypeParserSimpleCase(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSubview, tkns)
 
-	assert.Equal(t, "$i32", string(node.View.Raw(ctx)))
-	assert.EqualValues(t, 0, node.View.Start)
-	assert.EqualValues(t, 4, node.View.End)
+	assert.Equal(t, "$i32", string(node.View().Raw(ctx)))
+	assert.EqualValues(t, 0, node.View().Start)
+	assert.EqualValues(t, 4, node.View().End)
 }
 
 func TestTypeParserEofError(t *testing.T) {

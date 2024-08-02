@@ -26,12 +26,12 @@ func TestArgumentParserSimpleCase(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSubview, tkns)
 
-	assert.EqualValues(t, 0, node.View.Start)
-	assert.EqualValues(t, 7, node.View.End)
-	assert.Equal(t, "$i32 %0", string(node.View.Raw(ctx)))
+	assert.EqualValues(t, 0, node.View().Start)
+	assert.EqualValues(t, 7, node.View().End)
+	assert.Equal(t, "$i32 %0", string(node.View().Raw(ctx)))
 
-	assert.Equal(t, typTkn, node.Type)
-	assert.Equal(t, regTkn, node.Register)
+	assert.Equal(t, "$i32", string(node.Type.View().Raw(ctx)))
+	assert.Equal(t, "%0", string(node.Register.View().Raw(ctx)))
 }
 
 func TestArgumentTypEofError(t *testing.T) {
