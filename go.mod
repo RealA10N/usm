@@ -3,7 +3,7 @@ module usm
 go 1.22.5
 
 require (
-	github.com/RealA10N/view v0.0.0-20240802142741-37a29c568686
+	github.com/RealA10N/view v0.0.0-20240802185721-c0c62c1aa7f0
 	github.com/stretchr/testify v1.9.0
 )
 
