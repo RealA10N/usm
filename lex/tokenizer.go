@@ -6,7 +6,7 @@ import (
 	"usm/source"
 )
 
-type WordTokenizer interface {
+type SpecificTokenizer interface {
 	Tokenize(txt *source.SourceView) (Token, error)
 }
 
@@ -15,36 +15,38 @@ type Tokenizer interface {
 }
 
 type tokenizer struct {
-	wordTokenizers []WordTokenizer
+	specificTokenizers []SpecificTokenizer
 }
 
 func NewTokenizer() Tokenizer {
 	return tokenizer{
-		wordTokenizers: []WordTokenizer{
-			RegTokenizer{},
-			TypTokenizer{},
-			LblTokenizer{},
-			GlbTokenizer{},
-			ImmTokenizer{},
+		specificTokenizers: []SpecificTokenizer{
+			NewPrefixedTokenizer("%", RegToken),
+			NewPrefixedTokenizer("$", TypToken),
+			NewPrefixedTokenizer(".", LblToken),
+			NewPrefixedTokenizer("@", GlbToken),
+			NewPrefixedTokenizer("#", ImmToken),
 			KeywordTokenizer{Keyword: "=", Token: EqlToken},
 			KeywordTokenizer{Keyword: "{", Token: LcrToken},
 			KeywordTokenizer{Keyword: "}", Token: RcrToken},
 			KeywordTokenizer{Keyword: "def", Token: DefToken},
-			OprTokenizer{},
+			WordTokenizer{Token: OprToken},
 		},
 	}
 }
 
 func (t tokenizer) Tokenize(view source.SourceView) (tkns []Token, err error) {
 	for {
-		addSep := consumeWhitespace(&view)
+		addSep := t.consumeWhitespace(&view)
 		if addSep {
 			tkns = append(tkns, Token{Type: SepToken})
 		}
-		tkn, err := t.tokenizeWord(&view)
+
+		tkn, err := t.yieldToken(&view)
 		if err != nil {
 			break
 		}
+
 		tkns = append(tkns, tkn)
 	}
 
@@ -55,8 +57,8 @@ func (t tokenizer) Tokenize(view source.SourceView) (tkns []Token, err error) {
 	return tkns, nil
 }
 
-func (t tokenizer) tokenizeWord(view *source.SourceView) (tkn Token, err error) {
-	for _, tokenParser := range t.wordTokenizers {
+func (t tokenizer) yieldToken(view *source.SourceView) (tkn Token, err error) {
+	for _, tokenParser := range t.specificTokenizers {
 		tkn, err = tokenParser.Tokenize(view)
 		if err == nil {
 			return
@@ -67,18 +69,18 @@ func (t tokenizer) tokenizeWord(view *source.SourceView) (tkn Token, err error) 
 	return
 }
 
+// Consume white spaces and return true if encounterd a newline.
+func (tokenizer) consumeWhitespace(view *source.SourceView) bool {
+	idx := view.Index(not(unicode.IsSpace))
+	before, after := view.Partition(idx)
+	*view = after
+	return before.Contains('\n')
+}
+
 // Provided a boolean predicate, returns a new boolean predicate which yields
 // opposite (not) values of the provided predicate.
 func not[T any](f func(item T) bool) func(T) bool {
 	return func(item T) bool {
 		return !f(item)
 	}
-}
-
-// consume white spaces and return true if encounterd a newline.
-func consumeWhitespace(view *source.SourceView) bool {
-	idx := view.Index(not(unicode.IsSpace))
-	before, after := view.Partition(idx)
-	*view = after
-	return before.Contains('\n')
 }
