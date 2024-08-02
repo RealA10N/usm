@@ -16,6 +16,7 @@ const (
 	LcrToken
 	RcrToken
 	EqlToken
+	DefToken
 	OprToken
 	SepToken
 )
@@ -29,6 +30,7 @@ var tokenNames = map[TokenType]string{
 	LcrToken: "Left Curly Brace",
 	RcrToken: "Right Curly Brace",
 	EqlToken: "Equal",
+	DefToken: "Define",
 	OprToken: "Operator",
 	SepToken: "\\n",
 }

@@ -26,9 +26,10 @@ func NewTokenizer() Tokenizer {
 			LblTokenizer{},
 			GlbTokenizer{},
 			ImmTokenizer{},
-			LcrTokenizer{},
-			RcrTokenizer{},
-			EqlTokenizer{},
+			KeywordTokenizer{Keyword: "=", Token: EqlToken},
+			KeywordTokenizer{Keyword: "{", Token: LcrToken},
+			KeywordTokenizer{Keyword: "}", Token: RcrToken},
+			KeywordTokenizer{Keyword: "def", Token: DefToken},
 			OprTokenizer{},
 		},
 	}

@@ -31,7 +31,7 @@ func TestAddOne(t *testing.T) {
 		}`
 
 	expected := []tknDesc{
-		tknDesc{"def", lex.OprToken},
+		tknDesc{"def", lex.DefToken},
 		tknDesc{"$i32", lex.TypToken},
 		tknDesc{"@addOne", lex.GlbToken},
 		tknDesc{"$i32", lex.TypToken},
@@ -82,7 +82,7 @@ func TestPow(t *testing.T) {
 		}`
 
 	expected := []tknDesc{
-		tknDesc{"def", lex.OprToken},
+		tknDesc{"def", lex.DefToken},
 		tknDesc{"$u32", lex.TypToken},
 		tknDesc{"@pow", lex.GlbToken},
 		tknDesc{"$u32", lex.TypToken},
