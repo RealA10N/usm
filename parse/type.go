@@ -20,7 +20,7 @@ func (n TypeNode) String(ctx source.SourceContext) string {
 type TypeParser struct{}
 
 func (TypeParser) Parse(v *TokenView) (node TypeNode, err ParsingError) {
-	tkn, err := ConsumeToken(v, lex.TypToken)
+	tkn, err := v.ConsumeToken(lex.TypToken)
 	if err != nil {
 		return
 	}

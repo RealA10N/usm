@@ -7,10 +7,6 @@ import (
 	"github.com/RealA10N/view"
 )
 
-type TokenView = view.View[lex.Token, uint32]
-type UnmanagedTokenView = view.UnmanagedView[lex.Token, uint32]
-type TokenViewContext = view.ViewContext[lex.Token]
-
 type Node interface {
 	// Return a reference to the node substring in the source code
 	View() source.UnmanagedSourceView
@@ -19,13 +15,9 @@ type Node interface {
 	String(ctx source.SourceContext) string
 }
 
-type NodeParser[T any] interface {
-	Parse(view TokenView) (T, error)
-}
+type TokenView struct{ view.View[lex.Token, uint32] }
 
-// Parsing Utilities
-
-func ConsumeToken(v *TokenView, expectedTypes ...lex.TokenType) (tkn lex.Token, perr ParsingError) {
+func (v *TokenView) ConsumeToken(expectedTypes ...lex.TokenType) (tkn lex.Token, perr ParsingError) {
 	tknView, restView := v.Partition(1)
 	tkn, err := tknView.At(0)
 
@@ -47,6 +39,6 @@ func ConsumeToken(v *TokenView, expectedTypes ...lex.TokenType) (tkn lex.Token, 
 		return
 	}
 
-	*v = restView
+	*v = TokenView{restView}
 	return tkn, nil
 }

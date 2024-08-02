@@ -20,7 +20,7 @@ func (n RegisterNode) String(ctx source.SourceContext) string {
 type RegisterParser struct{}
 
 func (RegisterParser) Parse(v *TokenView) (node RegisterNode, err ParsingError) {
-	tkn, err := ConsumeToken(v, lex.RegToken)
+	tkn, err := v.ConsumeToken(lex.RegToken)
 	if err != nil {
 		return
 	}
