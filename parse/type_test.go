@@ -6,14 +6,13 @@ import (
 	"usm/parse"
 	"usm/source"
 
-	"github.com/RealA10N/view"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTypeNodeStringer(t *testing.T) {
 	typView, ctx := source.NewSourceView("$i32").Detach()
 	typTok := lex.Token{Type: lex.TypToken, View: typView}
-	tkns := view.NewView[lex.Token, uint32]([]lex.Token{typTok})
+	tkns := parse.NewTokenView([]lex.Token{typTok})
 	node, err := parse.TypeParser{}.Parse(&tkns)
 	assert.Nil(t, err)
 	assert.Equal(t, "$i32", node.String(ctx))
@@ -22,8 +21,8 @@ func TestTypeNodeStringer(t *testing.T) {
 func TestTypeParserSimpleCase(t *testing.T) {
 	typView, ctx := source.NewSourceView("$i32").Detach()
 	typTkn := lex.Token{Type: lex.TypToken, View: typView}
-	tkns := view.NewView[lex.Token, uint32]([]lex.Token{typTkn})
-	expectedSubview := tkns.Subview(1, 1)
+	tkns := parse.NewTokenView([]lex.Token{typTkn})
+	expectedSubview := parse.TokenView{tkns.Subview(1, 1)}
 
 	node, err := parse.TypeParser{}.Parse(&tkns)
 	assert.Nil(t, err)
@@ -37,7 +36,7 @@ func TestTypeParserSimpleCase(t *testing.T) {
 func TestTypeParserEofError(t *testing.T) {
 	_, ctx := source.NewSourceView("").Detach()
 	tkns := []lex.Token{}
-	view := view.NewView[lex.Token, uint32](tkns)
+	view := parse.NewTokenView(tkns)
 
 	_, err := parse.TypeParser{}.Parse(&view)
 	assert.NotNil(t, err)
@@ -48,7 +47,7 @@ func TestTypeParserEofError(t *testing.T) {
 func TestTypeParserUnexpectedTokenError(t *testing.T) {
 	regView, ctx := source.NewSourceView("%0").Detach()
 	regTkn := lex.Token{Type: lex.RegToken, View: regView}
-	tkns := view.NewView[lex.Token, uint32]([]lex.Token{regTkn})
+	tkns := parse.NewTokenView([]lex.Token{regTkn})
 
 	_, err := parse.TypeParser{}.Parse(&tkns)
 	assert.NotNil(t, err)

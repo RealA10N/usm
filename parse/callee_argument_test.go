@@ -6,7 +6,6 @@ import (
 	"usm/parse"
 	"usm/source"
 
-	"github.com/RealA10N/view"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,8 +18,8 @@ func TestArgumentParserSimpleCase(t *testing.T) {
 	typTkn := lex.Token{Type: lex.TypToken, View: typView}
 	regTkn := lex.Token{Type: lex.RegToken, View: regView}
 	lblTkn := lex.Token{Type: lex.LblToken, View: lblView}
-	tkns := view.NewView[lex.Token, uint32]([]lex.Token{typTkn, regTkn, lblTkn})
-	expectedSubview := tkns.Subview(2, 3)
+	tkns := parse.NewTokenView([]lex.Token{typTkn, regTkn, lblTkn})
+	expectedSubview := parse.TokenView{tkns.Subview(2, 3)}
 
 	node, err := parse.CalleeArgumentParser{}.Parse(&tkns)
 	assert.Nil(t, err)
@@ -36,8 +35,7 @@ func TestArgumentParserSimpleCase(t *testing.T) {
 
 func TestArgumentTypEofError(t *testing.T) {
 	_, ctx := source.NewSourceView("").Detach()
-	tkns := []lex.Token{}
-	view := view.NewView[lex.Token, uint32](tkns)
+	view := parse.NewTokenView([]lex.Token{})
 
 	_, err := parse.CalleeArgumentParser{}.Parse(&view)
 	assert.NotNil(t, err)
@@ -48,7 +46,7 @@ func TestArgumentTypEofError(t *testing.T) {
 func TestArgumentRegEofError(t *testing.T) {
 	v, ctx := source.NewSourceView("$i32").Detach()
 	tkn := lex.Token{Type: lex.TypToken, View: v}
-	view := view.NewView[lex.Token, uint32]([]lex.Token{tkn})
+	view := parse.NewTokenView([]lex.Token{tkn})
 
 	_, err := parse.CalleeArgumentParser{}.Parse(&view)
 	assert.NotNil(t, err)

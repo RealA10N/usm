@@ -13,7 +13,7 @@ func TestInstructionStringer(t *testing.T) {
 	v, ctx := source.NewSourceView(inst).Detach()
 
 	node := parse.InstructionNode{
-		Operation: v.Subview(12, 18),
+		Operator: v.Subview(12, 18),
 		Arguments: []parse.CallerArgumentNode{
 			parse.CallerArgumentNode{v.Subview(19, 21)},
 			parse.CallerArgumentNode{v.Subview(22, 24)},
