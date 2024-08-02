@@ -6,15 +6,15 @@ import (
 )
 
 type TypeNode struct {
-	view source.UnmanagedSourceView
+	source.UnmanagedSourceView
 }
 
 func (n TypeNode) View() source.UnmanagedSourceView {
-	return n.view
+	return n.UnmanagedSourceView
 }
 
 func (n TypeNode) String(ctx source.SourceContext) string {
-	return string(n.view.Raw(ctx))
+	return string(n.UnmanagedSourceView.Raw(ctx))
 }
 
 type TypeParser struct{}
@@ -25,6 +25,6 @@ func (TypeParser) Parse(v *TokenView) (node TypeNode, err ParsingError) {
 		return
 	}
 
-	node = TypeNode{view: tkn.View}
+	node = TypeNode{tkn.View}
 	return
 }

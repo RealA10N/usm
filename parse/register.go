@@ -6,11 +6,15 @@ import (
 )
 
 type RegisterNode struct {
-	view source.UnmanagedSourceView
+	source.UnmanagedSourceView
 }
 
 func (n RegisterNode) View() source.UnmanagedSourceView {
-	return n.view
+	return n.UnmanagedSourceView
+}
+
+func (n RegisterNode) String(ctx source.SourceContext) string {
+	return string(n.UnmanagedSourceView.Raw(ctx))
 }
 
 type RegisterParser struct{}
@@ -21,6 +25,6 @@ func (RegisterParser) Parse(v *TokenView) (node RegisterNode, err ParsingError) 
 		return
 	}
 
-	node = RegisterNode{view: tkn.View}
+	node = RegisterNode{tkn.View}
 	return
 }
