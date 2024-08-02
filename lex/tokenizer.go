@@ -3,14 +3,15 @@ package lex
 import (
 	"errors"
 	"unicode"
+	"usm/source"
 )
 
 type WordTokenizer interface {
-	Tokenize(txt *SourceView) (Token, error)
+	Tokenize(txt *source.SourceView) (Token, error)
 }
 
 type Tokenizer interface {
-	Tokenize(SourceView) ([]Token, error)
+	Tokenize(source.SourceView) ([]Token, error)
 }
 
 type tokenizer struct {
@@ -33,7 +34,7 @@ func NewTokenizer() Tokenizer {
 	}
 }
 
-func (t tokenizer) Tokenize(view SourceView) (tkns []Token, err error) {
+func (t tokenizer) Tokenize(view source.SourceView) (tkns []Token, err error) {
 	for {
 		consumeWhitespace(&view)
 		tkn, err := t.tokenizeWord(&view)
@@ -50,7 +51,7 @@ func (t tokenizer) Tokenize(view SourceView) (tkns []Token, err error) {
 	return tkns, nil
 }
 
-func (t tokenizer) tokenizeWord(view *SourceView) (tkn Token, err error) {
+func (t tokenizer) tokenizeWord(view *source.SourceView) (tkn Token, err error) {
 	for _, tokenParser := range t.wordTokenizers {
 		tkn, err = tokenParser.Tokenize(view)
 		if err == nil {
@@ -70,6 +71,6 @@ func not[T any](f func(item T) bool) func(T) bool {
 	}
 }
 
-func consumeWhitespace(view *SourceView) {
+func consumeWhitespace(view *source.SourceView) {
 	*view = view.Subview(view.Index(not(unicode.IsSpace)), view.Len())
 }

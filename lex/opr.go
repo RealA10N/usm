@@ -3,11 +3,12 @@ package lex
 import (
 	"errors"
 	"unicode"
+	"usm/source"
 )
 
 type OprTokenizer struct{}
 
-func (OprTokenizer) Tokenize(txt *SourceView) (tkn Token, err error) {
+func (OprTokenizer) Tokenize(txt *source.SourceView) (tkn Token, err error) {
 	idx := txt.Index(unicode.IsSpace)
 	if idx == 0 {
 		err = errors.New("token not matched")

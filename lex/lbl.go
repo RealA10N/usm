@@ -3,11 +3,12 @@ package lex
 import (
 	"errors"
 	"unicode"
+	"usm/source"
 )
 
 type LblTokenizer struct{}
 
-func (LblTokenizer) Tokenize(txt *SourceView) (tkn Token, err error) {
+func (LblTokenizer) Tokenize(txt *source.SourceView) (tkn Token, err error) {
 	chr, err := txt.At(0)
 	if err != nil || chr != '.' {
 		err = errors.New("token not matched")

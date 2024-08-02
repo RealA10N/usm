@@ -1,10 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"usm/lex"
+	"usm/source"
 )
 
 func main() {
@@ -14,13 +14,12 @@ func main() {
 	}
 	defer file.Close()
 
-	buf := new(bytes.Buffer)
-	if _, err := buf.ReadFrom(file); err != nil {
+	tokenizer := lex.NewTokenizer()
+	view, err := source.ReadSource(file)
+	if err != nil {
 		panic("can't read file")
 	}
 
-	tokenizer := lex.NewTokenizer()
-	view := lex.NewSourceView(buf.String())
 	tokens, err := tokenizer.Tokenize(view)
 	if err != nil {
 		panic(err)

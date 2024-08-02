@@ -1,10 +1,13 @@
 package lex
 
-import "errors"
+import (
+	"errors"
+	"usm/source"
+)
 
 type RcrTokenizer struct{}
 
-func (RcrTokenizer) Tokenize(txt *SourceView) (tkn Token, err error) {
+func (RcrTokenizer) Tokenize(txt *source.SourceView) (tkn Token, err error) {
 	chr, err := txt.At(0)
 	if err != nil || chr != '}' {
 		err = errors.New("token not matched")

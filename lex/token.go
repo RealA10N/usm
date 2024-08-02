@@ -2,8 +2,7 @@ package lex
 
 import (
 	"fmt"
-
-	"github.com/RealA10N/view"
+	"usm/source"
 )
 
 type TokenType uint8
@@ -40,20 +39,12 @@ func (tkn TokenType) String() string {
 	return fmt.Sprintf("<%s>", name)
 }
 
-type SourceView = view.View[rune, uint32]
-type UnmanagedSourceView = view.UnmanagedView[rune, uint32]
-type SourceContext = view.ViewContext[rune]
-
-func NewSourceView(data string) SourceView {
-	return view.NewView[rune, uint32]([]rune(data))
-}
-
 type Token struct {
 	Type TokenType
-	View UnmanagedSourceView
+	View source.UnmanagedSourceView
 }
 
-func (tkn Token) String(ctx SourceContext) string {
+func (tkn Token) String(ctx source.SourceContext) string {
 	typeName, ok := tokenNames[tkn.Type]
 	if !ok {
 		typeName = "?"
