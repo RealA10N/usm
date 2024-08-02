@@ -25,3 +25,26 @@ func TestTypeParserSimpleCase(t *testing.T) {
 	assert.EqualValues(t, 0, node.View.Start)
 	assert.EqualValues(t, 4, node.View.End)
 }
+
+func TestTypeParserEofError(t *testing.T) {
+	p := parse.TypeParser{}
+	_, ctx := source.NewSourceView("").Detach()
+	tkns := []lex.Token{}
+	view := view.NewView[lex.Token, uint32](tkns)
+
+	_, err := p.Parse(&view)
+	assert.NotNil(t, err)
+	assert.EqualValues(t, 0, view.Len())
+	assert.EqualValues(t, "expected <Type> token, but file ended", err.Error(ctx))
+}
+
+func TestTypeParserUnexpectedTokenError(t *testing.T) {
+	p := parse.TypeParser{}
+	regView, ctx := source.NewSourceView("%0").Detach()
+	regTkn := lex.Token{Type: lex.RegToken, View: regView}
+	tkns := view.NewView[lex.Token, uint32]([]lex.Token{regTkn})
+
+	_, err := p.Parse(&tkns)
+	assert.NotNil(t, err)
+	assert.EqualValues(t, "expected <Type> token, but got <Register \"%0\">", err.Error(ctx))
+}
