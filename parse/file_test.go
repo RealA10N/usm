@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// The purpose of the test is to verify the structure of "simple" source file.
 func TestSingleFunction(t *testing.T) {
 	src := `def $i32 @add $i32 %x $i32 %y {
 	%res = add %x %y
@@ -71,4 +72,30 @@ func TestSingleFunction(t *testing.T) {
 
 	assert.Nil(t, perr)
 	assert.Equal(t, expected, file)
+}
+
+func TestFileParserTwoFunctionsNoExtraSeparator(t *testing.T) {
+	src := `def @first {
+}
+def @second {
+}`
+
+	expected := `def @first {
+}
+
+def @second {
+}
+`
+
+	v := source.NewSourceView(src)
+	_, ctx := v.Detach()
+	tkns, err := lex.NewTokenizer().Tokenize(v)
+	assert.NoError(t, err)
+
+	tknsView := parse.NewTokenView(tkns)
+	file, perr := parse.FileParser{}.Parse(&tknsView)
+	assert.Nil(t, perr)
+
+	got := file.String(ctx)
+	assert.Equal(t, expected, got)
 }

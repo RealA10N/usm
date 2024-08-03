@@ -6,7 +6,7 @@ import (
 )
 
 // TODO: this should be a tagged union.
-// The supported caller arguments are registers, globals, immediates (and labales?)
+// The supported caller arguments are registers, globals, immediates (and labels?)
 
 type ArgumentNode struct {
 	source.UnmanagedSourceView
