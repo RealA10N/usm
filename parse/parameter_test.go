@@ -21,7 +21,7 @@ func TestArgumentParserSimpleCase(t *testing.T) {
 	tkns := parse.NewTokenView([]lex.Token{typTkn, regTkn, lblTkn})
 	expectedSubview := parse.TokenView{tkns.Subview(2, 3)}
 
-	node, err := parse.CalleeArgumentParser{}.Parse(&tkns)
+	node, err := parse.ParameterParser{}.Parse(&tkns)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSubview, tkns)
 
@@ -37,7 +37,7 @@ func TestArgumentTypEofError(t *testing.T) {
 	_, ctx := source.NewSourceView("").Detach()
 	view := parse.NewTokenView([]lex.Token{})
 
-	_, err := parse.CalleeArgumentParser{}.Parse(&view)
+	_, err := parse.ParameterParser{}.Parse(&view)
 	assert.NotNil(t, err)
 	assert.EqualValues(t, 0, view.Len())
 	assert.EqualValues(t, "reached end of file (expected <Type>)", err.Error(ctx))
@@ -48,7 +48,7 @@ func TestArgumentRegEofError(t *testing.T) {
 	tkn := lex.Token{Type: lex.TypToken, View: v}
 	view := parse.NewTokenView([]lex.Token{tkn})
 
-	_, err := parse.CalleeArgumentParser{}.Parse(&view)
+	_, err := parse.ParameterParser{}.Parse(&view)
 	assert.NotNil(t, err)
 	assert.EqualValues(t, 0, view.Len())
 	assert.EqualValues(t, "reached end of file (expected <Register>)", err.Error(ctx))
