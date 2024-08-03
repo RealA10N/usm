@@ -38,12 +38,30 @@ func (v *TokenView) ConsumeToken(expectedTypes ...lex.TokenType) (tkn lex.Token,
 	return tkn, nil
 }
 
-func (v *TokenView) ConsumeManyTokens(expectedTypes ...lex.TokenType) (tkns []lex.Token) {
-	for {
-		tkn, err := v.ConsumeToken(expectedTypes...)
+// Consume as many tokens as possible greedly, until we recieve an error.
+// The error and token count are returned.
+func (v *TokenView) ConsumeManyTokens(
+	expectedTypes ...lex.TokenType,
+) (count int, err ParsingError) {
+	for ; ; count++ {
+		_, err = v.ConsumeToken(expectedTypes...)
 		if err != nil {
 			return
 		}
-		tkns = append(tkns, tkn)
+	}
+}
+
+// Consume as many tokens as possible greedly, until we recieve an error.
+//
+// If the number of tokens consumed is strictly less than the provided number,
+// returns the underlying error. Otherwise, returns nil.
+func (v *TokenView) ConsumeAtLeastTokens(
+	atLeast int, expectedTypes ...lex.TokenType,
+) (err ParsingError) {
+	count, err := v.ConsumeManyTokens(expectedTypes...)
+	if count < atLeast {
+		return err
+	} else {
+		return nil
 	}
 }

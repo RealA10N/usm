@@ -11,19 +11,18 @@ type InstructionNode struct {
 	Targets   []RegisterNode
 }
 
-func (n InstructionNode) View() source.UnmanagedSourceView {
-	first := n.Operator
-	last := n.Operator
+func (n InstructionNode) View() (v source.UnmanagedSourceView) {
+	v = n.Operator
 
 	if len(n.Targets) > 0 {
-		first = n.Targets[0].View()
+		v.Start = n.Targets[0].View().Start
 	}
 
 	if len(n.Arguments) > 0 {
-		last = n.Arguments[len(n.Arguments)-1].View()
+		v.End = n.Arguments[len(n.Arguments)-1].View().End
 	}
 
-	return first.Merge(last)
+	return
 }
 
 func (n InstructionNode) stringArguments(ctx source.SourceContext) (s string) {
@@ -74,11 +73,9 @@ func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) Pars
 	return err
 }
 
-func (p InstructionParser) parseSeperator(v *TokenView) ParsingError {
-	_, err := v.ConsumeToken(lex.SepToken)
-	return err
-}
-
+// Parsing of the following regular expression:
+//
+// > (Reg+ Eql)? Opr Arg+ !Arg
 func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err ParsingError) {
 	node.Targets = ParseMany(p.RegisterParser, v)
 
@@ -93,6 +90,5 @@ func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err Parsin
 	}
 
 	node.Arguments = ParseMany(p.ArgumentParser, v)
-	err = p.parseSeperator(v)
 	return
 }

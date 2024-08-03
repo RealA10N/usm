@@ -35,7 +35,8 @@ func (p BlockParser) Parse(v *TokenView) (node BlockNode, err ParsingError) {
 		return
 	}
 
-	node.Instructions = ParseManyConsumeSeperators(p.InstructionParser, v)
+	v.ConsumeManyTokens(lex.SepToken)
+ 	node.Instructions, _ = ParseManyConsumeSeparators(p.InstructionParser, v)
 
 	end, err := v.ConsumeToken(lex.RcrToken)
 	if err != nil {

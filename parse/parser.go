@@ -16,15 +16,26 @@ func ParseMany[Node any](p Parser[Node], v *TokenView) (nodes []Node) {
 	}
 }
 
-func ParseManyConsumeSeperators[Node any](p Parser[Node], v *TokenView) (nodes []Node) {
+// Parse nodes using the provided parser, but after each node consume at least
+// one separator.
+//
+// This is useful for nodes that expect that they end in a separator (line break),
+// such as the InstructionNode or the FunctionNode.
+func ParseManyConsumeSeparators[Node any](
+	p Parser[Node],
+	v *TokenView,
+) (nodes []Node, err ParsingError) {
 	for {
-		v.ConsumeManyTokens(lex.SepToken)
-		inst, err := p.Parse(v)
+		var node Node
+		node, err = p.Parse(v)
 		if err != nil {
-			break
+			return
 		}
-		nodes = append(nodes, inst)
+		nodes = append(nodes, node)
+
+		err = v.ConsumeAtLeastTokens(1, lex.SepToken)
+		if err != nil {
+			return
+		}
 	}
-	v.ConsumeManyTokens(lex.SepToken)
-	return nodes
 }
