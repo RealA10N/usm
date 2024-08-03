@@ -24,3 +24,6 @@
 
 # build files
 build
+
+# editors
+.vscode
