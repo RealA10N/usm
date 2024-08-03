@@ -39,9 +39,9 @@ func main() {
 	fmt.Println("\n=== Formatted Source ===")
 
 	tknView := parse.NewTokenView(tokens)
-	fn, perr := parse.FunctionParser{}.Parse(&tknView)
+	fn, perr := parse.FileParser{}.Parse(&tknView)
 	if perr == nil {
-		fmt.Println(fn.String(ctx))
+		fmt.Print(fn.String(ctx))
 	} else {
 		fmt.Println(perr.Error(ctx))
 	}

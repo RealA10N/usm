@@ -29,25 +29,13 @@ type BlockParser struct {
 	InstructionParser InstructionParser
 }
 
-func (p BlockParser) parseInstructions(v *TokenView, node *BlockNode) {
-	for {
-		v.ConsumeManyTokens(lex.SepToken)
-		inst, err := p.InstructionParser.Parse(v)
-		if err != nil {
-			break
-		}
-		node.Instructions = append(node.Instructions, inst)
-	}
-	v.ConsumeManyTokens(lex.SepToken)
-}
-
 func (p BlockParser) Parse(v *TokenView) (node BlockNode, err ParsingError) {
 	start, err := v.ConsumeToken(lex.LcrToken)
 	if err != nil {
 		return
 	}
 
-	p.parseInstructions(v, &node)
+	node.Instructions = ParseManyConsumeSeperators(p.InstructionParser, v)
 
 	end, err := v.ConsumeToken(lex.RcrToken)
 	if err != nil {
