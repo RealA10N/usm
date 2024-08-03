@@ -7,7 +7,7 @@ import (
 
 type InstructionNode struct {
 	Operator  source.UnmanagedSourceView
-	Arguments []CallerArgumentNode
+	Arguments []ArgumentNode
 	Targets   []RegisterNode
 }
 
@@ -56,11 +56,14 @@ func (n InstructionNode) String(ctx source.SourceContext) string {
 	return n.stringTargets(ctx) + op + n.stringArguments(ctx)
 }
 
-type InstructionParser struct{}
+type InstructionParser struct {
+	RegisterParser RegisterParser
+	ArgumentParser ArgumentParser
+}
 
-func (InstructionParser) parseTargets(v *TokenView, node *InstructionNode) {
+func (p InstructionParser) parseTargets(v *TokenView, node *InstructionNode) {
 	for {
-		reg, err := RegisterParser{}.Parse(v)
+		reg, err := p.RegisterParser.Parse(v)
 		if err != nil {
 			return
 		}
@@ -81,9 +84,9 @@ func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) Pars
 	return err
 }
 
-func (InstructionParser) parseArguments(v *TokenView, node *InstructionNode) ParsingError {
+func (p InstructionParser) parseArguments(v *TokenView, node *InstructionNode) ParsingError {
 	for {
-		arg, err := CallerArgumentParser{}.Parse(v)
+		arg, err := p.ArgumentParser.Parse(v)
 		if err != nil {
 			break
 		}
