@@ -5,7 +5,7 @@ import "usm/source"
 type SignatureNode struct {
 	source.UnmanagedSourceView
 	Identifier source.UnmanagedSourceView
-	Arguments  []CalleeArgumentNode
+	Parameters []ParameterNode
 	Returns    []TypeNode
 }
 
@@ -21,7 +21,7 @@ func (n SignatureNode) String(ctx source.SourceContext) string {
 
 	s += string(n.Identifier.Raw(ctx))
 
-	for _, arg := range n.Arguments {
+	for _, arg := range n.Parameters {
 		s += " " + arg.String(ctx)
 	}
 
