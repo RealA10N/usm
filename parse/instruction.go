@@ -61,16 +61,6 @@ type InstructionParser struct {
 	ArgumentParser ArgumentParser
 }
 
-func (p InstructionParser) parseTargets(v *TokenView, node *InstructionNode) {
-	for {
-		reg, err := p.RegisterParser.Parse(v)
-		if err != nil {
-			return
-		}
-		node.Targets = append(node.Targets, reg)
-	}
-}
-
 func (InstructionParser) parseEquals(v *TokenView, node *InstructionNode) (err ParsingError) {
 	if len(node.Targets) > 0 {
 		_, err = v.ConsumeToken(lex.EqlToken)
@@ -84,21 +74,14 @@ func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) Pars
 	return err
 }
 
-func (p InstructionParser) parseArguments(v *TokenView, node *InstructionNode) ParsingError {
-	for {
-		arg, err := p.ArgumentParser.Parse(v)
-		if err != nil {
-			break
-		}
-		node.Arguments = append(node.Arguments, arg)
-	}
-
+func (p InstructionParser) parseSeperator(v *TokenView) ParsingError {
 	_, err := v.ConsumeToken(lex.SepToken)
 	return err
 }
 
 func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err ParsingError) {
-	p.parseTargets(v, &node)
+	node.Targets = ParseMany(p.RegisterParser, v)
+
 	err = p.parseEquals(v, &node)
 	if err != nil {
 		return
@@ -109,6 +92,7 @@ func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err Parsin
 		return
 	}
 
-	err = p.parseArguments(v, &node)
+	node.Arguments = ParseMany(p.ArgumentParser, v)
+	err = p.parseSeperator(v)
 	return
 }

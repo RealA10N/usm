@@ -25,7 +25,9 @@ func (n BlockNode) String(ctx source.SourceContext) (s string) {
 	return s
 }
 
-type BlockParser struct{}
+type BlockParser struct {
+	InstructionParser InstructionParser
+}
 
 func (p BlockParser) Parse(v *TokenView) (node BlockNode, err ParsingError) {
 	start, err := v.ConsumeToken(lex.LcrToken)
@@ -33,13 +35,7 @@ func (p BlockParser) Parse(v *TokenView) (node BlockNode, err ParsingError) {
 		return
 	}
 
-	for {
-		inst, err := InstructionParser{}.Parse(v)
-		if err != nil {
-			break
-		}
-		node.Instructions = append(node.Instructions, inst)
-	}
+	node.Instructions = ParseMany(p.InstructionParser, v)
 
 	end, err := v.ConsumeToken(lex.RcrToken)
 	if err != nil {
