@@ -16,8 +16,7 @@ func (n SignatureNode) View() source.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 
-func (n SignatureNode) String(ctx source.SourceContext) string {
-	s := "def "
+func (n SignatureNode) String(ctx source.SourceContext) (s string) {
 	for _, ret := range n.Returns {
 		s += ret.String(ctx) + " "
 	}
@@ -28,22 +27,12 @@ func (n SignatureNode) String(ctx source.SourceContext) string {
 		s += " " + arg.String(ctx)
 	}
 
-	return s
+	return
 }
 
 type SignatureParser struct {
 	ParameterParser ParameterParser
 	TypeParser      TypeParser
-}
-
-func (SignatureParser) parseDef(v *TokenView, node *SignatureNode) ParsingError {
-	def, err := v.ConsumeToken(lex.DefToken)
-	if err != nil {
-		return err
-	}
-
-	node.Start = def.View.Start
-	return nil
 }
 
 func (SignatureParser) parseIdentifier(v *TokenView, node *SignatureNode) ParsingError {
@@ -56,6 +45,14 @@ func (SignatureParser) parseIdentifier(v *TokenView, node *SignatureNode) Parsin
 	return nil
 }
 
+func (SignatureParser) updateNodeViewStart(node *SignatureNode) {
+	if len(node.Returns) > 0 {
+		node.Start = node.Returns[0].View().Start
+	} else {
+		node.Start = node.Identifier.Start
+	}
+}
+
 func (SignatureParser) updateNodeViewEnd(node *SignatureNode) {
 	if len(node.Parameters) > 0 {
 		node.End = node.Parameters[len(node.Parameters)-1].View().End
@@ -65,11 +62,6 @@ func (SignatureParser) updateNodeViewEnd(node *SignatureNode) {
 }
 
 func (p SignatureParser) Parse(v *TokenView) (node SignatureNode, err ParsingError) {
-	err = p.parseDef(v, &node)
-	if err != nil {
-		return
-	}
-
 	node.Returns = ParseMany(p.TypeParser, v)
 
 	err = p.parseIdentifier(v, &node)
@@ -78,6 +70,7 @@ func (p SignatureParser) Parse(v *TokenView) (node SignatureNode, err ParsingErr
 	}
 
 	node.Parameters = ParseMany(p.ParameterParser, v)
+	p.updateNodeViewStart(&node)
 	p.updateNodeViewEnd(&node)
 	return
 }
