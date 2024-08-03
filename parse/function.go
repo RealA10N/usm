@@ -46,5 +46,10 @@ func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError
 	}
 
 	node.Block, err = p.BlockParser.Parse(v)
+	if err != nil {
+		return
+	}
+
+	node.End = node.Block.View().End
 	return
 }
