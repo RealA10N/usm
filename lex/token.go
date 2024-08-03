@@ -32,7 +32,7 @@ var tokenNames = map[TokenType]string{
 	EqlToken: "Equal",
 	DefToken: "Define",
 	OprToken: "Operator",
-	SepToken: "\\n",
+	SepToken: `\n`,
 }
 
 func (tkn TokenType) String() string {
@@ -55,7 +55,7 @@ func (tkn Token) String(ctx source.SourceContext) string {
 	}
 
 	if tkn.View.Len() > 0 {
-		return fmt.Sprintf("<%s \"%s\">", typeName, string(tkn.View.Raw(ctx)))
+		return fmt.Sprintf(`<%s "%s">`, typeName, string(tkn.View.Raw(ctx)))
 	} else {
 		return fmt.Sprintf(typeName)
 	}
