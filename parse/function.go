@@ -16,3 +16,18 @@ func (n FunctionNode) View() source.UnmanagedSourceView {
 func (n FunctionNode) String(ctx source.SourceContext) string {
 	return n.Signature.String(ctx) + " " + n.Block.String(ctx)
 }
+
+type FunctionParser struct {
+	SignatureParser SignatureParser
+	BlockParser     BlockParser
+}
+
+func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError) {
+	node.Signature, err = p.SignatureParser.Parse(v)
+	if err != nil {
+		return
+	}
+
+	node.Block, err = p.BlockParser.Parse(v)
+	return
+}

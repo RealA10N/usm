@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"usm/lex"
+	"usm/parse"
 	"usm/source"
 )
 
@@ -25,11 +26,23 @@ func main() {
 		panic(err)
 	}
 
+	fmt.Println("=== Tokens ===")
+
 	_, ctx := view.Detach()
 	for _, tkn := range tokens {
 		fmt.Printf("%s ", tkn.String(ctx))
 		if tkn.Type == lex.SepToken {
 			fmt.Println()
 		}
+	}
+
+	fmt.Println("\n=== Formatted Source ===")
+
+	tknView := parse.NewTokenView(tokens)
+	fn, perr := parse.FunctionParser{}.Parse(&tknView)
+	if perr == nil {
+		fmt.Println(fn.String(ctx))
+	} else {
+		fmt.Println(perr.Error(ctx))
 	}
 }

@@ -37,3 +37,13 @@ func (v *TokenView) ConsumeToken(expectedTypes ...lex.TokenType) (tkn lex.Token,
 	*v = TokenView{restView}
 	return tkn, nil
 }
+
+func (v *TokenView) ConsumeManyTokens(expectedTypes ...lex.TokenType) (tkns []lex.Token) {
+	for {
+		tkn, err := v.ConsumeToken(expectedTypes...)
+		if err != nil {
+			return
+		}
+		tkns = append(tkns, tkn)
+	}
+}
