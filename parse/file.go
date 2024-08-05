@@ -1,6 +1,6 @@
 package parse
 
-import "usm/source"
+import "alon.kr/x/usm/source"
 
 type FileNode struct {
 	Functions []FunctionNode

@@ -1,4 +1,4 @@
-module usm
+module alon.kr/x/usm
 
 go 1.22.5
 

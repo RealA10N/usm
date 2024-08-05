@@ -3,7 +3,8 @@ package lex
 import (
 	"errors"
 	"unicode"
-	"usm/source"
+
+	"alon.kr/x/usm/source"
 )
 
 type WordTokenizer struct {

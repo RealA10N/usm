@@ -1,8 +1,8 @@
 package parse
 
 import (
-	"usm/lex"
-	"usm/source"
+	"alon.kr/x/usm/lex"
+	"alon.kr/x/usm/source"
 )
 
 type InstructionNode struct {

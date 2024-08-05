@@ -2,7 +2,8 @@ package lex
 
 import (
 	"fmt"
-	"usm/source"
+
+	"alon.kr/x/usm/source"
 )
 
 type TokenType uint8

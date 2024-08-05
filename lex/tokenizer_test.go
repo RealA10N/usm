@@ -2,8 +2,9 @@ package lex_test
 
 import (
 	"testing"
-	"usm/lex"
-	"usm/source"
+
+	"alon.kr/x/usm/lex"
+	"alon.kr/x/usm/source"
 
 	"github.com/stretchr/testify/assert"
 )

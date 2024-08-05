@@ -1,8 +1,8 @@
 package parse
 
 import (
-	"usm/lex"
-	"usm/source"
+	"alon.kr/x/usm/lex"
+	"alon.kr/x/usm/source"
 )
 
 // TODO: add label support
@@ -36,7 +36,7 @@ func (p BlockParser) Parse(v *TokenView) (node BlockNode, err ParsingError) {
 	}
 
 	v.ConsumeManyTokens(lex.SepToken)
- 	node.Instructions, _ = ParseManyConsumeSeparators(p.InstructionParser, v)
+	node.Instructions, _ = ParseManyConsumeSeparators(p.InstructionParser, v)
 
 	end, err := v.ConsumeToken(lex.RcrToken)
 	if err != nil {

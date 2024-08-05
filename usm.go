@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
-	"usm/lex"
-	"usm/parse"
-	"usm/source"
+
+	"alon.kr/x/usm/lex"
+	"alon.kr/x/usm/parse"
+	"alon.kr/x/usm/source"
 )
 
 func main() {

@@ -1,6 +1,6 @@
 package parse
 
-import "usm/lex"
+import "alon.kr/x/usm/lex"
 
 type Parser[Node any] interface {
 	Parse(v *TokenView) (Node, ParsingError)

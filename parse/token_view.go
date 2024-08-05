@@ -1,7 +1,7 @@
 package parse
 
 import (
-	"usm/lex"
+	"alon.kr/x/usm/lex"
 
 	"github.com/RealA10N/view"
 )

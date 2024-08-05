@@ -2,7 +2,8 @@ package lex
 
 import (
 	"errors"
-	"usm/source"
+
+	"alon.kr/x/usm/source"
 )
 
 type KeywordTokenizer struct {

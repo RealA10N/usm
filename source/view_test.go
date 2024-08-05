@@ -3,7 +3,8 @@ package source_test
 import (
 	"strings"
 	"testing"
-	"usm/source"
+
+	"alon.kr/x/usm/source"
 
 	"github.com/stretchr/testify/assert"
 )

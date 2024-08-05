@@ -3,7 +3,8 @@ package lex
 import (
 	"errors"
 	"unicode"
-	"usm/source"
+
+	"alon.kr/x/usm/source"
 )
 
 // Tokenizer that scans words prefixed with the provided prefix string,

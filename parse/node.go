@@ -1,7 +1,7 @@
 package parse
 
 import (
-	"usm/source"
+	"alon.kr/x/usm/source"
 )
 
 type Node interface {
