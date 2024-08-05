@@ -3,7 +3,7 @@ package source
 import (
 	"io"
 
-	"github.com/RealA10N/view"
+	"alon.kr/x/view"
 )
 
 // Represents a view into a single source file ("substring" of the file source).

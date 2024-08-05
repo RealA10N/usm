@@ -1,5 +1,5 @@
-github.com/RealA10N/view v0.0.0-20240802185721-c0c62c1aa7f0 h1:seIXL7qIhIZmZrCWBH9UbfSbnbzESsGVLraP1ttwMvQ=
-github.com/RealA10N/view v0.0.0-20240802185721-c0c62c1aa7f0/go.mod h1:b0iBi+f/nBnJOqjmQu8+Gj02+EI8vRtajVvp8cGwCw4=
+alon.kr/x/view v0.0.0-20240805213311-4b8dc200f18b h1:mrQF2fFbl0lyxWXmL3Ue3UE+LCmB7Gm/qPFj5YdzZ2k=
+alon.kr/x/view v0.0.0-20240805213311-4b8dc200f18b/go.mod h1:mBgC0V/rYw+WHTpZgTEyFVYdFOobXQUTDP4JPdgHeWU=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

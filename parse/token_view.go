@@ -3,7 +3,7 @@ package parse
 import (
 	"alon.kr/x/usm/lex"
 
-	"github.com/RealA10N/view"
+	"alon.kr/x/view"
 )
 
 type TokenView struct{ view.View[lex.Token, uint32] }
