@@ -5,6 +5,8 @@ import (
 	"alon.kr/x/usm/source"
 )
 
+// TODO add function labels before each instruction.
+
 type InstructionNode struct {
 	Operator  source.UnmanagedSourceView
 	Arguments []ArgumentNode
@@ -62,13 +64,13 @@ type InstructionParser struct {
 
 func (InstructionParser) parseEquals(v *TokenView, node *InstructionNode) (err ParsingError) {
 	if len(node.Targets) > 0 {
-		_, err = v.ConsumeToken(lex.EqlToken)
+		_, err = v.ConsumeToken(lex.EqualToken)
 	}
 	return
 }
 
 func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) ParsingError {
-	opr, err := v.ConsumeToken(lex.OprToken)
+	opr, err := v.ConsumeToken(lex.OperatorToken)
 	node.Operator = opr.View
 	return err
 }
