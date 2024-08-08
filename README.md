@@ -25,6 +25,78 @@ For reference, see [Go's unicode.IsSpace standard function](https://pkg.go.dev/u
 Registers are not necessarily stored in memory, and thus can't be directly
 dereferenced.
 
+## Types
+
+Each value in USM has a distinct type. A type name is prefixed with `$`.
+
+### Standard Integer Types
+
+For any strictly positive integer `n`, there exists a builtin standard integer
+type named `$<n>` where `<n>` is the decimal representation of `n`.
+The `$<n>` type is a `n` bit integer. USM does not distinguish between the
+signed and unsigned values.
+
+```usm
+%boolean = $1
+%integer = $32
+```
+
+### Custom Type Definitions
+
+A custom type declaration begins with the top level token `type`.
+Then, follows the new type name, prefixed with `$` and a non-digit character.
+After that comes the `=` token, and then follows a list of (at least one) a type
+definitions.
+
+A type definitions begins with a list of (possibly zero) field labels.
+A field label is a label in the context of the type declaration only, and
+is prefixed with `.`.
+
+Then, follows the underlying type, which is `$` prefixed.
+Finally, there is a list of (possibly zero) type descriptors, separated by
+(at least one) whitespace.
+
+The `*` descriptor represents a pointer. `*<n>` is a nested pointer (pointer
+of a pointer of a...) exactly `n` times, where `<n>` is the decimal representation
+of a strictly positive integer. If `n` is not specified, it is assumed that `n=1`.
+
+Similarly, the `^` descriptor represents an array. `^<n>` is an array of size
+`n`, where `<n>` is the decimal representation of a strictly positive integer
+`n`.
+
+Descriptors are applied from left to right, in order. e.g. `$8 ^100 *` is a
+pointer to an array of 100 bytes, and `$8 * ^100` is an array of 100 pointers.
+The number of descriptors si not bounded. e.g. `$8 * ^100 *` is a pointer to
+an array of pointers.
+
+```usm
+type $bool = $1
+
+type $str = $8 *
+
+type $person =
+    .name $str
+    .age $32
+    .isMale $bool
+
+type $peopleArray = $person * ^100
+```
+
+> [!NOTE]
+> The type definitions above will be used in examples throughout the specification.
+
+### Function Pointer Type Definition
+
+If a type definition contains the `@` token, it is treaded as a function pointer
+alias. The (possibly empty) type list before the `@` token represents the function
+return types, and the (possibly empty) type list after the `@` token represents
+the function parameter types.
+
+```usm
+type $voidOp = @                ; no parameters, no returns
+type $binaryOp = $32 @ $32 $32  ; two parameters, one return
+```
+
 ## Functions
 
 A function declaration always begins with the top level token `func`.
