@@ -35,10 +35,5 @@ func (p ParameterParser) Parse(v *TokenView) (node ParameterNode, err ParsingErr
 		return
 	}
 
-	node = ParameterNode{
-		Type:     typ,
-		Register: reg,
-	}
-
-	return
+	return ParameterNode{typ, reg}, nil
 }
