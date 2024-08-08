@@ -26,29 +26,29 @@ func assertExpectedTokens(t *testing.T, expected []tknDesc, actual []lex.Token, 
 
 func TestAddOne(t *testing.T) {
 	code :=
-		`def $i32 @addOne $i32 %x {
-			%0 = add %x #1
+		`function $32 @addOne $32 %x =
+			%0 = add %x $32 #1
 			ret %0
-		}`
+		`
 
 	expected := []tknDesc{
-		tknDesc{"def", lex.DefToken},
-		tknDesc{"$i32", lex.TypToken},
-		tknDesc{"@addOne", lex.GlbToken},
-		tknDesc{"$i32", lex.TypToken},
-		tknDesc{"%x", lex.RegToken},
-		tknDesc{"{", lex.LcrToken},
-		tknDesc{"", lex.SepToken},
-		tknDesc{"%0", lex.RegToken},
-		tknDesc{"=", lex.EqlToken},
-		tknDesc{"add", lex.OprToken},
-		tknDesc{"%x", lex.RegToken},
-		tknDesc{"#1", lex.ImmToken},
-		tknDesc{"", lex.SepToken},
-		tknDesc{"ret", lex.OprToken},
-		tknDesc{"%0", lex.RegToken},
-		tknDesc{"", lex.SepToken},
-		tknDesc{"}", lex.RcrToken},
+		{"function", lex.FunctionKeywordToken},
+		{"$32", lex.TypeToken},
+		{"@addOne", lex.GlobalToken},
+		{"$32", lex.TypeToken},
+		{"%x", lex.RegisterToken},
+		{"=", lex.EqualToken},
+		{"", lex.SeparatorToken},
+		{"%0", lex.RegisterToken},
+		{"=", lex.EqualToken},
+		{"add", lex.OperatorToken},
+		{"%x", lex.RegisterToken},
+		{"$32", lex.TypeToken},
+		{"#1", lex.ImmediateToken},
+		{"", lex.SeparatorToken},
+		{"ret", lex.OperatorToken},
+		{"%0", lex.RegisterToken},
+		{"", lex.SeparatorToken},
 	}
 
 	view := source.NewSourceView(code)
@@ -61,14 +61,14 @@ func TestAddOne(t *testing.T) {
 
 func TestPow(t *testing.T) {
 	code :=
-		`def $u32 @pow $u32 %base $u32 %exp {
+		`function $32 @pow $32 %base $32 %exp =
 			jz %exp .end
 
 		.recurse
 			%base.new = mul %base %base
-			%exp.new = shr %exp #1
+			%exp.new = shr %exp $32 #1
 			%res.0 = call @pow %base.new %exp.new
-			%exp.mod2 = and %exp #1
+			%exp.mod2 = and %exp $32 #1
 			jz %exp.mod2 .even_base
 
 		.odd_base
@@ -80,100 +80,100 @@ func TestPow(t *testing.T) {
 		.end
 			%res.3 = phi . %base .even_base %res.2
 			ret %res.3
-		}`
+		`
 
 	expected := []tknDesc{
-		tknDesc{"def", lex.DefToken},
-		tknDesc{"$u32", lex.TypToken},
-		tknDesc{"@pow", lex.GlbToken},
-		tknDesc{"$u32", lex.TypToken},
-		tknDesc{"%base", lex.RegToken},
-		tknDesc{"$u32", lex.TypToken},
-		tknDesc{"%exp", lex.RegToken},
-		tknDesc{"{", lex.LcrToken},
-		tknDesc{"", lex.SepToken},
+		{"function", lex.FunctionKeywordToken},
+		{"$32", lex.TypeToken},
+		{"@pow", lex.GlobalToken},
+		{"$32", lex.TypeToken},
+		{"%base", lex.RegisterToken},
+		{"$32", lex.TypeToken},
+		{"%exp", lex.RegisterToken},
+		{"=", lex.EqualToken},
+		{"", lex.SeparatorToken},
 
-		tknDesc{"jz", lex.OprToken},
-		tknDesc{"%exp", lex.RegToken},
-		tknDesc{".end", lex.LblToken},
-		tknDesc{"", lex.SepToken},
+		{"jz", lex.OperatorToken},
+		{"%exp", lex.RegisterToken},
+		{".end", lex.LabelToken},
+		{"", lex.SeparatorToken},
 
-		tknDesc{".recurse", lex.LblToken},
-		tknDesc{"", lex.SepToken},
+		{".recurse", lex.LabelToken},
+		{"", lex.SeparatorToken},
 
-		tknDesc{"%base.new", lex.RegToken},
-		tknDesc{"=", lex.EqlToken},
-		tknDesc{"mul", lex.OprToken},
-		tknDesc{"%base", lex.RegToken},
-		tknDesc{"%base", lex.RegToken},
-		tknDesc{"", lex.SepToken},
+		{"%base.new", lex.RegisterToken},
+		{"=", lex.EqualToken},
+		{"mul", lex.OperatorToken},
+		{"%base", lex.RegisterToken},
+		{"%base", lex.RegisterToken},
+		{"", lex.SeparatorToken},
 
-		tknDesc{"%exp.new", lex.RegToken},
-		tknDesc{"=", lex.EqlToken},
-		tknDesc{"shr", lex.OprToken},
-		tknDesc{"%exp", lex.RegToken},
-		tknDesc{"#1", lex.ImmToken},
-		tknDesc{"", lex.SepToken},
+		{"%exp.new", lex.RegisterToken},
+		{"=", lex.EqualToken},
+		{"shr", lex.OperatorToken},
+		{"%exp", lex.RegisterToken},
+		{"$32", lex.TypeToken},
+		{"#1", lex.ImmediateToken},
+		{"", lex.SeparatorToken},
 
-		tknDesc{"%res.0", lex.RegToken},
-		tknDesc{"=", lex.EqlToken},
-		tknDesc{"call", lex.OprToken},
-		tknDesc{"@pow", lex.GlbToken},
-		tknDesc{"%base.new", lex.RegToken},
-		tknDesc{"%exp.new", lex.RegToken},
-		tknDesc{"", lex.SepToken},
+		{"%res.0", lex.RegisterToken},
+		{"=", lex.EqualToken},
+		{"call", lex.OperatorToken},
+		{"@pow", lex.GlobalToken},
+		{"%base.new", lex.RegisterToken},
+		{"%exp.new", lex.RegisterToken},
+		{"", lex.SeparatorToken},
 
-		tknDesc{"%exp.mod2", lex.RegToken},
-		tknDesc{"=", lex.EqlToken},
-		tknDesc{"and", lex.OprToken},
-		tknDesc{"%exp", lex.RegToken},
-		tknDesc{"#1", lex.ImmToken},
-		tknDesc{"", lex.SepToken},
+		{"%exp.mod2", lex.RegisterToken},
+		{"=", lex.EqualToken},
+		{"and", lex.OperatorToken},
+		{"%exp", lex.RegisterToken},
+		{"$32", lex.TypeToken},
+		{"#1", lex.ImmediateToken},
+		{"", lex.SeparatorToken},
 
-		tknDesc{"jz", lex.OprToken},
-		tknDesc{"%exp.mod2", lex.RegToken},
-		tknDesc{".even_base", lex.LblToken},
-		tknDesc{"", lex.SepToken},
+		{"jz", lex.OperatorToken},
+		{"%exp.mod2", lex.RegisterToken},
+		{".even_base", lex.LabelToken},
+		{"", lex.SeparatorToken},
 
-		tknDesc{".odd_base", lex.LblToken},
-		tknDesc{"", lex.SepToken},
+		{".odd_base", lex.LabelToken},
+		{"", lex.SeparatorToken},
 
-		tknDesc{"%res.1", lex.RegToken},
-		tknDesc{"=", lex.EqlToken},
-		tknDesc{"mul", lex.OprToken},
-		tknDesc{"%res.0", lex.RegToken},
-		tknDesc{"%base", lex.RegToken},
-		tknDesc{"", lex.SepToken},
+		{"%res.1", lex.RegisterToken},
+		{"=", lex.EqualToken},
+		{"mul", lex.OperatorToken},
+		{"%res.0", lex.RegisterToken},
+		{"%base", lex.RegisterToken},
+		{"", lex.SeparatorToken},
 
-		tknDesc{".even_base", lex.LblToken},
-		tknDesc{"", lex.SepToken},
+		{".even_base", lex.LabelToken},
+		{"", lex.SeparatorToken},
 
-		tknDesc{"%res.2", lex.RegToken},
-		tknDesc{"=", lex.EqlToken},
-		tknDesc{"phi", lex.OprToken},
-		tknDesc{".odd_base", lex.LblToken},
-		tknDesc{"%res.1", lex.RegToken},
-		tknDesc{".recurse", lex.LblToken},
-		tknDesc{"%res.0", lex.RegToken},
-		tknDesc{"", lex.SepToken},
+		{"%res.2", lex.RegisterToken},
+		{"=", lex.EqualToken},
+		{"phi", lex.OperatorToken},
+		{".odd_base", lex.LabelToken},
+		{"%res.1", lex.RegisterToken},
+		{".recurse", lex.LabelToken},
+		{"%res.0", lex.RegisterToken},
+		{"", lex.SeparatorToken},
 
-		tknDesc{".end", lex.LblToken},
-		tknDesc{"", lex.SepToken},
+		{".end", lex.LabelToken},
+		{"", lex.SeparatorToken},
 
-		tknDesc{"%res.3", lex.RegToken},
-		tknDesc{"=", lex.EqlToken},
-		tknDesc{"phi", lex.OprToken},
-		tknDesc{".", lex.LblToken},
-		tknDesc{"%base", lex.RegToken},
-		tknDesc{".even_base", lex.LblToken},
-		tknDesc{"%res.2", lex.RegToken},
-		tknDesc{"", lex.SepToken},
+		{"%res.3", lex.RegisterToken},
+		{"=", lex.EqualToken},
+		{"phi", lex.OperatorToken},
+		{".", lex.LabelToken},
+		{"%base", lex.RegisterToken},
+		{".even_base", lex.LabelToken},
+		{"%res.2", lex.RegisterToken},
+		{"", lex.SeparatorToken},
 
-		tknDesc{"ret", lex.OprToken},
-		tknDesc{"%res.3", lex.RegToken},
-		tknDesc{"", lex.SepToken},
-
-		tknDesc{"}", lex.RcrToken},
+		{"ret", lex.OperatorToken},
+		{"%res.3", lex.RegisterToken},
+		{"", lex.SeparatorToken},
 	}
 
 	view := source.NewSourceView(code)

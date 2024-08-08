@@ -9,31 +9,35 @@ import (
 type TokenType uint8
 
 const (
-	RegToken TokenType = iota
-	TypToken
-	LblToken
-	GlbToken
-	ImmToken
-	LcrToken
-	RcrToken
-	EqlToken
-	DefToken
-	OprToken
-	SepToken
+	RegisterToken TokenType = iota
+	TypeToken
+	LabelToken
+	GlobalToken
+	ImmediateToken
+	EqualToken
+	FunctionKeywordToken
+	GlobalKeywordToken
+	TypeKeywordToken
+	OperatorToken
+	PointerToken
+	RepeatToken
+	SeparatorToken
 )
 
 var tokenNames = map[TokenType]string{
-	RegToken: "Register",
-	TypToken: "Type",
-	LblToken: "Label",
-	GlbToken: "Global",
-	ImmToken: "Immediate",
-	LcrToken: "Left Curly Brace",
-	RcrToken: "Right Curly Brace",
-	EqlToken: "Equal",
-	DefToken: "Define",
-	OprToken: "Operator",
-	SepToken: `\n`,
+	RegisterToken:        "Register",
+	TypeToken:            "Type",
+	LabelToken:           "Label",
+	GlobalToken:          "Global",
+	ImmediateToken:       "Immediate",
+	EqualToken:           "Equal",
+	GlobalKeywordToken:   "Global Keyword",
+	TypeKeywordToken:     "Type Keyword",
+	FunctionKeywordToken: "Function Keyword",
+	PointerToken:         "Pointer",
+	RepeatToken:          "Repeat",
+	OperatorToken:        "Operator",
+	SeparatorToken:       "\n",
 }
 
 func (tkn TokenType) String() string {
