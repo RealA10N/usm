@@ -15,3 +15,4 @@ repos:
     - mdformat-frontmatter
     - mdformat-footnote
     - mdformat-toc
+    - mdformat-gfm-alerts

@@ -97,7 +97,8 @@ type $person =
 type $peopleArray = $person * ^100
 ```
 
-> \[!NOTE\] The type definitions above will be used in examples throughout the
+> [!NOTE]
+> The type definitions above will be used in examples throughout the
 > specification.
 
 ### Function Pointer Type Definition<a name="function-pointer-type-definition"></a>
