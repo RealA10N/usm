@@ -7,8 +7,8 @@ import (
 
 type FunctionNode struct {
 	source.UnmanagedSourceView
-	Signature SignatureNode
-	Block     BlockNode
+	Declaration  FunctionDeclarationNode
+	Instructions []InstructionNode
 }
 
 func (n FunctionNode) View() source.UnmanagedSourceView {
@@ -16,40 +16,48 @@ func (n FunctionNode) View() source.UnmanagedSourceView {
 }
 
 func (n FunctionNode) String(ctx source.SourceContext) string {
-	return "def " + n.Signature.String(ctx) + " " + n.Block.String(ctx)
+	s := "function " + n.Declaration.String(ctx)
+	if len(n.Instructions) > 0 {
+		s += " =\n"
+		for _, inst := range n.Instructions {
+			s += "\t" + inst.String(ctx) + "\n"
+		}
+	}
+	return s
 }
 
 type FunctionParser struct {
-	SignatureParser SignatureParser
-	BlockParser     BlockParser
+	FunctionDeclarationParser FunctionDeclarationParser
+	InstructionParser         InstructionParser
 }
 
-func (FunctionParser) parseDef(v *TokenView, node *FunctionNode) ParsingError {
-	def, err := v.ConsumeToken(lex.DefToken)
+func (*FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) ParsingError {
+	kw, err := v.ConsumeToken(lex.FunctionKeywordToken)
 	if err != nil {
 		return err
 	}
 
-	node.Start = def.View.Start
+	node.Start = kw.View.Start
 	return nil
 }
 
-func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError) {
-	err = p.parseDef(v, &node)
+func (p *FunctionParser) parseInstructions(v *TokenView, node *FunctionNode) ParsingError {
+	v.ConsumeManyTokens(lex.SeparatorToken)
+	node.Instructions, _ = ParseManyConsumeSeparators(p.InstructionParser, v)
+	return nil
+}
+
+func (p *FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError) {
+	err = p.parseFunctionKeyword(v, &node)
 	if err != nil {
 		return
 	}
 
-	node.Signature, err = p.SignatureParser.Parse(v)
+	node.Declaration, err = p.FunctionDeclarationParser.Parse(v)
 	if err != nil {
 		return
 	}
 
-	node.Block, err = p.BlockParser.Parse(v)
-	if err != nil {
-		return
-	}
-
-	node.End = node.Block.View().End
+	err = p.parseInstructions(v, &node)
 	return
 }
