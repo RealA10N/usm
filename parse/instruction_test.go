@@ -25,12 +25,12 @@ func TestInstructionParserMultipleTargets(t *testing.T) {
 	expected := parse.InstructionNode{
 		Operator: v.Subview(12, 18),
 		Arguments: []parse.ArgumentNode{
-			parse.ArgumentNode{v.Subview(19, 21)},
-			parse.ArgumentNode{v.Subview(22, 24)},
+			{v.Subview(19, 21)},
+			{v.Subview(22, 24)},
 		},
 		Targets: []parse.RegisterNode{
-			parse.RegisterNode{v.Subview(0, 4)},
-			parse.RegisterNode{v.Subview(5, 9)},
+			{v.Subview(0, 4)},
+			{v.Subview(5, 9)},
 		},
 	}
 

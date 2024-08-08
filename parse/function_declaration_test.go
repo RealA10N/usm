@@ -39,7 +39,7 @@ func TestSignatureParserVoidFunction(t *testing.T) {
 		UnmanagedSourceView: v.Subview(4, 25),
 		Identifier:          glb.View,
 		Parameters: []parse.ParameterNode{
-			parse.ParameterNode{
+			{
 				Type:     parse.TypeNode{typ.View},
 				Register: parse.RegisterNode{reg.View},
 			},
@@ -69,17 +69,17 @@ func TestSignatureParserSingleReturn(t *testing.T) {
 		UnmanagedSourceView: v,
 		Identifier:          id.View,
 		Parameters: []parse.ParameterNode{
-			parse.ParameterNode{
+			{
 				Type:     parse.TypeNode{param1Typ.View},
 				Register: parse.RegisterNode{param1Reg.View},
 			},
-			parse.ParameterNode{
+			{
 				Type:     parse.TypeNode{param2Typ.View},
 				Register: parse.RegisterNode{param2Reg.View},
 			},
 		},
 		Returns: []parse.TypeNode{
-			parse.TypeNode{ret.View},
+			{ret.View},
 		},
 	}
 
@@ -107,18 +107,18 @@ func TestSignatureParserMutltiReturn(t *testing.T) {
 		UnmanagedSourceView: v,
 		Identifier:          id.View,
 		Parameters: []parse.ParameterNode{
-			parse.ParameterNode{
+			{
 				Type:     parse.TypeNode{param1Typ.View},
 				Register: parse.RegisterNode{param1Reg.View},
 			},
-			parse.ParameterNode{
+			{
 				Type:     parse.TypeNode{param2Typ.View},
 				Register: parse.RegisterNode{param2Reg.View},
 			},
 		},
 		Returns: []parse.TypeNode{
-			parse.TypeNode{ret1.View},
-			parse.TypeNode{ret2.View},
+			{ret1.View},
+			{ret2.View},
 		},
 	}
 
