@@ -5,9 +5,6 @@ import (
 	"alon.kr/x/usm/source"
 )
 
-// TODO: this should be a tagged union.
-// The supported caller arguments are registers, globals, immediates (and labels?)
-
 type ArgumentNode struct {
 	source.UnmanagedSourceView
 }
@@ -22,8 +19,11 @@ func (n ArgumentNode) String(ctx source.SourceContext) string {
 
 type ArgumentParser struct{}
 
+// TODO: fix argument to use appropriate subparsers
+// TODO: immediate argument should be prefixed with a type
+
 func (ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError) {
-	tkn, err := v.ConsumeToken(lex.RegToken, lex.ImmToken, lex.GlbToken)
+	tkn, err := v.ConsumeToken(lex.RegisterToken, lex.ImmediateToken, lex.GlobalToken)
 	if err != nil {
 		return
 	}
