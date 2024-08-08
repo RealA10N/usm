@@ -2,6 +2,7 @@
 
 [![CI]](https://github.com/RealA10N/usm/actions/workflows/ci.yml)
 [![codecov]](https://codecov.io/gh/RealA10N/usm)
+[![pre-commit.ci status]](https://results.pre-commit.ci/latest/github/RealA10N/usm/main)
 
 One Universal assembly language to rule them all.
 
@@ -278,3 +279,4 @@ is undefined (that is, including other fields).
 [ci]: https://github.com/RealA10N/usm/actions/workflows/ci.yml/badge.svg
 [codecov]: https://codecov.io/gh/RealA10N/usm/graph/badge.svg?token=ZXVrTG9OxC
 [go's unicode.isspace standard function]: https://pkg.go.dev/unicode#IsSpace
+[pre-commit.ci status]: https://results.pre-commit.ci/badge/github/RealA10N/usm/main.svg
