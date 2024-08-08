@@ -1,12 +1,11 @@
-TARGET := build/usm
-COVERAGE_TARGET := coverage.txt
-
 GOEXPERIMENT := rangefunc
 export GOEXPERIMENT
 
+COVERAGE_TARGET := coverage.txt
+
 .PHONY: build
 build:
-	go build -o $(TARGET)
+	go build
 
 .PHONY: run
 run: build
@@ -15,3 +14,9 @@ run: build
 .PHONY: test
 test:
 	go test -coverprofile=$(COVERAGE_TARGET) ./...
+
+.PHONY: format
+fmt:
+	go mod tidy
+	go fmt ./...
+	mdformat .
