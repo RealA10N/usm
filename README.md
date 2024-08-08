@@ -67,8 +67,6 @@ below).
 | Octal (8)        | `o` or `O`             | `0`-`7`                     |
 | Binary (2)       | `b` or `B`             | `0`, `1`                    |
 
-For reference, consider the following example.
-
 ```usm
 func @main =
     %0 = $32 #-1337
