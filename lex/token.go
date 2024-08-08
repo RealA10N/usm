@@ -37,7 +37,7 @@ var tokenNames = map[TokenType]string{
 	PointerToken:         "Pointer",
 	RepeatToken:          "Repeat",
 	OperatorToken:        "Operator",
-	SeparatorToken:       "\n",
+	SeparatorToken:       `\n`,
 }
 
 func (tkn TokenType) String() string {

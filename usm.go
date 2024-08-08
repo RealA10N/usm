@@ -32,7 +32,7 @@ func main() {
 	_, ctx := view.Detach()
 	for _, tkn := range tokens {
 		fmt.Printf("%s ", tkn.String(ctx))
-		if tkn.Type == lex.SepToken {
+		if tkn.Type == lex.SeparatorToken {
 			fmt.Println()
 		}
 	}
