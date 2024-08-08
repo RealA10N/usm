@@ -5,35 +5,7 @@
 
 One Universal assembly language to rule them all.
 
-Key aspects:
-
-- There is no importance to the order of top level declarations.
-
-```mermaid
-graph TD;
-    LEX[Lexer]
-    PRS[Parser]
-    SSA[Static Single Assignment];
-    CP[Constant Propagation];
-    DCE[Dead Code Elimination];
-    RA[Register Allocation];
-
-    subgraph "Sparse Conditional Constant Propagation"
-        CP
-        DCE
-    end
-
-    LEX --> PRS;
-    PRS --> SSA;
-    SSA --> CP;
-    CP --> DCE;
-    DCE --> CP;
-    DCE --> RA;
-```
-
-## Language Specification
-
-### Registers
+## Registers
 
 A register is a location that can store values of a certain type.
 Registers are defined and bounded to the context of a single function.
@@ -51,11 +23,11 @@ whitespace[^1] unicode characters, prefixed by `%`.
 Registers are not necessarily stored in memory, and thus can't be directly
 dereferenced.
 
-### Immediate Values
+## Immediate Values
 
 Immediate values are used to initialize registers and globals.
 
-#### Integer Immediate Value
+### Integer Immediate Value
 
 Initialize an integer value using the syntax `#<n><b>` where `<b>` is replaced
 with the immediate base (as described below), and `<n>` is replaced with a
@@ -80,28 +52,28 @@ func @main =
     %4 = $8 #100b
 ```
 
-#### Character Immediate Value
+### Character Immediate Value
 
 For convenience, an initialization of integers can be also done via a unicode
 character. Using the syntax `#'<c>'`, where `<c>` is replaced by a unicode
 character, the immediate value will be translated to the appropriate [unicode
 code point](https://en.wikipedia.org/wiki/Code_point#In_Unicode).
 
-#### Pointer Immediate Value
+### Pointer Immediate Value
 
 A pointer type can be only explicitly initialized to the zero immediate `#0`
 (or to a global with the same type).
 
-### Globals
+## Globals
 
 It is possible to declare a global without initialization. In that case the
 initial value of the global is undefined.
 
 ```usm
-global $person @author  ; undefined value
+glob $person @author  ; undefined value
 ```
 
-#### Global Initialization
+### Global Initialization
 
 Global initialization is done by initializing the global underlying standard types,
 in order of declaration of the global type. The initialization should be provided after the declaration of the global and the `=` token.
@@ -110,11 +82,11 @@ If not all fields of the global are initialized (possibly, none), the
 uninitialized fields are implicitly initialized to zero.
 
 ```usm
-global $32 @authorAge = #1337
+glob $32 @authorAge = #1337
 
-global $8 ^5 @authorName = #'A' #'l' #'o' #'n'
+glob $8 ^5 @authorName = #'A' #'l' #'o' #'n'
 
-global $person @author =
+glob $person @author =
     @authorName
     @authorAge            ; .isMale is implicitly initialized to #0
 ```
@@ -123,7 +95,7 @@ Using type labels, it is possible to start initialize fields from a different
 starting position, and skip explicit initialization of fields to zero.
 
 ```usm
-global $person @author =  ; the .name field is initialized to #0 implicitly.
+glob $person @author =  ; the .name field is initialized to #0 implicitly.
     .age @authorAge       ; initialization is started from .age field
     #1                    ; and continues to the .isMale field
 ```
@@ -132,7 +104,7 @@ Note that it is possible to implicitly initialize all of the fields to `#0`,
 but simply appending the `=` token after the global declaration.
 
 ```usm
-global $person @author =
+glob $person @author =
 ```
 
 If a type field is initialized more than once, the value of the whole structure
