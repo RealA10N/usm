@@ -23,6 +23,32 @@ whitespace[^1] unicode characters, prefixed by `%`.
 Registers are not necessarily stored in memory, and thus can't be directly
 dereferenced.
 
+## Functions
+
+A function declaration always begins with the top level token `func`.
+Then follows a list of (possibly zero) return types, than the function global
+name (prefixed with `@`), and finally follows a list of (possibly zero) type and
+register pairs for each parameter that the function accepts.
+
+It is possible to declare a function without providing an implementation.
+In that case, the compiler should expect to find the implementation in another
+object file that should be eventually linked.
+
+```usm
+func $32 @add $32 %a $32 %b
+```
+
+An implementation can be provided be appending the `=` token after the function
+declaration. Then, a list of at least one instruction is expected, separated
+by at least one newline between them. The function definition ends when an `EOF`
+token is reached, or another top level token is encountered.
+
+```usm
+func $32 @add $32 %a $32 %b =
+    %c = add %a %b
+    ret %c
+```
+
 ## Immediate Values
 
 Immediate values are used to initialize registers and globals.
