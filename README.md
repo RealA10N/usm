@@ -1,4 +1,4 @@
-# USM - The Universal Assembly Language
+# USM - The Universal Assembly Language<a name="usm---the-universal-assembly-language"></a>
 
 [![CI]](https://github.com/RealA10N/usm/actions/workflows/ci.yml)
 [![codecov]](https://codecov.io/gh/RealA10N/usm)
@@ -6,7 +6,26 @@
 
 One Universal assembly language to rule them all.
 
-## Registers
+<!-- mdformat-toc start --slug=github --maxlevel=6 --minlevel=2 -->
+
+- [Registers](#registers)
+- [Types](#types)
+  - [Standard Integer Types](#standard-integer-types)
+  - [Custom Type Definitions](#custom-type-definitions)
+  - [Function Pointer Type Definition](#function-pointer-type-definition)
+- [Functions](#functions)
+- [Instructions](#instructions)
+  - [Expressions](#expressions)
+- [Immediate Values](#immediate-values)
+  - [Integer Immediate Value](#integer-immediate-value)
+  - [Character Immediate Value](#character-immediate-value)
+  - [Pointer Immediate Value](#pointer-immediate-value)
+- [Globals](#globals)
+  - [Global Initialization](#global-initialization)
+
+<!-- mdformat-toc end -->
+
+## Registers<a name="registers"></a>
 
 A register is a location that can store values of a certain type. Registers are
 defined and bounded to the context of a single function. The first assignment of
@@ -21,11 +40,11 @@ whitespace[^1] unicode characters, prefixed by `%`.
 Registers are not necessarily stored in memory, and thus can't be directly
 dereferenced.
 
-## Types
+## Types<a name="types"></a>
 
 Each value in USM has a distinct type. A type name is prefixed with `$`.
 
-### Standard Integer Types
+### Standard Integer Types<a name="standard-integer-types"></a>
 
 For any strictly positive integer `n`, there exists a builtin standard integer
 type named `$<n>` where `<n>` is the decimal representation of `n`. The `$<n>`
@@ -37,7 +56,7 @@ unsigned values.
 %integer = $32
 ```
 
-### Custom Type Definitions
+### Custom Type Definitions<a name="custom-type-definitions"></a>
 
 A custom type declaration begins with the top level token `type`. Then, follows
 the new type name, prefixed with `$` and a non-digit character. After that comes
@@ -81,7 +100,7 @@ type $peopleArray = $person * ^100
 > \[!NOTE\] The type definitions above will be used in examples throughout the
 > specification.
 
-### Function Pointer Type Definition
+### Function Pointer Type Definition<a name="function-pointer-type-definition"></a>
 
 If a type definition contains the `@` token, it is treaded as a function pointer
 alias. The (possibly empty) type list before the `@` token represents the
@@ -93,7 +112,7 @@ type $voidOp = @                ; no parameters, no returns
 type $binaryOp = $32 @ $32 $32  ; two parameters, one return
 ```
 
-## Functions
+## Functions<a name="functions"></a>
 
 A function declaration always begins with the top level token `func`. Then
 follows a list of (possibly zero) return types, than the function global name
@@ -119,7 +138,7 @@ func $32 @add $32 %a $32 %b =
     ret %c
 ```
 
-## Instructions
+## Instructions<a name="instructions"></a>
 
 An instruction consists of (possibly zero) target registers, and an expression.
 The return types from an expression is always known, and should match the target
@@ -157,7 +176,7 @@ are ignored, the `=` token should be emitted.
 divmod %a %b
 ```
 
-### Expressions
+### Expressions<a name="expressions"></a>
 
 There are two distinct expression types: an *operator expression*, and an
 *immediate values expression*.
@@ -186,11 +205,11 @@ immediate values.
           imm #0     imm #1
 ```
 
-## Immediate Values
+## Immediate Values<a name="immediate-values"></a>
 
 Immediate values are used to initialize registers and globals.
 
-### Integer Immediate Value
+### Integer Immediate Value<a name="integer-immediate-value"></a>
 
 Initialize an integer value using the syntax `#<n><b>` where `<b>` is replaced
 with the immediate base (as described below), and `<n>` is replaced with a
@@ -213,19 +232,19 @@ func @main =
     %4 = $8 #100b
 ```
 
-### Character Immediate Value
+### Character Immediate Value<a name="character-immediate-value"></a>
 
 For convenience, an initialization of integers can be also done via a unicode
 character. Using the syntax `#'<c>'`, where `<c>` is replaced by a unicode
 character, the immediate value will be translated to the appropriate
 [unicode code point](https://en.wikipedia.org/wiki/Code_point#In_Unicode).
 
-### Pointer Immediate Value
+### Pointer Immediate Value<a name="pointer-immediate-value"></a>
 
 A pointer type can be only explicitly initialized to the zero immediate `#0` (or
 to a global with the same type).
 
-## Globals
+## Globals<a name="globals"></a>
 
 It is possible to declare a global without initialization. In that case the
 initial value of the global is undefined.
@@ -234,7 +253,7 @@ initial value of the global is undefined.
 glob $person @author  ; undefined value
 ```
 
-### Global Initialization
+### Global Initialization<a name="global-initialization"></a>
 
 Global initialization is done by initializing the global underlying standard
 types, in order of declaration of the global type. The initialization should be
