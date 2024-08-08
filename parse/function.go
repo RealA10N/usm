@@ -31,7 +31,7 @@ type FunctionParser struct {
 	InstructionParser         InstructionParser
 }
 
-func (*FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) ParsingError {
+func (FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) ParsingError {
 	kw, err := v.ConsumeToken(lex.FunctionKeywordToken)
 	if err != nil {
 		return err
@@ -41,13 +41,13 @@ func (*FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) Pa
 	return nil
 }
 
-func (p *FunctionParser) parseInstructions(v *TokenView, node *FunctionNode) ParsingError {
+func (p FunctionParser) parseInstructions(v *TokenView, node *FunctionNode) ParsingError {
 	v.ConsumeManyTokens(lex.SeparatorToken)
 	node.Instructions, _ = ParseManyConsumeSeparators(p.InstructionParser, v)
 	return nil
 }
 
-func (p *FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError) {
+func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError) {
 	err = p.parseFunctionKeyword(v, &node)
 	if err != nil {
 		return
