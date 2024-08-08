@@ -27,7 +27,7 @@ dereferenced.
 
 A function declaration always begins with the top level token `func`.
 Then follows a list of (possibly zero) return types, than the function global
-name (prefixed with `@`), and finally follows a list of (possibly zero) type and
+name (`@` prefixed), and finally follows a list of (possibly zero) type and
 register pairs for each parameter that the function accepts.
 
 It is possible to declare a function without providing an implementation.
@@ -47,6 +47,72 @@ token is reached, or another top level token is encountered.
 func $32 @add $32 %a $32 %b =
     %c = add %a %b
     ret %c
+```
+
+## Instructions
+
+An instruction consists of (possibly zero) target registers, and an expression.
+The return types from an expression is always known, and should match the target
+register types. If some (possibly all) registers are appearing for the first
+time in function, their type should be inferred from the corresponding
+expression return type.
+
+```
+%a %b %c ... =     ...
+-----┬------   ------------
+ target(s)      expression
+```
+
+Expression return values can be assigned to the *epsilon register* `%` if the
+corresponding value should be ignored. If the expression returns more values
+than the amount of target registers `n`, only the first `n` values from the
+expression are assigned to the target registers, and the rest of the values
+are ignored. If the expression does not return any values, or all returned
+values are ignored, the `=` token should be emitted.
+
+```usm
+%q, %r = divmod $32 #7 $32 #3
+%q, %r = divmod %a %b
+
+; keep quotient, ignore reminder
+%q % = divmod %a %b
+%q = divmod %a %b
+
+; ignore quotient, keep reminder
+% %r = divmod %a %b
+
+; ignore both
+% % = divmod %a %b
+% = divmod %a %b
+divmod %a %b
+```
+
+### Expressions
+
+There are two distinct expression types: an *operator expression*, and an
+*immediate values expression*.
+
+An operator expression a operator name. It is an identifier which is *not*
+prefixed with a special character. Then, follows the arguments to the operation,
+which are operation specific, can can be immediate values, function labels,
+or registers. An operation with specific parameter types should return a
+deterministic set of (possibly zero) return types, which are then assigned to
+the corresponding target registers.
+
+```usm
+%a %b %c ... = dosomething %a %b $32 #1234 ...
+-----┬------   -----┬----- ---------┬---------
+ target(s)        opr id     specific params
+```
+
+In addition, a list of (at least one) type and immediate initialization pairs
+can be supplied as an expression to directly initialize the registers with
+immediate values.
+
+```usm
+%0 %1 = $person ... $32 ...
+        ----------- -------
+          imm #0     imm #1
 ```
 
 ## Immediate Values
