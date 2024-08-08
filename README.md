@@ -18,7 +18,9 @@ Unlike in other, machine specific, assembly languages, the number of available
 registers are not bounded by USM, and their names can be any sequence of non
 whitespace[^1] unicode characters, prefixed by `%`.
 
-[^1]: A unicode whitespace character is one that has the ["WSpace=Y" property](https://en.wikipedia.org/wiki/Whitespace_character#Unicode). For reference, see [Go's unicode.IsSpace standard function](https://pkg.go.dev/unicode#IsSpace).
+[^1]: A unicode whitespace character is one that has the
+["WSpace=Y" property](https://en.wikipedia.org/wiki/Whitespace_character#Unicode).
+For reference, see [Go's unicode.IsSpace standard function](https://pkg.go.dev/unicode#IsSpace).
 
 Registers are not necessarily stored in memory, and thus can't be directly
 dereferenced.
