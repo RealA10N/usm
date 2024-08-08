@@ -44,6 +44,11 @@ func (FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) Par
 func (p FunctionParser) parseInstructions(v *TokenView, node *FunctionNode) ParsingError {
 	v.ConsumeManyTokens(lex.SeparatorToken)
 	node.Instructions, _ = ParseManyConsumeSeparators(p.InstructionParser, v)
+
+	if len(node.Instructions) > 0 {
+		node.End = node.Instructions[len(node.Instructions)-1].View().End
+	}
+
 	return nil
 }
 
@@ -54,6 +59,11 @@ func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError
 	}
 
 	node.Declaration, err = p.FunctionDeclarationParser.Parse(v)
+	if err != nil {
+		return
+	}
+
+	_, err = v.ConsumeToken(lex.EqualToken)
 	if err != nil {
 		return
 	}

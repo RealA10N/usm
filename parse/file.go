@@ -33,6 +33,6 @@ type FileParser struct {
 }
 
 func (p FileParser) Parse(v *TokenView) (node FileNode, err ParsingError) {
-	node.Functions, _ = ParseManyConsumeSeparators(p.FunctionParser, v)
+	node.Functions = ParseMany(p.FunctionParser, v)
 	return
 }
