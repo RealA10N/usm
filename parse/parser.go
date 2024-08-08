@@ -33,7 +33,7 @@ func ParseManyConsumeSeparators[Node any](
 		}
 		nodes = append(nodes, node)
 
-		err = v.ConsumeAtLeastTokens(1, lex.SepToken)
+		err = v.ConsumeAtLeastTokens(1, lex.SeparatorToken)
 		if err != nil {
 			return
 		}
