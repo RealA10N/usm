@@ -3,9 +3,6 @@
 [![CI]](https://github.com/RealA10N/usm/actions/workflows/ci.yml)
 [![codecov]](https://codecov.io/gh/RealA10N/usm)
 
-[CI]: https://github.com/RealA10N/usm/actions/workflows/ci.yml/badge.svg
-[codecov]: https://codecov.io/gh/RealA10N/usm/graph/badge.svg?token=ZXVrTG9OxC
-
 One Universal assembly language to rule them all.
 
 ## Registers
@@ -19,12 +16,6 @@ can be any valid type, and the size of the register (in bits) is unbounded.
 Unlike in other, machine specific, assembly languages, the number of available
 registers are not bounded by USM, and their names can be any sequence of non
 whitespace[^1] unicode characters, prefixed by `%`.
-
-[^1]: A unicode whitespace character is one that has the ["WSpace=Y" property].
-For reference, see [Go's unicode.IsSpace standard function].
-
-["WSpace=Y" property]: https://en.wikipedia.org/wiki/Whitespace_character#Unicode
-[Go's unicode.IsSpace standard function]: https://pkg.go.dev/unicode#IsSpace
 
 Registers are not necessarily stored in memory, and thus can't be directly
 dereferenced.
@@ -59,10 +50,10 @@ Then, follows the underlying type, which is `$` prefixed. Finally, there is a
 list of (possibly zero) type descriptors, separated by (at least one)
 whitespace.
 
-The `*` descriptor represents a pointer. `*<n>` is a nested pointer (pointer
-of a pointer of a...) exactly `n` times, where `<n>` is the decimal
-representation of a strictly positive integer. If `n` is not specified, it is
-assumed that `n=1`.
+The `*` descriptor represents a pointer. `*<n>` is a nested pointer (pointer of
+a pointer of a...) exactly `n` times, where `<n>` is the decimal representation
+of a strictly positive integer. If `n` is not specified, it is assumed that
+`n=1`.
 
 Similarly, the `^` descriptor represents an array. `^<n>` is an array of size
 `n`, where `<n>` is the decimal representation of a strictly positive integer
@@ -86,16 +77,15 @@ type $person =
 type $peopleArray = $person * ^100
 ```
 
-> [!NOTE]
-> The type definitions above will be used in examples throughout the
+> \[!NOTE\] The type definitions above will be used in examples throughout the
 > specification.
 
 ### Function Pointer Type Definition
 
-If a type definition contains the `@` token, it is treaded as a function
-pointer alias. The (possibly empty) type list before the `@` token represents
-the function return types, and the (possibly empty) type list after the `@`
-token represents the function parameter types.
+If a type definition contains the `@` token, it is treaded as a function pointer
+alias. The (possibly empty) type list before the `@` token represents the
+function return types, and the (possibly empty) type list after the `@` token
+represents the function parameter types.
 
 ```usm
 type $voidOp = @                ; no parameters, no returns
@@ -207,7 +197,7 @@ possibly negative integer, in the provided base representation (as described
 below).
 
 | Base             | Allowed Suffix (`<b>`) | Allowed Digits (`<n>`)      |
-|------------------|------------------------|-----------------------------|
+| ---------------- | ---------------------- | --------------------------- |
 | Hexadecimal (16) | `h` or `H`             | `0`-`9`, `a`-`f` or `A`-`F` |
 | Decimal (10)     | empty, `d` or `D`      | `0`-`9`                     |
 | Octal (8)        | `o` or `O`             | `0`-`7`                     |
@@ -226,8 +216,8 @@ func @main =
 
 For convenience, an initialization of integers can be also done via a unicode
 character. Using the syntax `#'<c>'`, where `<c>` is replaced by a unicode
-character, the immediate value will be translated to the appropriate [unicode
-code point](https://en.wikipedia.org/wiki/Code_point#In_Unicode).
+character, the immediate value will be translated to the appropriate
+[unicode code point](https://en.wikipedia.org/wiki/Code_point#In_Unicode).
 
 ### Pointer Immediate Value
 
@@ -280,3 +270,11 @@ glob $person @author =
 
 If a type field is initialized more than once, the value of the whole structure
 is undefined (that is, including other fields).
+
+[^1]: A unicode whitespace character is one that has the ["WSpace=Y" property].
+    For reference, see [Go's unicode.IsSpace standard function].
+
+["wspace=y" property]: https://en.wikipedia.org/wiki/Whitespace_character#Unicode
+[ci]: https://github.com/RealA10N/usm/actions/workflows/ci.yml/badge.svg
+[codecov]: https://codecov.io/gh/RealA10N/usm/graph/badge.svg?token=ZXVrTG9OxC
+[go's unicode.isspace standard function]: https://pkg.go.dev/unicode#IsSpace
