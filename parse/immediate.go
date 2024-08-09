@@ -15,7 +15,7 @@ func (n ImmediateNode) View() source.UnmanagedSourceView {
 }
 
 func (n ImmediateNode) String(ctx source.SourceContext) string {
-	return n.Type.String(ctx) + string(n.Value.Raw(ctx))
+	return n.Type.String(ctx) + " " + string(n.Value.Raw(ctx))
 }
 
 type ImmediateParser struct {
