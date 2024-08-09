@@ -8,7 +8,7 @@ import (
 type FunctionNode struct {
 	source.UnmanagedSourceView
 	Declaration  FunctionDeclarationNode
-	Instructions []InstructionNode
+	Instructions BlockNode[InstructionNode]
 }
 
 func (n FunctionNode) View() source.UnmanagedSourceView {
@@ -17,18 +17,15 @@ func (n FunctionNode) View() source.UnmanagedSourceView {
 
 func (n FunctionNode) String(ctx source.SourceContext) string {
 	s := "function " + n.Declaration.String(ctx)
-	if len(n.Instructions) > 0 {
-		s += " =\n"
-		for _, inst := range n.Instructions {
-			s += inst.String(ctx) + "\n"
-		}
+	if len(n.Instructions.Nodes) > 0 {
+		s += " = " + n.Instructions.String(ctx)
 	}
 	return s
 }
 
 type FunctionParser struct {
 	FunctionDeclarationParser FunctionDeclarationParser
-	InstructionParser         InstructionParser
+	InstructionsParser        BlockParser[InstructionNode]
 }
 
 func (FunctionParser) String() string {
@@ -42,17 +39,6 @@ func (FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) Par
 	}
 
 	node.Start = kw.View.Start
-	return nil
-}
-
-func (p FunctionParser) parseInstructions(v *TokenView, node *FunctionNode) ParsingError {
-	v.ConsumeManyTokens(lex.SeparatorToken)
-	node.Instructions, _ = ParseManyConsumeSeparators(p.InstructionParser, v)
-
-	if len(node.Instructions) > 0 {
-		node.End = node.Instructions[len(node.Instructions)-1].View().End
-	}
-
 	return nil
 }
 
@@ -72,6 +58,6 @@ func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError
 		return
 	}
 
-	err = p.parseInstructions(v, &node)
+	node.Instructions, err = p.InstructionsParser.Parse(v)
 	return
 }

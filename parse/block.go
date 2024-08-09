@@ -2,34 +2,48 @@ package parse
 
 import (
 	"alon.kr/x/usm/lex"
+	"alon.kr/x/usm/source"
 )
 
-type BlockNode[NodeT any] struct {
+type BlockNode[NodeT Node] struct {
 	Nodes []NodeT
 }
 
-type BlockParser[NodeT any] struct {
-	parser Parser[NodeT]
+func (n BlockNode[NodeT]) String(ctx source.SourceContext) (s string) {
+	if len(n.Nodes) == 0 {
+		return "{ }\n"
+	}
+
+	s = "{\n"
+	for _, node := range n.Nodes {
+		s += node.String(ctx)
+	}
+	s += "}\n"
+
+	return
+}
+
+type BlockParser[NodeT Node] struct {
+	Parser Parser[NodeT]
 }
 
 func (p BlockParser[NodeT]) String() string {
-	return p.parser.String() + " block"
+	return p.Parser.String() + " block"
 }
 
-func (p BlockParser[NodeT]) Parse(v *TokenView) (node BlockNode[NodeT], err ParsingError) {
+func (p BlockParser[NodeT]) Parse(v *TokenView) (nodes BlockNode[NodeT], err ParsingError) {
 	_, err = v.ConsumeToken(lex.LeftCurlyBraceToken)
 
 	if err != nil {
-		first, err := p.parser.Parse(v)
+		first, err := p.Parser.Parse(v)
 		if err != nil {
-			return node, GenericUnexpectedError{Expected: p.String()}
+			return nodes, GenericUnexpectedError{Expected: p.String()}
 		}
 
-		node.Nodes = []NodeT{first}
-		return node, nil
+		return BlockNode[NodeT]{[]NodeT{first}}, nil
 	}
 
-	node.Nodes = ParseMany(p.parser, v)
+	nodes = BlockNode[NodeT]{ParseMany(p.Parser, v)}
 	_, err = v.ConsumeToken(lex.RightCurlyBraceToken)
 	return
 }

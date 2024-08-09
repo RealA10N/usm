@@ -62,7 +62,7 @@ func (n InstructionNode) String(ctx source.SourceContext) string {
 	targets := n.stringTargets(ctx)
 	op := string(n.Operator.Raw(ctx))
 	arguments := n.stringArguments(ctx)
-	return labels + "\t" + targets + op + arguments
+	return labels + "\t" + targets + op + arguments + "\n"
 }
 
 type InstructionParser struct {
@@ -92,6 +92,7 @@ func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) Pars
 //
 // > Lbl* (Reg+ Eql)? Opr Arg+ !Arg
 func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err ParsingError) {
+	v.ConsumeManyTokens(lex.SeparatorToken)
 	node.Labels, _ = ParseManyIgnoreSeparators(p.LabelParser, v)
 	node.Targets = ParseMany(p.RegisterParser, v)
 
@@ -106,5 +107,6 @@ func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err Parsin
 	}
 
 	node.Arguments = ParseMany(p.ArgumentParser, v)
-	return node, nil
+	err = v.ConsumeAtLeastTokens(1, lex.SeparatorToken)
+	return node, err
 }

@@ -57,9 +57,6 @@ func ParseManyIgnoreSeparators[Node any](
 		}
 		nodes = append(nodes, node)
 
-		_, err = v.ConsumeManyTokens(lex.SeparatorToken)
-		if err != nil {
-			return
-		}
+		v.ConsumeManyTokens(lex.SeparatorToken)
 	}
 }
