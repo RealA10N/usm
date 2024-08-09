@@ -83,7 +83,35 @@ ret`
 function @second =
 	ret
 `
+	testFormattedFile(t, src, expected)
+}
 
+func TestFileWithLabels(t *testing.T) {
+	src := `function $32 @fib $i32 %n =
+    jle %n $32 #1 .return
+    %n = dec %n
+    %a = call @fib %n
+    %n = dec %n
+    %b = call @fib %n
+    %n = add %a %b
+.return
+    ret %n`
+
+	expected := `function $32 @fib $i32 %n =
+    jle %n $32 #1 .return
+    %n = dec %n
+    %a = call @fib %n
+    %n = dec %n
+    %b = call @fib %n
+    %n = add %a %b
+	.return ret %n
+`
+	testFormattedFile(t, src, expected)
+}
+
+// MARK: Helpers
+
+func testFormattedFile(t *testing.T, src string, expected string) {
 	v := source.NewSourceView(src)
 	_, ctx := v.Detach()
 	tkns, err := lex.NewTokenizer().Tokenize(v)
