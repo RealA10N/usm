@@ -98,12 +98,12 @@ func TestFileWithLabels(t *testing.T) {
     ret %n`
 
 	expected := `function $32 @fib $i32 %n =
-    jle %n $32 #1 .return
-    %n = dec %n
-    %a = call @fib %n
-    %n = dec %n
-    %b = call @fib %n
-    %n = add %a %b
+	jle %n $32 #1 .return
+	%n = dec %n
+	%a = call @fib %n
+	%n = dec %n
+	%b = call @fib %n
+	%n = add %a %b
 	.return ret %n
 `
 	testFormattedFile(t, src, expected)
