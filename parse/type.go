@@ -25,6 +25,5 @@ func (TypeParser) Parse(v *TokenView) (node TypeNode, err ParsingError) {
 		return
 	}
 
-	node = TypeNode{tkn.View}
-	return
+	return TypeNode{tkn.View}, nil
 }

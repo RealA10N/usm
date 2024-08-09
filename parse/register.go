@@ -25,6 +25,5 @@ func (RegisterParser) Parse(v *TokenView) (node RegisterNode, err ParsingError) 
 		return
 	}
 
-	node = RegisterNode{tkn.View}
-	return
+	return RegisterNode{tkn.View}, nil
 }

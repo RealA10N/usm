@@ -110,5 +110,5 @@ func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err Parsin
 	}
 
 	node.Arguments = ParseMany(p.ArgumentParser, v)
-	return
+	return node, nil
 }

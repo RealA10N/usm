@@ -25,6 +25,5 @@ func (LabelParser) Parse(v *TokenView) (node LabelNode, err ParsingError) {
 		return
 	}
 
-	node = LabelNode{tkn.View}
-	return
+	return LabelNode{tkn.View}, nil
 }

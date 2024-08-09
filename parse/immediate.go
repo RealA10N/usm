@@ -34,5 +34,5 @@ func (p ImmediateParser) Parse(v *TokenView) (node ImmediateNode, err ParsingErr
 	}
 
 	node.Value = tkn.View
-	return
+	return node, nil
 }
