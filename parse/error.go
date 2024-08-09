@@ -42,10 +42,10 @@ func stringManyTokenTypes(typs []lex.TokenType) (s string) {
 	return s
 }
 
-type GenericError struct {
+type GenericUnexpectedError struct {
 	Expected string
 }
 
-func (e GenericError) Error(ctx source.SourceContext) string {
+func (e GenericUnexpectedError) Error(ctx source.SourceContext) string {
 	return "expected " + e.Expected
 }
