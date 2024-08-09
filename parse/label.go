@@ -19,6 +19,10 @@ func (n LabelNode) String(ctx source.SourceContext) string {
 
 type LabelParser struct{}
 
+func (LabelParser) String() string {
+	return ".label"
+}
+
 func (LabelParser) Parse(v *TokenView) (node LabelNode, err ParsingError) {
 	tkn, err := v.ConsumeToken(lex.LabelToken)
 	if err != nil {

@@ -19,6 +19,10 @@ func (n TypeNode) String(ctx source.SourceContext) string {
 
 type TypeParser struct{}
 
+func (TypeParser) String() string {
+	return "$type"
+}
+
 func (TypeParser) Parse(v *TokenView) (node TypeNode, err ParsingError) {
 	tkn, err := v.ConsumeToken(lex.TypeToken)
 	if err != nil {

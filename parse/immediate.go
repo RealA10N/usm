@@ -22,6 +22,10 @@ type ImmediateParser struct {
 	TypeParser TypeParser
 }
 
+func (ImmediateParser) String() string {
+	return "immediate ($type #value)"
+}
+
 func (p ImmediateParser) Parse(v *TokenView) (node ImmediateNode, err ParsingError) {
 	node.Type, err = p.TypeParser.Parse(v)
 	if err != nil {

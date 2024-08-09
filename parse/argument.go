@@ -9,6 +9,10 @@ type ArgumentParser struct {
 	GlobalParser    GlobalParser
 }
 
+func (ArgumentParser) String() string {
+	return "argument"
+}
+
 func (p ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError) {
 	// TODO: make this code neater.
 
@@ -28,7 +32,5 @@ func (p ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError
 		return node, nil
 	}
 
-	return nil, GenericError{
-		Expected: "argument (register, immediate, label, or global)",
-	}
+	return nil, GenericUnexpectedError{Expected: p.String()}
 }

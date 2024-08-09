@@ -1,8 +1,13 @@
 package parse
 
-import "alon.kr/x/usm/lex"
+import (
+	"fmt"
+
+	"alon.kr/x/usm/lex"
+)
 
 type Parser[Node any] interface {
+	fmt.Stringer
 	Parse(v *TokenView) (Node, ParsingError)
 }
 

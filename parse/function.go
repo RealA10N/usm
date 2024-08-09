@@ -31,6 +31,10 @@ type FunctionParser struct {
 	InstructionParser         InstructionParser
 }
 
+func (FunctionParser) String() string {
+	return "function"
+}
+
 func (FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) ParsingError {
 	kw, err := v.ConsumeToken(lex.FunctionKeywordToken)
 	if err != nil {

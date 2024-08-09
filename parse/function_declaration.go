@@ -35,6 +35,10 @@ type FunctionDeclarationParser struct {
 	TypeParser      TypeParser
 }
 
+func (FunctionDeclarationParser) String() string {
+	return "function declaration"
+}
+
 func (FunctionDeclarationParser) parseIdentifier(v *TokenView, node *FunctionDeclarationNode) ParsingError {
 	id, err := v.ConsumeToken(lex.GlobalToken)
 	if err != nil {

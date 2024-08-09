@@ -32,6 +32,10 @@ type FileParser struct {
 	FunctionParser FunctionParser
 }
 
+func (FileParser) String() string {
+	return "file"
+}
+
 func (p FileParser) Parse(v *TokenView) (node FileNode, err ParsingError) {
 	node.Functions = ParseMany(p.FunctionParser, v)
 	return

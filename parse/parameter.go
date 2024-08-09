@@ -24,6 +24,10 @@ type ParameterParser struct {
 	RegisterParser RegisterParser
 }
 
+func (ParameterParser) String() string {
+	return "parameter ($type %register)"
+}
+
 func (p ParameterParser) Parse(v *TokenView) (node ParameterNode, err ParsingError) {
 	typ, err := p.TypeParser.Parse(v)
 	if err != nil {

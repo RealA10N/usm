@@ -19,6 +19,10 @@ func (n GlobalNode) String(ctx source.SourceContext) string {
 
 type GlobalParser struct{}
 
+func (GlobalParser) String() string {
+	return "global"
+}
+
 func (GlobalParser) Parse(v *TokenView) (node GlobalNode, err ParsingError) {
 	tkn, err := v.ConsumeToken(lex.GlobalToken)
 	if err != nil {
