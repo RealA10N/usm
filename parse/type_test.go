@@ -12,7 +12,7 @@ import (
 
 func TestTypeNodeStringer(t *testing.T) {
 	typView, ctx := source.NewSourceView("$i32").Detach()
-	typTok := lex.Token{Type: lex.TypToken, View: typView}
+	typTok := lex.Token{Type: lex.TypeToken, View: typView}
 	tkns := parse.NewTokenView([]lex.Token{typTok})
 	node, err := parse.TypeParser{}.Parse(&tkns)
 	assert.Nil(t, err)
@@ -21,7 +21,7 @@ func TestTypeNodeStringer(t *testing.T) {
 
 func TestTypeParserSimpleCase(t *testing.T) {
 	typView, ctx := source.NewSourceView("$i32").Detach()
-	typTkn := lex.Token{Type: lex.TypToken, View: typView}
+	typTkn := lex.Token{Type: lex.TypeToken, View: typView}
 	tkns := parse.NewTokenView([]lex.Token{typTkn})
 	expectedSubview := parse.TokenView{tkns.Subview(1, 1)}
 
@@ -47,7 +47,7 @@ func TestTypeParserEofError(t *testing.T) {
 
 func TestTypeParserUnexpectedTokenError(t *testing.T) {
 	regView, ctx := source.NewSourceView("%0").Detach()
-	regTkn := lex.Token{Type: lex.RegToken, View: regView}
+	regTkn := lex.Token{Type: lex.RegisterToken, View: regView}
 	tkns := parse.NewTokenView([]lex.Token{regTkn})
 
 	_, err := parse.TypeParser{}.Parse(&tkns)

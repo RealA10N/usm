@@ -12,9 +12,9 @@ type WordTokenizer struct {
 }
 
 func (t WordTokenizer) Tokenize(txt *source.SourceView) (tkn Token, err error) {
-	idx := txt.Index(unicode.IsSpace) // TODO: currently assuming prefix has no whitespaces.
+	idx := txt.Index(unicode.IsSpace)
 	if idx < 1 {
-		err = errors.New("token not matched")
+		err = errors.New("token not matched (empty word)")
 		return
 	}
 

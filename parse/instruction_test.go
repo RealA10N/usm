@@ -12,12 +12,12 @@ import (
 
 func TestInstructionParserMultipleTargets(t *testing.T) {
 	v, ctx := source.NewSourceView("%div %mod = divmod %x %y").Detach()
-	t1 := lex.Token{Type: lex.RegToken, View: v.Subview(0, 4)}
-	t2 := lex.Token{Type: lex.RegToken, View: v.Subview(5, 9)}
-	eq := lex.Token{Type: lex.EqlToken, View: v.Subview(10, 11)}
-	op := lex.Token{Type: lex.OprToken, View: v.Subview(12, 18)}
-	a1 := lex.Token{Type: lex.RegToken, View: v.Subview(19, 21)}
-	a2 := lex.Token{Type: lex.RegToken, View: v.Subview(22, 24)}
+	t1 := lex.Token{Type: lex.RegisterToken, View: v.Subview(0, 4)}
+	t2 := lex.Token{Type: lex.RegisterToken, View: v.Subview(5, 9)}
+	eq := lex.Token{Type: lex.EqualToken, View: v.Subview(10, 11)}
+	op := lex.Token{Type: lex.OperatorToken, View: v.Subview(12, 18)}
+	a1 := lex.Token{Type: lex.RegisterToken, View: v.Subview(19, 21)}
+	a2 := lex.Token{Type: lex.RegisterToken, View: v.Subview(22, 24)}
 	tknView := parse.NewTokenView([]lex.Token{
 		t1, t2, eq, op, a1, a2,
 	})
@@ -25,12 +25,12 @@ func TestInstructionParserMultipleTargets(t *testing.T) {
 	expected := parse.InstructionNode{
 		Operator: v.Subview(12, 18),
 		Arguments: []parse.ArgumentNode{
-			parse.ArgumentNode{v.Subview(19, 21)},
-			parse.ArgumentNode{v.Subview(22, 24)},
+			parse.RegisterNode{v.Subview(19, 21)},
+			parse.RegisterNode{v.Subview(22, 24)},
 		},
 		Targets: []parse.RegisterNode{
-			parse.RegisterNode{v.Subview(0, 4)},
-			parse.RegisterNode{v.Subview(5, 9)},
+			{v.Subview(0, 4)},
+			{v.Subview(5, 9)},
 		},
 	}
 

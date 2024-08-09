@@ -33,7 +33,26 @@ func ParseManyConsumeSeparators[Node any](
 		}
 		nodes = append(nodes, node)
 
-		err = v.ConsumeAtLeastTokens(1, lex.SepToken)
+		err = v.ConsumeAtLeastTokens(1, lex.SeparatorToken)
+		if err != nil {
+			return
+		}
+	}
+}
+
+func ParseManyIgnoreSeparators[Node any](
+	p Parser[Node],
+	v *TokenView,
+) (nodes []Node, err ParsingError) {
+	for {
+		var node Node
+		node, err = p.Parse(v)
+		if err != nil {
+			return
+		}
+		nodes = append(nodes, node)
+
+		_, err = v.ConsumeManyTokens(lex.SeparatorToken)
 		if err != nil {
 			return
 		}

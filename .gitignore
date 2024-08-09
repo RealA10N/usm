@@ -24,6 +24,13 @@
 
 # build files
 build
+usm
 
 # editors
 .vscode
+
+# coverage
+coverage.txt
+
+# test sources
+a.usm

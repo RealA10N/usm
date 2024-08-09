@@ -22,16 +22,18 @@ type tokenizer struct {
 func NewTokenizer() Tokenizer {
 	return tokenizer{
 		specificTokenizers: []SpecificTokenizer{
-			NewPrefixedTokenizer("%", RegToken),
-			NewPrefixedTokenizer("$", TypToken),
-			NewPrefixedTokenizer(".", LblToken),
-			NewPrefixedTokenizer("@", GlbToken),
-			NewPrefixedTokenizer("#", ImmToken),
-			KeywordTokenizer{Keyword: "=", Token: EqlToken},
-			KeywordTokenizer{Keyword: "{", Token: LcrToken},
-			KeywordTokenizer{Keyword: "}", Token: RcrToken},
-			KeywordTokenizer{Keyword: "def", Token: DefToken},
-			WordTokenizer{Token: OprToken},
+			PrefixedTokenizer{"%", RegisterToken},
+			PrefixedTokenizer{"$", TypeToken},
+			PrefixedTokenizer{".", LabelToken},
+			PrefixedTokenizer{"@", GlobalToken},
+			PrefixedTokenizer{"#", ImmediateToken},
+			PrefixedTokenizer{"*", PointerToken},
+			PrefixedTokenizer{"^", RepeatToken},
+			KeywordTokenizer{"=", EqualToken},
+			KeywordTokenizer{"function", FunctionKeywordToken},
+			KeywordTokenizer{"global", GlobalToken},
+			KeywordTokenizer{"type", TypeKeywordToken},
+			WordTokenizer{OperatorToken},
 		},
 	}
 }
@@ -40,7 +42,7 @@ func (t tokenizer) Tokenize(view source.SourceView) (tkns []Token, err error) {
 	for {
 		addSep := t.consumeWhitespace(&view)
 		if addSep {
-			tkns = append(tkns, Token{Type: SepToken})
+			tkns = append(tkns, Token{Type: SeparatorToken})
 		}
 
 		tkn, err := t.yieldToken(&view)

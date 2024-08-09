@@ -5,10 +5,13 @@ import (
 	"alon.kr/x/usm/source"
 )
 
+// TODO add function labels before each instruction.
+
 type InstructionNode struct {
 	Operator  source.UnmanagedSourceView
 	Arguments []ArgumentNode
 	Targets   []RegisterNode
+	Labels    []LabelNode
 }
 
 func (n InstructionNode) View() (v source.UnmanagedSourceView) {
@@ -20,6 +23,18 @@ func (n InstructionNode) View() (v source.UnmanagedSourceView) {
 
 	if len(n.Arguments) > 0 {
 		v.End = n.Arguments[len(n.Arguments)-1].View().End
+	}
+
+	return
+}
+
+func (n InstructionNode) stringLabels(ctx source.SourceContext) (s string) {
+	if len(n.Labels) == 0 {
+		return
+	}
+
+	for _, lbl := range n.Labels {
+		s += lbl.String(ctx) + " "
 	}
 
 	return
@@ -51,32 +66,37 @@ func (n InstructionNode) stringTargets(ctx source.SourceContext) (s string) {
 }
 
 func (n InstructionNode) String(ctx source.SourceContext) string {
+	labels := n.stringLabels(ctx)
+	targets := n.stringTargets(ctx)
 	op := string(n.Operator.Raw(ctx))
-	return n.stringTargets(ctx) + op + n.stringArguments(ctx)
+	arguments := n.stringArguments(ctx)
+	return labels + targets + op + arguments
 }
 
 type InstructionParser struct {
+	LabelParser    LabelParser
 	RegisterParser RegisterParser
 	ArgumentParser ArgumentParser
 }
 
 func (InstructionParser) parseEquals(v *TokenView, node *InstructionNode) (err ParsingError) {
 	if len(node.Targets) > 0 {
-		_, err = v.ConsumeToken(lex.EqlToken)
+		_, err = v.ConsumeToken(lex.EqualToken)
 	}
 	return
 }
 
 func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) ParsingError {
-	opr, err := v.ConsumeToken(lex.OprToken)
+	opr, err := v.ConsumeToken(lex.OperatorToken)
 	node.Operator = opr.View
 	return err
 }
 
 // Parsing of the following regular expression:
 //
-// > (Reg+ Eql)? Opr Arg+ !Arg
+// > Lbl* (Reg+ Eql)? Opr Arg+ !Arg
 func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err ParsingError) {
+	node.Labels, _ = ParseManyIgnoreSeparators(p.LabelParser, v)
 	node.Targets = ParseMany(p.RegisterParser, v)
 
 	err = p.parseEquals(v, &node)
@@ -90,5 +110,5 @@ func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err Parsin
 	}
 
 	node.Arguments = ParseMany(p.ArgumentParser, v)
-	return
+	return node, nil
 }

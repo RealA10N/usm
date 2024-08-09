@@ -5,18 +5,18 @@ import (
 	"alon.kr/x/usm/source"
 )
 
-type SignatureNode struct {
+type FunctionDeclarationNode struct {
 	source.UnmanagedSourceView
 	Identifier source.UnmanagedSourceView
 	Parameters []ParameterNode
 	Returns    []TypeNode
 }
 
-func (n SignatureNode) View() source.UnmanagedSourceView {
+func (n FunctionDeclarationNode) View() source.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 
-func (n SignatureNode) String(ctx source.SourceContext) (s string) {
+func (n FunctionDeclarationNode) String(ctx source.SourceContext) (s string) {
 	for _, ret := range n.Returns {
 		s += ret.String(ctx) + " "
 	}
@@ -30,13 +30,13 @@ func (n SignatureNode) String(ctx source.SourceContext) (s string) {
 	return
 }
 
-type SignatureParser struct {
+type FunctionDeclarationParser struct {
 	ParameterParser ParameterParser
 	TypeParser      TypeParser
 }
 
-func (SignatureParser) parseIdentifier(v *TokenView, node *SignatureNode) ParsingError {
-	id, err := v.ConsumeToken(lex.GlbToken)
+func (FunctionDeclarationParser) parseIdentifier(v *TokenView, node *FunctionDeclarationNode) ParsingError {
+	id, err := v.ConsumeToken(lex.GlobalToken)
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func (SignatureParser) parseIdentifier(v *TokenView, node *SignatureNode) Parsin
 	return nil
 }
 
-func (SignatureParser) updateNodeViewStart(node *SignatureNode) {
+func (FunctionDeclarationParser) updateNodeViewStart(node *FunctionDeclarationNode) {
 	if len(node.Returns) > 0 {
 		node.Start = node.Returns[0].View().Start
 	} else {
@@ -53,7 +53,7 @@ func (SignatureParser) updateNodeViewStart(node *SignatureNode) {
 	}
 }
 
-func (SignatureParser) updateNodeViewEnd(node *SignatureNode) {
+func (FunctionDeclarationParser) updateNodeViewEnd(node *FunctionDeclarationNode) {
 	if len(node.Parameters) > 0 {
 		node.End = node.Parameters[len(node.Parameters)-1].View().End
 	} else {
@@ -61,7 +61,7 @@ func (SignatureParser) updateNodeViewEnd(node *SignatureNode) {
 	}
 }
 
-func (p SignatureParser) Parse(v *TokenView) (node SignatureNode, err ParsingError) {
+func (p FunctionDeclarationParser) Parse(v *TokenView) (node FunctionDeclarationNode, err ParsingError) {
 	node.Returns = ParseMany(p.TypeParser, v)
 
 	err = p.parseIdentifier(v, &node)
