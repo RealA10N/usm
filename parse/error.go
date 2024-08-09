@@ -6,17 +6,12 @@ import (
 )
 
 type ParsingError interface {
-	View() source.UnmanagedSourceView
 	Error(source.SourceContext) string
 }
 
 type UnexpectedTokenError struct {
 	Expected []lex.TokenType
 	Actual   lex.Token
-}
-
-func (e UnexpectedTokenError) View() source.UnmanagedSourceView {
-	return e.Actual.View
 }
 
 func (e UnexpectedTokenError) Error(ctx source.SourceContext) string {
@@ -29,10 +24,6 @@ func (e UnexpectedTokenError) Error(ctx source.SourceContext) string {
 
 type EofError struct {
 	Expected []lex.TokenType
-}
-
-func (e EofError) View() (v source.UnmanagedSourceView) {
-	return // TODO: fix.
 }
 
 func (e EofError) Error(source.SourceContext) string {
@@ -49,4 +40,12 @@ func stringManyTokenTypes(typs []lex.TokenType) (s string) {
 	}
 	s += typs[len(typs)-1].String()
 	return s
+}
+
+type GenericError struct {
+	Expected string
+}
+
+func (e GenericError) Error(ctx source.SourceContext) string {
+	return "expected " + e.Expected
 }
