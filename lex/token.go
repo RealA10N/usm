@@ -15,12 +15,14 @@ const (
 	GlobalToken
 	ImmediateToken
 	EqualToken
+	LeftCurlyBraceToken
+	RightCurlyBraceToken
 	FunctionKeywordToken
 	GlobalKeywordToken
 	TypeKeywordToken
-	OperatorToken
 	PointerToken
 	RepeatToken
+	OperatorToken
 	SeparatorToken
 )
 
@@ -31,6 +33,8 @@ var tokenNames = map[TokenType]string{
 	GlobalToken:          "Global",
 	ImmediateToken:       "Immediate",
 	EqualToken:           "Equal",
+	LeftCurlyBraceToken:  "Left Curly Brace",
+	RightCurlyBraceToken: "Right Curly Brace",
 	GlobalKeywordToken:   "Global Keyword",
 	TypeKeywordToken:     "Type Keyword",
 	FunctionKeywordToken: "Function Keyword",

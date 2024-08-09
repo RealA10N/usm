@@ -30,6 +30,8 @@ func NewTokenizer() Tokenizer {
 			PrefixedTokenizer{"*", PointerToken},
 			PrefixedTokenizer{"^", RepeatToken},
 			KeywordTokenizer{"=", EqualToken},
+			KeywordTokenizer{"{", LeftCurlyBraceToken},
+			KeywordTokenizer{"}", RightCurlyBraceToken},
 			KeywordTokenizer{"function", FunctionKeywordToken},
 			KeywordTokenizer{"global", GlobalToken},
 			KeywordTokenizer{"type", TypeKeywordToken},
