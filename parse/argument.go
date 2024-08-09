@@ -1,33 +1,34 @@
 package parse
 
-import (
-	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/source"
-)
+type ArgumentNode Node
 
-type ArgumentNode struct {
-	source.UnmanagedSourceView
+type ArgumentParser struct {
+	RegisterParser  RegisterParser
+	ImmediateParser ImmediateParser
+	LabelParser     LabelParser
+	GlobalParser    GlobalParser
 }
 
-func (n ArgumentNode) View() source.UnmanagedSourceView {
-	return n.UnmanagedSourceView
-}
+func (p ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError) {
+	// TODO: make this code neater.
 
-func (n ArgumentNode) String(ctx source.SourceContext) string {
-	return string(n.UnmanagedSourceView.Raw(ctx))
-}
-
-type ArgumentParser struct{}
-
-// TODO: fix argument to use appropriate subparsers
-// TODO: immediate argument should be prefixed with a type
-
-func (ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError) {
-	tkn, err := v.ConsumeToken(lex.RegisterToken, lex.ImmediateToken, lex.GlobalToken)
-	if err != nil {
-		return
+	if node, err := p.RegisterParser.Parse(v); err == nil {
+		return node, nil
 	}
 
-	node = ArgumentNode{tkn.View}
-	return
+	if node, err := p.ImmediateParser.Parse(v); err == nil {
+		return node, nil
+	}
+
+	if node, err := p.LabelParser.Parse(v); err == nil {
+		return node, nil
+	}
+
+	if node, err := p.GlobalParser.Parse(v); err == nil {
+		return node, nil
+	}
+
+	return nil, GenericError{
+		Expected: "argument (register, immediate, label, or global)",
+	}
 }
