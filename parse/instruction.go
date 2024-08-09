@@ -29,22 +29,14 @@ func (n InstructionNode) View() (v source.UnmanagedSourceView) {
 }
 
 func (n InstructionNode) stringLabels(ctx source.SourceContext) (s string) {
-	if len(n.Labels) == 0 {
-		return
-	}
-
 	for _, lbl := range n.Labels {
-		s += lbl.String(ctx) + " "
+		s += lbl.String(ctx) + "\n"
 	}
 
 	return
 }
 
 func (n InstructionNode) stringArguments(ctx source.SourceContext) (s string) {
-	if len(n.Arguments) == 0 {
-		return
-	}
-
 	for _, arg := range n.Arguments {
 		s += " " + arg.String(ctx)
 	}
@@ -70,7 +62,7 @@ func (n InstructionNode) String(ctx source.SourceContext) string {
 	targets := n.stringTargets(ctx)
 	op := string(n.Operator.Raw(ctx))
 	arguments := n.stringArguments(ctx)
-	return labels + targets + op + arguments
+	return labels + "\t" + targets + op + arguments
 }
 
 type InstructionParser struct {

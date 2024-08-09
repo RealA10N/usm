@@ -20,7 +20,7 @@ func (n FunctionNode) String(ctx source.SourceContext) string {
 	if len(n.Instructions) > 0 {
 		s += " =\n"
 		for _, inst := range n.Instructions {
-			s += "\t" + inst.String(ctx) + "\n"
+			s += inst.String(ctx) + "\n"
 		}
 	}
 	return s
