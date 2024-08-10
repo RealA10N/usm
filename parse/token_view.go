@@ -51,6 +51,14 @@ func (v *TokenView) ConsumeManyTokens(
 	}
 }
 
+// Consume a token, but ignore any separator tokens that come before it.
+func (v *TokenView) ConsumeTokenIgnoreSeparator(
+	expectedTypes ...lex.TokenType,
+) (lex.Token, ParsingError) {
+	v.ConsumeManyTokens(lex.SeparatorToken)
+	return v.ConsumeToken(expectedTypes...)
+}
+
 // Consume as many tokens as possible greedly, until we recieve an error.
 //
 // If the number of tokens consumed is strictly less than the provided number,

@@ -49,6 +49,7 @@ func ParseManyIgnoreSeparators[Node any](
 	p Parser[Node],
 	v *TokenView,
 ) (nodes []Node, err ParsingError) {
+	v.ConsumeManyTokens(lex.SeparatorToken)
 	for {
 		var node Node
 		node, err = p.Parse(v)

@@ -37,7 +37,7 @@ func (p BlockParser[NodeT]) String() string {
 }
 
 func (p BlockParser[NodeT]) Parse(v *TokenView) (block BlockNode[NodeT], err ParsingError) {
-	leftCurly, err := v.ConsumeToken(lex.LeftCurlyBraceToken)
+	leftCurly, err := v.ConsumeTokenIgnoreSeparator(lex.LeftCurlyBraceToken)
 
 	if err != nil {
 		return
@@ -46,7 +46,7 @@ func (p BlockParser[NodeT]) Parse(v *TokenView) (block BlockNode[NodeT], err Par
 	block.Start = leftCurly.View.Start
 	block.Nodes = ParseMany(p.Parser, v)
 
-	rightCurly, err := v.ConsumeToken(lex.RightCurlyBraceToken)
+	rightCurly, err := v.ConsumeTokenIgnoreSeparator(lex.RightCurlyBraceToken)
 	if err != nil {
 		return
 	}

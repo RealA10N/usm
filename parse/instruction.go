@@ -92,7 +92,6 @@ func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) Pars
 //
 // > Lbl* (Reg+ Eql)? Opr Arg+ !Arg
 func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err ParsingError) {
-	v.ConsumeManyTokens(lex.SeparatorToken)
 	node.Labels, _ = ParseManyIgnoreSeparators(p.LabelParser, v)
 	node.Targets = ParseMany(p.RegisterParser, v)
 
@@ -107,6 +106,6 @@ func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err Parsin
 	}
 
 	node.Arguments = ParseMany(p.ArgumentParser, v)
-	err = v.ConsumeAtLeastTokens(1, lex.SeparatorToken)
-	return node, err
+	v.ConsumeManyTokens(lex.SeparatorToken)
+	return node, nil
 }
