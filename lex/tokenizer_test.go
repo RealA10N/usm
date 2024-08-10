@@ -26,18 +26,19 @@ func assertExpectedTokens(t *testing.T, expected []tknDesc, actual []lex.Token, 
 
 func TestAddOne(t *testing.T) {
 	code :=
-		`function $32 @addOne $32 %x =
+		`func $32 @addOne $32 %x {
 			%0 = add %x $32 #1
 			ret %0
+		}
 		`
 
 	expected := []tknDesc{
-		{"function", lex.FunctionKeywordToken},
+		{"func", lex.FuncKeywordToken},
 		{"$32", lex.TypeToken},
 		{"@addOne", lex.GlobalToken},
 		{"$32", lex.TypeToken},
 		{"%x", lex.RegisterToken},
-		{"=", lex.EqualToken},
+		{"{", lex.LeftCurlyBraceToken},
 		{"", lex.SeparatorToken},
 		{"%0", lex.RegisterToken},
 		{"=", lex.EqualToken},
@@ -48,6 +49,8 @@ func TestAddOne(t *testing.T) {
 		{"", lex.SeparatorToken},
 		{"ret", lex.OperatorToken},
 		{"%0", lex.RegisterToken},
+		{"", lex.SeparatorToken},
+		{"}", lex.RightCurlyBraceToken},
 		{"", lex.SeparatorToken},
 	}
 
@@ -61,7 +64,7 @@ func TestAddOne(t *testing.T) {
 
 func TestPow(t *testing.T) {
 	code :=
-		`function $32 @pow $32 %base $32 %exp =
+		`func $32 @pow $32 %base $32 %exp {
 			jz %exp .end
 
 		.recurse
@@ -80,17 +83,17 @@ func TestPow(t *testing.T) {
 		.end
 			%res.3 = phi . %base .even_base %res.2
 			ret %res.3
-		`
+		}`
 
 	expected := []tknDesc{
-		{"function", lex.FunctionKeywordToken},
+		{"func", lex.FuncKeywordToken},
 		{"$32", lex.TypeToken},
 		{"@pow", lex.GlobalToken},
 		{"$32", lex.TypeToken},
 		{"%base", lex.RegisterToken},
 		{"$32", lex.TypeToken},
 		{"%exp", lex.RegisterToken},
-		{"=", lex.EqualToken},
+		{"{", lex.LeftCurlyBraceToken},
 		{"", lex.SeparatorToken},
 
 		{"jz", lex.OperatorToken},
@@ -174,6 +177,8 @@ func TestPow(t *testing.T) {
 		{"ret", lex.OperatorToken},
 		{"%res.3", lex.RegisterToken},
 		{"", lex.SeparatorToken},
+
+		{"}", lex.RightCurlyBraceToken},
 	}
 
 	view := source.NewSourceView(code)

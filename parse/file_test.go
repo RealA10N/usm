@@ -12,7 +12,7 @@ import (
 
 // The purpose of the test is to verify the structure of "simple" source file.
 func TestSingleFunction(t *testing.T) {
-	src := `function $32 @add $32 %x $32 %y {
+	src := `func $32 @add $32 %x $32 %y {
 	%res = add %x %y
 	ret %res
 }`
@@ -24,39 +24,39 @@ func TestSingleFunction(t *testing.T) {
 			{
 				UnmanagedSourceView: srcView,
 				Declaration: parse.FunctionDeclarationNode{
-					UnmanagedSourceView: srcView.Subview(9, 31),
-					Identifier:          srcView.Subview(13, 17),
+					UnmanagedSourceView: srcView.Subview(5, 27),
+					Identifier:          srcView.Subview(9, 13),
 					Parameters: []parse.ParameterNode{
 						{
-							Type:     parse.TypeNode{srcView.Subview(18, 21)},
-							Register: parse.RegisterNode{srcView.Subview(22, 24)},
+							Type:     parse.TypeNode{srcView.Subview(14, 17)},
+							Register: parse.RegisterNode{srcView.Subview(18, 20)},
 						},
 						{
-							Type:     parse.TypeNode{srcView.Subview(25, 28)},
-							Register: parse.RegisterNode{srcView.Subview(29, 31)},
+							Type:     parse.TypeNode{srcView.Subview(21, 24)},
+							Register: parse.RegisterNode{srcView.Subview(25, 27)},
 						},
 					},
 					Returns: []parse.TypeNode{
-						{srcView.Subview(9, 12)},
+						{srcView.Subview(5, 8)},
 					},
 				},
 				Instructions: parse.BlockNode[parse.InstructionNode]{
-					UnmanagedSourceView: srcView.Subview(32, 73),
+					UnmanagedSourceView: srcView.Subview(28, 69),
 					Nodes: []parse.InstructionNode{
 						{
-							Operator: srcView.Subview(42, 45),
+							Operator: srcView.Subview(38, 41),
 							Arguments: []parse.ArgumentNode{
-								parse.RegisterNode{srcView.Subview(46, 48)},
-								parse.RegisterNode{srcView.Subview(49, 51)},
+								parse.RegisterNode{srcView.Subview(42, 44)},
+								parse.RegisterNode{srcView.Subview(45, 47)},
 							},
 							Targets: []parse.RegisterNode{
-								{srcView.Subview(35, 39)},
+								{srcView.Subview(31, 35)},
 							},
 						},
 						{
-							Operator: srcView.Subview(53, 56),
+							Operator: srcView.Subview(49, 52),
 							Arguments: []parse.ArgumentNode{
-								parse.RegisterNode{srcView.Subview(57, 61)},
+								parse.RegisterNode{srcView.Subview(53, 57)},
 							},
 						},
 					},
@@ -76,16 +76,16 @@ func TestSingleFunction(t *testing.T) {
 }
 
 func TestFileParserTwoFunctionsNoExtraSeparator(t *testing.T) {
-	src := `function @first { ret }
-function @second   {
+	src := `func @first { ret }
+func @second   {
 ret
 	}`
 
-	expected := `function @first {
+	expected := `func @first {
 	ret
 }
 
-function @second {
+func @second {
 	ret
 }
 `
@@ -94,7 +94,7 @@ function @second {
 
 func TestFileWithLabels(t *testing.T) {
 	src := `
-function $32 @fib $i32 %n {
+func $32 @fib $i32 %n {
 
 	jle %n $32 #1 .return
     %n = dec %n
@@ -108,7 +108,7 @@ function $32 @fib $i32 %n {
 	}
 `
 
-	expected := `function $32 @fib $i32 %n {
+	expected := `func $32 @fib $i32 %n {
 	jle %n $32 #1 .return
 	%n = dec %n
 	%a = call @fib %n

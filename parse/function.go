@@ -16,7 +16,7 @@ func (n FunctionNode) View() source.UnmanagedSourceView {
 }
 
 func (n FunctionNode) String(ctx source.SourceContext) string {
-	s := "function " + n.Declaration.String(ctx)
+	s := "func " + n.Declaration.String(ctx)
 	if len(n.Instructions.Nodes) > 0 {
 		s += " " + n.Instructions.String(ctx)
 	}
@@ -33,7 +33,7 @@ func (FunctionParser) String() string {
 }
 
 func (FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) ParsingError {
-	kw, err := v.ConsumeTokenIgnoreSeparator(lex.FunctionKeywordToken)
+	kw, err := v.ConsumeTokenIgnoreSeparator(lex.FuncKeywordToken)
 	if err != nil {
 		return err
 	}

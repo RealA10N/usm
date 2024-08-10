@@ -17,7 +17,7 @@ const (
 	EqualToken
 	LeftCurlyBraceToken
 	RightCurlyBraceToken
-	FunctionKeywordToken
+	FuncKeywordToken
 	GlobalKeywordToken
 	TypeKeywordToken
 	PointerToken
@@ -37,7 +37,7 @@ var tokenNames = map[TokenType]string{
 	RightCurlyBraceToken: "Right Curly Brace",
 	GlobalKeywordToken:   "Global Keyword",
 	TypeKeywordToken:     "Type Keyword",
-	FunctionKeywordToken: "Function Keyword",
+	FuncKeywordToken:     "Func Keyword",
 	PointerToken:         "Pointer",
 	RepeatToken:          "Repeat",
 	OperatorToken:        "Operator",
