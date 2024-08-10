@@ -6,7 +6,12 @@ import (
 )
 
 type BlockNode[NodeT Node] struct {
+	source.UnmanagedSourceView
 	Nodes []NodeT
+}
+
+func (n BlockNode[NodeT]) View() source.UnmanagedSourceView {
+	return n.UnmanagedSourceView
 }
 
 func (n BlockNode[NodeT]) String(ctx source.SourceContext) (s string) {
@@ -31,19 +36,21 @@ func (p BlockParser[NodeT]) String() string {
 	return p.Parser.String() + " block"
 }
 
-func (p BlockParser[NodeT]) Parse(v *TokenView) (nodes BlockNode[NodeT], err ParsingError) {
-	_, err = v.ConsumeToken(lex.LeftCurlyBraceToken)
+func (p BlockParser[NodeT]) Parse(v *TokenView) (block BlockNode[NodeT], err ParsingError) {
+	leftCurly, err := v.ConsumeToken(lex.LeftCurlyBraceToken)
 
 	if err != nil {
-		first, err := p.Parser.Parse(v)
-		if err != nil {
-			return nodes, GenericUnexpectedError{Expected: p.String()}
-		}
-
-		return BlockNode[NodeT]{[]NodeT{first}}, nil
+		return
 	}
 
-	nodes = BlockNode[NodeT]{ParseMany(p.Parser, v)}
-	_, err = v.ConsumeToken(lex.RightCurlyBraceToken)
-	return
+	block.Start = leftCurly.View.Start
+	block.Nodes = ParseMany(p.Parser, v)
+
+	rightCurly, err := v.ConsumeToken(lex.RightCurlyBraceToken)
+	if err != nil {
+		return
+	}
+
+	block.End = rightCurly.View.End
+	return block, nil
 }

@@ -12,9 +12,10 @@ import (
 
 // The purpose of the test is to verify the structure of "simple" source file.
 func TestSingleFunction(t *testing.T) {
-	src := `function $32 @add $32 %x $32 %y =
+	src := `function $32 @add $32 %x $32 %y = {
 	%res = add %x %y
-	ret %res`
+	ret %res
+}`
 	v := source.NewSourceView(src)
 	srcView, _ := v.Detach()
 
@@ -40,21 +41,22 @@ func TestSingleFunction(t *testing.T) {
 					},
 				},
 				Instructions: parse.BlockNode[parse.InstructionNode]{
-					[]parse.InstructionNode{
+					UnmanagedSourceView: srcView.Subview(34, 75),
+					Nodes: []parse.InstructionNode{
 						{
-							Operator: srcView.Subview(42, 45),
+							Operator: srcView.Subview(44, 47),
 							Arguments: []parse.ArgumentNode{
-								parse.RegisterNode{srcView.Subview(46, 48)},
-								parse.RegisterNode{srcView.Subview(49, 51)},
+								parse.RegisterNode{srcView.Subview(48, 50)},
+								parse.RegisterNode{srcView.Subview(51, 53)},
 							},
 							Targets: []parse.RegisterNode{
-								{srcView.Subview(35, 39)},
+								{srcView.Subview(37, 41)},
 							},
 						},
 						{
-							Operator: srcView.Subview(53, 56),
+							Operator: srcView.Subview(55, 58),
 							Arguments: []parse.ArgumentNode{
-								parse.RegisterNode{srcView.Subview(57, 61)},
+								parse.RegisterNode{srcView.Subview(59, 63)},
 							},
 						},
 					},
@@ -67,7 +69,7 @@ func TestSingleFunction(t *testing.T) {
 	assert.NoError(t, err)
 
 	tknsView := parse.NewTokenView(tkns)
-	file, perr := parse.FileParser{}.Parse(&tknsView)
+	file, perr := parse.NewFileParser().Parse(&tknsView)
 
 	assert.Nil(t, perr)
 	assert.Equal(t, expected, file)

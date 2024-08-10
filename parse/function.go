@@ -59,5 +59,6 @@ func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError
 	}
 
 	node.Instructions, err = p.InstructionsParser.Parse(v)
+	node.End = node.Instructions.View().End
 	return
 }
