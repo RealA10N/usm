@@ -3,7 +3,7 @@ module alon.kr/x/usm
 go 1.22.5
 
 require (
-	alon.kr/x/view v0.0.0-20240809091433-06d21369bd07
+	alon.kr/x/view v0.0.0-20240810101401-7b9dabbb2b19
 	github.com/stretchr/testify v1.9.0
 )
 

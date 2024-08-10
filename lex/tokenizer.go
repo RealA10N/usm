@@ -76,7 +76,7 @@ func (t tokenizer) yieldToken(view *source.SourceView) (tkn Token, err error) {
 
 // Consume white spaces and return true if encounterd a newline.
 func (tokenizer) consumeWhitespace(view *source.SourceView) bool {
-	idx := view.Index(not(unicode.IsSpace))
+	idx := view.IndexFunc(not(unicode.IsSpace))
 	before, after := view.Partition(idx)
 	*view = after
 	return before.Contains('\n')

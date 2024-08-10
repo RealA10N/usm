@@ -12,7 +12,7 @@ type WordTokenizer struct {
 }
 
 func (t WordTokenizer) Tokenize(txt *source.SourceView) (tkn Token, err error) {
-	idx := txt.Index(unicode.IsSpace)
+	idx := txt.IndexFunc(unicode.IsSpace)
 	if idx < 1 {
 		err = errors.New("token not matched (empty word)")
 		return

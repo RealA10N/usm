@@ -38,7 +38,7 @@ func (v *TokenView) ConsumeToken(expectedTypes ...lex.TokenType) (tkn lex.Token,
 	return tkn, nil
 }
 
-// Consume as many tokens as possible greedly, until we recieve an error.
+// Consume as many tokens as possible greedly, until we receive an error.
 // The error and token count are returned.
 func (v *TokenView) ConsumeManyTokens(
 	expectedTypes ...lex.TokenType,

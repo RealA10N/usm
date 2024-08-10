@@ -21,7 +21,7 @@ func (t PrefixedTokenizer) Tokenize(txt *source.SourceView) (tkn Token, err erro
 		return
 	}
 
-	idx := txt.Index(unicode.IsSpace)
+	idx := txt.IndexFunc(unicode.IsSpace)
 	tknView, restView := txt.Partition(idx)
 	detachedTkn, _ := tknView.Detach()
 	tkn = Token{Type: t.Token, View: detachedTkn}
