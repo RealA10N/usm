@@ -12,7 +12,7 @@ import (
 
 // The purpose of the test is to verify the structure of "simple" source file.
 func TestSingleFunction(t *testing.T) {
-	src := `function $32 @add $32 %x $32 %y = {
+	src := `function $32 @add $32 %x $32 %y {
 	%res = add %x %y
 	ret %res
 }`
@@ -41,22 +41,22 @@ func TestSingleFunction(t *testing.T) {
 					},
 				},
 				Instructions: parse.BlockNode[parse.InstructionNode]{
-					UnmanagedSourceView: srcView.Subview(34, 75),
+					UnmanagedSourceView: srcView.Subview(32, 73),
 					Nodes: []parse.InstructionNode{
 						{
-							Operator: srcView.Subview(44, 47),
+							Operator: srcView.Subview(42, 45),
 							Arguments: []parse.ArgumentNode{
-								parse.RegisterNode{srcView.Subview(48, 50)},
-								parse.RegisterNode{srcView.Subview(51, 53)},
+								parse.RegisterNode{srcView.Subview(46, 48)},
+								parse.RegisterNode{srcView.Subview(49, 51)},
 							},
 							Targets: []parse.RegisterNode{
-								{srcView.Subview(37, 41)},
+								{srcView.Subview(35, 39)},
 							},
 						},
 						{
-							Operator: srcView.Subview(55, 58),
+							Operator: srcView.Subview(53, 56),
 							Arguments: []parse.ArgumentNode{
-								parse.RegisterNode{srcView.Subview(59, 63)},
+								parse.RegisterNode{srcView.Subview(57, 61)},
 							},
 						},
 					},
@@ -76,17 +76,16 @@ func TestSingleFunction(t *testing.T) {
 }
 
 func TestFileParserTwoFunctionsNoExtraSeparator(t *testing.T) {
-	src := `function @first = { ret }
-function @second =
-{
+	src := `function @first { ret }
+function @second   {
 ret
 	}`
 
-	expected := `function @first = {
+	expected := `function @first {
 	ret
 }
 
-function @second = {
+function @second {
 	ret
 }
 `
@@ -95,8 +94,7 @@ function @second = {
 
 func TestFileWithLabels(t *testing.T) {
 	src := `
-function $32 @fib $i32 %n =
-{
+function $32 @fib $i32 %n {
 
 	jle %n $32 #1 .return
     %n = dec %n
@@ -105,10 +103,12 @@ function $32 @fib $i32 %n =
 		%b = call @fib %n
     %n = add %a %b
 
-.return ret %n }
+.return ret %n
+
+	}
 `
 
-	expected := `function $32 @fib $i32 %n = {
+	expected := `function $32 @fib $i32 %n {
 	jle %n $32 #1 .return
 	%n = dec %n
 	%a = call @fib %n

@@ -18,14 +18,14 @@ func (n FunctionNode) View() source.UnmanagedSourceView {
 func (n FunctionNode) String(ctx source.SourceContext) string {
 	s := "function " + n.Declaration.String(ctx)
 	if len(n.Instructions.Nodes) > 0 {
-		s += " = " + n.Instructions.String(ctx)
+		s += " " + n.Instructions.String(ctx)
 	}
 	return s
 }
 
 type FunctionParser struct {
 	FunctionDeclarationParser FunctionDeclarationParser
-	InstructionsParser        BlockParser[InstructionNode]
+	InstructionBlockParser    BlockParser[InstructionNode]
 }
 
 func (FunctionParser) String() string {
@@ -53,12 +53,7 @@ func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError
 		return
 	}
 
-	_, err = v.ConsumeToken(lex.EqualToken)
-	if err != nil {
-		return
-	}
-
-	node.Instructions, err = p.InstructionsParser.Parse(v)
+	node.Instructions, err = p.InstructionBlockParser.Parse(v)
 	node.End = node.Instructions.View().End
 	return
 }

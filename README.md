@@ -128,15 +128,18 @@ object file that should be eventually linked.
 func $32 @add $32 %a $32 %b
 ```
 
-An implementation can be provided be appending the `=` token after the function
-declaration. Then, a list of at least one instruction is expected, separated by
-at least one newline between them. The function definition ends when an `EOF`
-token is reached, or another top level token is encountered.
+An implementation can be provided be appending the `{` token after the function
+declaration (on the same line). Then, a list of at least one instruction is
+expected, separated by at least one newline between them. The function
+definition on the next `}` token which is not part of an immediate definition
+inside the function implementation. The `}` token must be on a new line, and not
+on an instruction line.
 
 ```usm
-func $32 @add $32 %a $32 %b =
+func $32 @add $32 %a $32 %b {
     %c = add %a %b
     ret %c
+}
 ```
 
 ## Instructions<a name="instructions"></a>

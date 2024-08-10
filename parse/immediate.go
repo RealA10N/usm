@@ -23,7 +23,7 @@ type ImmediateParser struct {
 }
 
 func (ImmediateParser) String() string {
-	return "immediate ($type #value)"
+	return "immediate ($type { ... })"
 }
 
 func (p ImmediateParser) Parse(v *TokenView) (node ImmediateNode, err ParsingError) {
