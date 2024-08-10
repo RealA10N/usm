@@ -38,5 +38,5 @@ func TestInstructionParserMultipleTargets(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expected, inst)
 	assert.Equal(t, v, inst.View())
-	assert.Equal(t, "%div %mod = divmod %x %y", inst.String(ctx))
+	assert.Equal(t, "\t%div %mod = divmod %x %y\n", inst.String(ctx))
 }
