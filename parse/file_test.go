@@ -122,7 +122,7 @@ func testFormattedFile(t *testing.T, src string, expected string) {
 	assert.NoError(t, err)
 
 	tknsView := parse.NewTokenView(tkns)
-	file, perr := parse.FileParser{}.Parse(&tknsView)
+	file, perr := parse.NewFileParser().Parse(&tknsView)
 	assert.Nil(t, perr)
 
 	got := file.String(ctx)

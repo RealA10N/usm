@@ -40,3 +40,13 @@ func (p FileParser) Parse(v *TokenView) (node FileNode, err ParsingError) {
 	node.Functions = ParseMany(p.FunctionParser, v)
 	return
 }
+
+func NewFileParser() FileParser {
+	return FileParser{
+		FunctionParser: FunctionParser{
+			InstructionsParser: BlockParser[InstructionNode]{
+				Parser: InstructionParser{},
+			},
+		},
+	}
+}

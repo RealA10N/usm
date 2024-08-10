@@ -40,15 +40,7 @@ func main() {
 	fmt.Println("\n=== Formatted Source ===")
 
 	tknView := parse.NewTokenView(tokens)
-	parser := parse.FileParser{
-		FunctionParser: parse.FunctionParser{
-			InstructionsParser: parse.BlockParser[parse.InstructionNode]{
-				Parser: parse.InstructionParser{},
-			},
-		},
-	}
-
-	fn, perr := parser.Parse(&tknView)
+	fn, perr := parse.NewFileParser().Parse(&tknView)
 	if perr == nil {
 		fmt.Print(fn.String(ctx))
 	} else {
