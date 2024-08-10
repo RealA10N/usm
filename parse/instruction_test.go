@@ -40,3 +40,35 @@ func TestInstructionParserMultipleTargets(t *testing.T) {
 	assert.Equal(t, v, inst.View())
 	assert.Equal(t, "\t%div %mod = divmod %x %y\n", inst.String(ctx))
 }
+
+func TestInstructionWithImmediateValuesAndLabel(t *testing.T) {
+	srcView := source.NewSourceView(".entry %res = add %x $32 #1 .arg")
+
+	expected := parse.InstructionNode{
+		Operator: srcView.Unmanaged().Subview(14, 17),
+		Arguments: []parse.ArgumentNode{
+			parse.RegisterNode{srcView.Unmanaged().Subview(18, 20)},
+			parse.ImmediateNode{
+				Type:  parse.TypeNode{srcView.Unmanaged().Subview(21, 24)},
+				Value: srcView.Unmanaged().Subview(25, 27),
+			},
+			parse.LabelNode{srcView.Unmanaged().Subview(28, 32)},
+		},
+		Targets: []parse.RegisterNode{
+			{srcView.Unmanaged().Subview(7, 11)},
+		},
+		Labels: []parse.LabelNode{
+			{srcView.Unmanaged().Subview(0, 6)},
+		},
+	}
+
+	tkns, err := lex.NewTokenizer().Tokenize(srcView)
+	assert.NoError(t, err)
+
+	tknView := parse.NewTokenView(tkns)
+	inst, perr := parse.InstructionParser{}.Parse(&tknView)
+	assert.Nil(t, perr)
+	assert.Equal(t, expected, inst)
+
+	assert.Equal(t, ".entry\n\t%res = add %x $32 #1 .arg\n", inst.String(srcView.Ctx()))
+}
