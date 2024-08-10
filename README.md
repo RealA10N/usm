@@ -228,12 +228,13 @@ below).
 | Binary (2)       | `b` or `B`             | `0`, `1`                    |
 
 ```usm
-func @main =
+func @main {
     %0 = $32 #-1337
     %1 = $32 #4294967295
     %2 = $64 #DEADBEEFh
     %3 = $32 #-1234567o
     %4 = $8 #100b
+}
 ```
 
 ### Character Immediate Value<a name="character-immediate-value"></a>
