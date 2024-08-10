@@ -39,21 +39,23 @@ func TestSingleFunction(t *testing.T) {
 						{srcView.Subview(9, 12)},
 					},
 				},
-				Instructions: []parse.InstructionNode{
-					{
-						Operator: srcView.Subview(42, 45),
-						Arguments: []parse.ArgumentNode{
-							parse.RegisterNode{srcView.Subview(46, 48)},
-							parse.RegisterNode{srcView.Subview(49, 51)},
+				Instructions: parse.BlockNode[parse.InstructionNode]{
+					[]parse.InstructionNode{
+						{
+							Operator: srcView.Subview(42, 45),
+							Arguments: []parse.ArgumentNode{
+								parse.RegisterNode{srcView.Subview(46, 48)},
+								parse.RegisterNode{srcView.Subview(49, 51)},
+							},
+							Targets: []parse.RegisterNode{
+								{srcView.Subview(35, 39)},
+							},
 						},
-						Targets: []parse.RegisterNode{
-							{srcView.Subview(35, 39)},
-						},
-					},
-					{
-						Operator: srcView.Subview(53, 56),
-						Arguments: []parse.ArgumentNode{
-							parse.RegisterNode{srcView.Subview(57, 61)},
+						{
+							Operator: srcView.Subview(53, 56),
+							Arguments: []parse.ArgumentNode{
+								parse.RegisterNode{srcView.Subview(57, 61)},
+							},
 						},
 					},
 				},
