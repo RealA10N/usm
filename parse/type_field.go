@@ -35,9 +35,11 @@ type TypeFieldParser struct {
 }
 
 func (TypeFieldParser) String() (s string) {
-	return // TODO: not implemented
+	return "type field"
 }
 
-func (TypeFieldParser) Parse(v *TokenView) (node TypeFieldNode, err ParsingError) {
-	return // TODO: not implemented
+func (p TypeFieldParser) Parse(v *TokenView) (node TypeFieldNode, err ParsingError) {
+	node.Labels, _ = ParseManyIgnoreSeparators(p.LabelParser, v)
+	node.Type, err = p.TypeParser.Parse(v)
+	return
 }
