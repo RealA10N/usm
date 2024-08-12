@@ -43,10 +43,6 @@ func (p FileParser) Parse(v *TokenView) (node FileNode, err ParsingError) {
 
 func NewFileParser() FileParser {
 	return FileParser{
-		FunctionParser: FunctionParser{
-			InstructionBlockParser: BlockParser[InstructionNode]{
-				Parser: InstructionParser{},
-			},
-		},
+		FunctionParser: NewFunctionParser(),
 	}
 }

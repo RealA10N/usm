@@ -28,6 +28,15 @@ type FunctionParser struct {
 	InstructionBlockParser    BlockParser[InstructionNode]
 }
 
+func NewFunctionParser() FunctionParser {
+	return FunctionParser{
+		FunctionDeclarationParser: FunctionDeclarationParser{},
+		InstructionBlockParser: BlockParser[InstructionNode]{
+			Parser: InstructionParser{},
+		},
+	}
+}
+
 func (FunctionParser) String() string {
 	return "function"
 }
