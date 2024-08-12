@@ -18,17 +18,35 @@ func (n FileNode) View() (v source.UnmanagedSourceView) {
 	return
 }
 
+func (n FileNode) countAllNodes() int {
+	return len(n.Functions) + len(n.Types)
+}
+
+func (n FileNode) collectAllNodes() (nodes []Node) {
+	nodes = make([]Node, 0, n.countAllNodes())
+	for _, fun := range n.Functions {
+		nodes = append(nodes, Node(fun))
+	}
+	for _, typ := range n.Types {
+		nodes = append(nodes, Node(typ))
+	}
+	return
+}
+
 func (n FileNode) String(ctx source.SourceContext) (s string) {
-	l := len(n.Functions)
-	if l == 0 {
-		return
+	nodes := n.collectAllNodes()
+	SortNodesBySourceOrder(nodes)
+	// TODO: efficiency improvement, we do not need to sort here in O(n log n),
+	// because each node type is already parsed in source order and stored in order.
+	// we just need to merge the sorted lists in linear time.
+
+	for i, node := range nodes {
+		s += node.String(ctx)
+		if i != len(nodes)-1 {
+			s += "\n"
+		}
 	}
 
-	for i := 0; i < l-1; i++ {
-		s += n.Functions[i].String(ctx) + "\n"
-	}
-
-	s += n.Functions[l-1].String(ctx)
 	return s
 }
 
