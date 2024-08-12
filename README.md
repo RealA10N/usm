@@ -11,8 +11,9 @@ One Universal assembly language to rule them all.
 - [Registers](#registers)
 - [Types](#types)
   - [Standard Integer Types](#standard-integer-types)
-  - [Custom Type Definitions](#custom-type-definitions)
-  - [Function Pointer Type Definition](#function-pointer-type-definition)
+    - [Type Descriptors](#type-descriptors)
+  - [Custom Types](#custom-types)
+    - [Function Pointer Types](#function-pointer-types)
 - [Functions](#functions)
 - [Instructions](#instructions)
   - [Expressions](#expressions)
@@ -56,19 +57,7 @@ unsigned values.
 %integer = $32
 ```
 
-### Custom Type Definitions<a name="custom-type-definitions"></a>
-
-A custom type declaration begins with the top level token `type`. Then, follows
-the new type name, prefixed with `$` and a non-digit character. After that comes
-the `=` token, and then follows a list of (at least one) a type definitions.
-
-A type definitions begins with a list of (possibly zero) field labels. A field
-label is a label in the context of the type declaration only, and is prefixed
-with `.`.
-
-Then, follows the underlying type, which is `$` prefixed. Finally, there is a
-list of (possibly zero) type descriptors, separated by (at least one)
-whitespace.
+#### Type Descriptors<a name="type-descriptors"></a>
 
 The `*` descriptor represents a pointer. `*<n>` is a nested pointer (pointer of
 a pointer of a...) exactly `n` times, where `<n>` is the decimal representation
@@ -84,33 +73,58 @@ pointer to an array of 100 bytes, and `$8 * ^100` is an array of 100 pointers.
 The number of descriptors si not bounded. e.g. `$8 * ^100 *` is a pointer to an
 array of pointers.
 
+### Custom Types<a name="custom-types"></a>
+
+A custom type declaration begins with the top level token `type`. Then, follows
+the new type name, prefixed with `$` and a non-digit character. After that comes
+the `{` token, and then follows a list of (possibly zero) a type fields.
+
+A type field begins with a list of (possibly zero) field labels. A field label
+is a label in the context of the type declaration only, and is prefixed with
+`.`.
+
+Then, follows the underlying type, which is `$` prefixed. Finally, there is a
+list of (possibly zero) type descriptors, separated by (at least one)
+whitespace.
+
+The type definition is finally terminated by a `}` token.
+
 ```usm
-type $bool = $1
+type $void { }
 
-type $str = $8 *
+type $bool { $1 }
 
-type $person =
+type $str { $8 * }
+
+type $person {
     .name $str
     .age $32
     .isMale $bool
+}
 
-type $peopleArray = $person * ^100
+type $peopleArray { $person * ^100 }
 ```
 
 > [!NOTE]
 > The type definitions above will be used in examples throughout the
 > specification.
 
-### Function Pointer Type Definition<a name="function-pointer-type-definition"></a>
+#### Function Pointer Types<a name="function-pointer-types"></a>
 
-If a type definition contains the `@` token, it is treaded as a function pointer
-alias. The (possibly empty) type list before the `@` token represents the
-function return types, and the (possibly empty) type list after the `@` token
-represents the function parameter types.
+If a type field contains the `@` token, it is treaded as a function pointer. The
+(possibly empty) type list before the `@` token represents the function return
+types, and the (possibly empty) type list after the `@` token represents the
+function parameter types.
 
 ```usm
-type $voidOp = @                ; no parameters, no returns
-type $binaryOp = $32 @ $32 $32  ; two parameters, one return
+type $voidOp { @ }                ; no parameters, no returns
+
+type $binaryOp { $32 @ $32 $32 }  ; two parameters, one return
+
+type $funcDescriptor {
+    .name $8*
+    .ptr $32 @ $32 $32
+}
 ```
 
 ## Functions<a name="functions"></a>
