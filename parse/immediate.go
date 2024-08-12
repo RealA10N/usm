@@ -11,7 +11,7 @@ type ImmediateNode struct {
 }
 
 func (n ImmediateNode) View() source.UnmanagedSourceView {
-	return n.Type.Merge(n.Value)
+	return n.Type.View().MergeEnd(n.Value)
 }
 
 func (n ImmediateNode) String(ctx source.SourceContext) string {
