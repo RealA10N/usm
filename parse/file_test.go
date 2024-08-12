@@ -89,7 +89,7 @@ func @second {
 	ret
 }
 `
-	testFormattedFile(t, src, expected)
+	testExpectedFileFormat(t, src, expected)
 }
 
 func TestFileWithLabels(t *testing.T) {
@@ -119,12 +119,35 @@ func $32 @fib $i32 %n {
 	ret %n
 }
 `
-	testFormattedFile(t, src, expected)
+	testExpectedFileFormat(t, src, expected)
+}
+
+func TestFileWithTypes(t *testing.T) {
+	src := `func @foo {
+	ret
+}
+
+type $bar {
+	$32 *
+	.a $32 ^100
+}
+
+func @baz {
+	ret
+}
+
+type $qux {
+	$8 ^1337
+}
+`
+	testExpectedFileFormat(t, src, src)
 }
 
 // MARK: Helpers
 
-func testFormattedFile(t *testing.T, src string, expected string) {
+func testExpectedFileFormat(t *testing.T, src string, expected string) {
+	t.Helper()
+
 	v := source.NewSourceView(src)
 	_, ctx := v.Detach()
 	tkns, err := lex.NewTokenizer().Tokenize(v)
