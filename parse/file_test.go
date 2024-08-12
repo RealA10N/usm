@@ -28,16 +28,16 @@ func TestSingleFunction(t *testing.T) {
 					Identifier:          srcView.Subview(9, 13),
 					Parameters: []parse.ParameterNode{
 						{
-							Type:     parse.TypeNode{srcView.Subview(14, 17)},
+							Type:     parse.TypeNode{Identifier: srcView.Subview(14, 17)},
 							Register: parse.RegisterNode{srcView.Subview(18, 20)},
 						},
 						{
-							Type:     parse.TypeNode{srcView.Subview(21, 24)},
+							Type:     parse.TypeNode{Identifier: srcView.Subview(21, 24)},
 							Register: parse.RegisterNode{srcView.Subview(25, 27)},
 						},
 					},
 					Returns: []parse.TypeNode{
-						{srcView.Subview(5, 8)},
+						{Identifier: srcView.Subview(5, 8)},
 					},
 				},
 				Instructions: &parse.BlockNode[parse.InstructionNode]{
