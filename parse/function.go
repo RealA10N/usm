@@ -44,7 +44,7 @@ func (FunctionParser) String() string {
 }
 
 func (FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) ParsingError {
-	kw, err := v.ConsumeTokenIgnoreSeparator(lex.FuncKeywordToken)
+	kw, err := v.ConsumeToken(lex.FuncKeywordToken)
 	if err != nil {
 		return err
 	}
