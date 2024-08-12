@@ -71,10 +71,6 @@ type InstructionParser struct {
 	ArgumentParser ArgumentParser
 }
 
-func (InstructionParser) String() string {
-	return "instruction"
-}
-
 func (InstructionParser) parseEquals(v *TokenView, node *InstructionNode) (err ParsingError) {
 	if len(node.Targets) > 0 {
 		_, err = v.ConsumeToken(lex.EqualToken)

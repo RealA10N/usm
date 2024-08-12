@@ -46,10 +46,6 @@ func (n TypeNode) String(ctx source.SourceContext) string {
 
 type TypeParser struct{}
 
-func (TypeParser) String() string {
-	return "$type"
-}
-
 func (p TypeParser) parseDecorator(v *TokenView, node *TypeNode) (err ParsingError) {
 	tkn, err := v.ConsumeToken(lex.PointerToken, lex.RepeatToken)
 	if err != nil {

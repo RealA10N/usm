@@ -37,10 +37,6 @@ func NewFunctionParser() FunctionParser {
 	}
 }
 
-func (FunctionParser) String() string {
-	return "function"
-}
-
 func (FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) ParsingError {
 	kw, err := v.ConsumeToken(lex.FuncKeywordToken)
 	if err != nil {

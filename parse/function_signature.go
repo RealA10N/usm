@@ -35,10 +35,6 @@ type FunctionSignatureParser struct {
 	TypeParser      TypeParser
 }
 
-func (FunctionSignatureParser) String() string {
-	return "function signature"
-}
-
 func (FunctionSignatureParser) parseIdentifier(v *TokenView, node *FunctionSignatureNode) ParsingError {
 	id, err := v.ConsumeToken(lex.GlobalToken)
 	if err != nil {

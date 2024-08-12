@@ -22,10 +22,6 @@ type ImmediateParser struct {
 	TypeParser TypeParser
 }
 
-func (ImmediateParser) String() string {
-	return "immediate ($type { ... })"
-}
-
 func (p ImmediateParser) Parse(v *TokenView) (node ImmediateNode, err ParsingError) {
 	node.Type, err = p.TypeParser.Parse(v)
 	if err != nil {
@@ -40,3 +36,15 @@ func (p ImmediateParser) Parse(v *TokenView) (node ImmediateNode, err ParsingErr
 	node.Value = tkn.View
 	return node, nil
 }
+
+// type ImmediateFieldNode struct {
+// }
+// type ImmediateFieldParser struct {
+// }
+
+// func (p ImmediateFieldParser) Parse(v *TokenView) (node ImmediateNode, err ParsingError) {
+// }
+
+// type ImmediateValueParser struct {
+// 	GlobalParser GlobalParser
+// }
