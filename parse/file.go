@@ -1,9 +1,13 @@
 package parse
 
-import "alon.kr/x/usm/source"
+import (
+	"alon.kr/x/usm/lex"
+	"alon.kr/x/usm/source"
+)
 
 type FileNode struct {
 	Functions []FunctionNode
+	Types     []TypeDeclarationNode
 }
 
 func (n FileNode) View() (v source.UnmanagedSourceView) {
@@ -29,20 +33,58 @@ func (n FileNode) String(ctx source.SourceContext) (s string) {
 }
 
 type FileParser struct {
-	FunctionParser FunctionParser
+	FunctionParser        FunctionParser
+	TypeDeclarationParser TypeDeclarationParser
 }
 
 func (FileParser) String() string {
 	return "file"
 }
 
+func (p FileParser) parseNextNode(v *TokenView, node *FileNode) ParsingError {
+	v.ConsumeManyTokens(lex.SeparatorToken)
+	if v.Len() == 0 {
+		return nil
+	}
+
+	tkn, err := v.PeekToken(lex.TopLevelTokens...)
+	if err != nil {
+		return err
+	}
+
+	switch tkn.Type {
+	case lex.FuncKeywordToken:
+		fun, err := p.FunctionParser.Parse(v)
+		if err != nil {
+			return err
+		}
+		node.Functions = append(node.Functions, fun)
+	case lex.TypeKeywordToken:
+		typ, err := p.TypeDeclarationParser.Parse(v)
+		if err != nil {
+			return err
+		}
+		node.Types = append(node.Types, typ)
+	default:
+		panic("unreachable")
+	}
+
+	return nil
+}
+
 func (p FileParser) Parse(v *TokenView) (node FileNode, err ParsingError) {
-	node.Functions, _ = ParseManyIgnoreSeparators(p.FunctionParser, v)
+	for v.Len() > 0 {
+		err = p.parseNextNode(v, &node)
+		if err != nil {
+			return
+		}
+	}
 	return
 }
 
 func NewFileParser() FileParser {
 	return FileParser{
-		FunctionParser: NewFunctionParser(),
+		FunctionParser:        NewFunctionParser(),
+		TypeDeclarationParser: NewTypeDeclarationParser(),
 	}
 }

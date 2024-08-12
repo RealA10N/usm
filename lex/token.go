@@ -26,6 +26,8 @@ const (
 	SeparatorToken
 )
 
+var TopLevelTokens = []TokenType{SeparatorToken, FuncKeywordToken, TypeKeywordToken}
+
 var tokenNames = map[TokenType]string{
 	RegisterToken:        "Register",
 	TypeToken:            "Type",
