@@ -10,14 +10,6 @@ type FileNode struct {
 	Types     []TypeDeclarationNode
 }
 
-func (n FileNode) View() (v source.UnmanagedSourceView) {
-	if len(n.Functions) > 0 {
-		v.Start = n.Functions[0].View().Start
-		v.End = n.Functions[len(n.Functions)-1].View().End
-	}
-	return
-}
-
 func (n FileNode) countAllNodes() int {
 	return len(n.Functions) + len(n.Types)
 }
@@ -53,10 +45,6 @@ func (n FileNode) String(ctx source.SourceContext) (s string) {
 type FileParser struct {
 	FunctionParser        FunctionParser
 	TypeDeclarationParser TypeDeclarationParser
-}
-
-func (FileParser) String() string {
-	return "file"
 }
 
 func (p FileParser) parseNextNode(v *TokenView, node *FileNode) ParsingError {
