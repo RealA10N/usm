@@ -3,7 +3,7 @@ module alon.kr/x/usm
 go 1.22.5
 
 require (
-	alon.kr/x/view v0.0.0-20240810101401-7b9dabbb2b19
+	alon.kr/x/view v0.0.0-20240812121221-e32070531793
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
 )
