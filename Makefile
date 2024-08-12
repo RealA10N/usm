@@ -1,8 +1,6 @@
 GOEXPERIMENT := rangefunc
 export GOEXPERIMENT
 
-COVERAGE_TARGET := coverage.txt
-
 .PHONY: build
 build:
 	go build
@@ -13,7 +11,15 @@ run: build
 
 .PHONY: test
 test:
-	go test -coverprofile=$(COVERAGE_TARGET) ./...
+	go test -v ./...
+
+.PHONY: ci
+ci:
+	go install github.com/dave/courtney@v0.4.1
+
+.PHONY: coverage
+coverage:
+	courtney -v
 
 .PHONY: format
 fmt:
