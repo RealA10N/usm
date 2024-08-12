@@ -25,11 +25,21 @@ type TypeNode struct {
 }
 
 func (n TypeNode) View() source.UnmanagedSourceView {
-	return n.Identifier
+	if len(n.Decorators) == 0 {
+		return n.Identifier
+	} else {
+		return n.Identifier.MergeEnd(
+			n.Decorators[len(n.Decorators)-1].UnmanagedSourceView,
+		)
+	}
 }
 
 func (n TypeNode) String(ctx source.SourceContext) string {
-	return string(n.Identifier.Raw(ctx))
+	s := string(n.Identifier.Raw(ctx))
+	for _, decorator := range n.Decorators {
+		s += " " + string(decorator.Raw(ctx))
+	}
+	return s
 }
 
 // MARK: Parser
