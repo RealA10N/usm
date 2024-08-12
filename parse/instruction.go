@@ -29,8 +29,8 @@ func (n InstructionNode) View() (v source.UnmanagedSourceView) {
 }
 
 func (n InstructionNode) stringLabels(ctx source.SourceContext) (s string) {
-	for _, lbl := range n.Labels {
-		s += lbl.String(ctx) + "\n"
+	for _, label := range n.Labels {
+		s += label.String(ctx) + "\n"
 	}
 
 	return
