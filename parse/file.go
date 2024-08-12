@@ -37,7 +37,7 @@ func (FileParser) String() string {
 }
 
 func (p FileParser) Parse(v *TokenView) (node FileNode, err ParsingError) {
-	node.Functions = ParseMany(p.FunctionParser, v)
+	node.Functions, _ = ParseManyIgnoreSeparators(p.FunctionParser, v)
 	return
 }
 

@@ -40,7 +40,7 @@ func TestSingleFunction(t *testing.T) {
 						{srcView.Subview(5, 8)},
 					},
 				},
-				Instructions: parse.BlockNode[parse.InstructionNode]{
+				Instructions: &parse.BlockNode[parse.InstructionNode]{
 					UnmanagedSourceView: srcView.Subview(28, 69),
 					Nodes: []parse.InstructionNode{
 						{

@@ -8,7 +8,7 @@ import (
 type FunctionNode struct {
 	source.UnmanagedSourceView
 	Declaration  FunctionDeclarationNode
-	Instructions BlockNode[InstructionNode]
+	Instructions *BlockNode[InstructionNode]
 }
 
 func (n FunctionNode) View() source.UnmanagedSourceView {
@@ -17,9 +17,12 @@ func (n FunctionNode) View() source.UnmanagedSourceView {
 
 func (n FunctionNode) String(ctx source.SourceContext) string {
 	s := "func " + n.Declaration.String(ctx)
-	if len(n.Instructions.Nodes) > 0 {
+	if n.Instructions != nil {
 		s += " " + n.Instructions.String(ctx)
+	} else {
+		s += "\n"
 	}
+
 	return s
 }
 
@@ -51,6 +54,16 @@ func (FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) Par
 	return nil
 }
 
+func (p FunctionParser) parseBlockMaybe(v *TokenView, node *FunctionNode) {
+	instructions, err := p.InstructionBlockParser.Parse(v)
+	if err == nil {
+		node.Instructions = &instructions
+		node.End = node.Instructions.View().End
+	} else {
+		node.End = node.Declaration.View().End
+	}
+}
+
 func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError) {
 	err = p.parseFunctionKeyword(v, &node)
 	if err != nil {
@@ -62,7 +75,6 @@ func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError
 		return
 	}
 
-	node.Instructions, err = p.InstructionBlockParser.Parse(v)
-	node.End = node.Instructions.View().End
+	p.parseBlockMaybe(v, &node)
 	return
 }
