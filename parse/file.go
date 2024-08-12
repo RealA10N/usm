@@ -33,7 +33,7 @@ func (n FileNode) String(ctx source.SourceContext) (s string) {
 	// we just need to merge the sorted lists in linear time.
 
 	for i, node := range nodes {
-		s += node.String(ctx)
+		s += node.String(ctx) + "\n"
 		if i != len(nodes)-1 {
 			s += "\n"
 		}

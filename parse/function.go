@@ -19,8 +19,6 @@ func (n FunctionNode) String(ctx source.SourceContext) string {
 	s := "func " + n.Signature.String(ctx)
 	if n.Instructions != nil {
 		s += " " + n.Instructions.String(ctx)
-	} else {
-		s += "\n"
 	}
 
 	return s

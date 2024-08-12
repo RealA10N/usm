@@ -10,7 +10,7 @@ import (
 )
 
 func TestFunctionNoBody(t *testing.T) {
-	src := "func @foo\n"
+	src := "func @foo"
 
 	expected := parse.FunctionNode{
 		UnmanagedSourceView: source.UnmanagedSourceView{Start: 0, End: 9},
@@ -24,7 +24,7 @@ func TestFunctionNoBody(t *testing.T) {
 }
 
 func TestFunctionOneLineZeroInstructions(t *testing.T) {
-	src := "func @foo { }\n"
+	src := "func @foo { }"
 
 	expected := parse.FunctionNode{
 		UnmanagedSourceView: source.UnmanagedSourceView{Start: 0, End: 13},
@@ -41,7 +41,7 @@ func TestFunctionOneLineZeroInstructions(t *testing.T) {
 }
 
 func TestFunctionOneLine(t *testing.T) {
-	src := "func @foo { %0 = bar }\n"
+	src := "func @foo { %0 = bar }"
 	expected := parse.FunctionNode{
 		UnmanagedSourceView: source.UnmanagedSourceView{Start: 0, End: 22},
 		Signature: parse.FunctionSignatureNode{
@@ -61,7 +61,7 @@ func TestFunctionOneLine(t *testing.T) {
 		},
 	}
 
-	expectedString := "func @foo {\n\t%0 = bar\n}\n"
+	expectedString := "func @foo {\n\t%0 = bar\n}"
 
 	testExpectedFunctionParsing(t, src, expected, expectedString)
 }

@@ -16,14 +16,14 @@ func (n BlockNode[NodeT]) View() source.UnmanagedSourceView {
 
 func (n BlockNode[NodeT]) String(ctx source.SourceContext) (s string) {
 	if len(n.Nodes) == 0 {
-		return "{ }\n"
+		return "{ }"
 	}
 
 	s = "{\n"
 	for _, node := range n.Nodes {
 		s += node.String(ctx)
 	}
-	s += "}\n"
+	s += "}"
 
 	return
 }
