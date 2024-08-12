@@ -45,6 +45,15 @@ func TestTypeDeclarationMultipleLabels(t *testing.T) {
 	testExpectedTypeDeclaration(t, src, expected)
 }
 
+func TestTypeDeclarationLongOneLine(t *testing.T) {
+	src := `type $struct { .a .b .c $8 *2102 ^1337 * ^ * .d .e .f $1234 }`
+	expected := `type $struct {
+	.a .b .c $8 *2102 ^1337 * ^ *
+	.d .e .f $1234
+}`
+	testExpectedTypeDeclaration(t, src, expected)
+}
+
 // MARK: Helpers
 
 func testExpectedTypeDeclaration(t *testing.T, src, expected string) {
