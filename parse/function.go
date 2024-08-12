@@ -7,7 +7,7 @@ import (
 
 type FunctionNode struct {
 	source.UnmanagedSourceView
-	Declaration  FunctionDeclarationNode
+	Signature    FunctionSignatureNode
 	Instructions *BlockNode[InstructionNode]
 }
 
@@ -16,7 +16,7 @@ func (n FunctionNode) View() source.UnmanagedSourceView {
 }
 
 func (n FunctionNode) String(ctx source.SourceContext) string {
-	s := "func " + n.Declaration.String(ctx)
+	s := "func " + n.Signature.String(ctx)
 	if n.Instructions != nil {
 		s += " " + n.Instructions.String(ctx)
 	} else {
@@ -27,13 +27,12 @@ func (n FunctionNode) String(ctx source.SourceContext) string {
 }
 
 type FunctionParser struct {
-	FunctionDeclarationParser FunctionDeclarationParser
-	InstructionBlockParser    BlockParser[InstructionNode]
+	FunctionSignatureParser FunctionSignatureParser
+	InstructionBlockParser  BlockParser[InstructionNode]
 }
 
 func NewFunctionParser() FunctionParser {
 	return FunctionParser{
-		FunctionDeclarationParser: FunctionDeclarationParser{},
 		InstructionBlockParser: BlockParser[InstructionNode]{
 			Parser: InstructionParser{},
 		},
@@ -60,7 +59,7 @@ func (p FunctionParser) parseBlockMaybe(v *TokenView, node *FunctionNode) {
 		node.Instructions = &instructions
 		node.End = node.Instructions.View().End
 	} else {
-		node.End = node.Declaration.View().End
+		node.End = node.Signature.View().End
 	}
 }
 
@@ -70,7 +69,7 @@ func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError
 		return
 	}
 
-	node.Declaration, err = p.FunctionDeclarationParser.Parse(v)
+	node.Signature, err = p.FunctionSignatureParser.Parse(v)
 	if err != nil {
 		return
 	}

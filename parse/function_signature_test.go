@@ -15,12 +15,12 @@ func TestSignatureParserOnlyIdentifier(t *testing.T) {
 	glb := lex.Token{Type: lex.GlobalToken, View: v}
 	tknView := parse.NewTokenView([]lex.Token{glb})
 
-	expectedSig := parse.FunctionDeclarationNode{
+	expectedSig := parse.FunctionSignatureNode{
 		UnmanagedSourceView: v.Subview(0, 10),
 		Identifier:          v,
 	}
 
-	sig, err := parse.FunctionDeclarationParser{}.Parse(&tknView)
+	sig, err := parse.FunctionSignatureParser{}.Parse(&tknView)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSig, sig)
 
@@ -35,7 +35,7 @@ func TestSignatureParserVoidFunction(t *testing.T) {
 	reg := lex.Token{Type: lex.RegisterToken, View: v.Subview(23, 25)}
 	tknView := parse.NewTokenView([]lex.Token{glb, typ, reg})
 
-	expectedSig := parse.FunctionDeclarationNode{
+	expectedSig := parse.FunctionSignatureNode{
 		UnmanagedSourceView: v.Subview(4, 25),
 		Identifier:          glb.View,
 		Parameters: []parse.ParameterNode{
@@ -46,7 +46,7 @@ func TestSignatureParserVoidFunction(t *testing.T) {
 		},
 	}
 
-	sig, err := parse.FunctionDeclarationParser{}.Parse(&tknView)
+	sig, err := parse.FunctionSignatureParser{}.Parse(&tknView)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSig, sig)
 	assert.Equal(t, v.Subview(4, 25), sig.View())
@@ -65,7 +65,7 @@ func TestSignatureParserSingleReturn(t *testing.T) {
 		ret, id, param1Typ, param1Reg, param2Typ, param2Reg,
 	})
 
-	expectedSig := parse.FunctionDeclarationNode{
+	expectedSig := parse.FunctionSignatureNode{
 		UnmanagedSourceView: v,
 		Identifier:          id.View,
 		Parameters: []parse.ParameterNode{
@@ -83,7 +83,7 @@ func TestSignatureParserSingleReturn(t *testing.T) {
 		},
 	}
 
-	sig, err := parse.FunctionDeclarationParser{}.Parse(&tknView)
+	sig, err := parse.FunctionSignatureParser{}.Parse(&tknView)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSig, sig)
 	assert.Equal(t, v, sig.View())
@@ -103,7 +103,7 @@ func TestSignatureParserMutltiReturn(t *testing.T) {
 		ret1, ret2, id, param1Typ, param1Reg, param2Typ, param2Reg,
 	})
 
-	expectedSig := parse.FunctionDeclarationNode{
+	expectedSig := parse.FunctionSignatureNode{
 		UnmanagedSourceView: v,
 		Identifier:          id.View,
 		Parameters: []parse.ParameterNode{
@@ -122,7 +122,7 @@ func TestSignatureParserMutltiReturn(t *testing.T) {
 		},
 	}
 
-	sig, err := parse.FunctionDeclarationParser{}.Parse(&tknView)
+	sig, err := parse.FunctionSignatureParser{}.Parse(&tknView)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSig, sig)
 	assert.Equal(t, v, sig.View())
@@ -139,7 +139,7 @@ func TestSignatureParserIdentifierNotGlobal(t *testing.T) {
 		Actual:   opr,
 	}
 
-	_, err := parse.FunctionDeclarationParser{}.Parse(&tknView)
+	_, err := parse.FunctionSignatureParser{}.Parse(&tknView)
 	assert.NotNil(t, err)
 
 	details, ok := err.(parse.UnexpectedTokenError)

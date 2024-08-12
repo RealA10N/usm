@@ -14,7 +14,7 @@ func TestFunctionNoBody(t *testing.T) {
 
 	expected := parse.FunctionNode{
 		UnmanagedSourceView: source.UnmanagedSourceView{Start: 0, End: 9},
-		Declaration: parse.FunctionDeclarationNode{
+		Signature: parse.FunctionSignatureNode{
 			UnmanagedSourceView: source.UnmanagedSourceView{Start: 5, End: 9},
 			Identifier:          source.UnmanagedSourceView{Start: 5, End: 9},
 		},
@@ -28,7 +28,7 @@ func TestFunctionOneLineZeroInstructions(t *testing.T) {
 
 	expected := parse.FunctionNode{
 		UnmanagedSourceView: source.UnmanagedSourceView{Start: 0, End: 13},
-		Declaration: parse.FunctionDeclarationNode{
+		Signature: parse.FunctionSignatureNode{
 			UnmanagedSourceView: source.UnmanagedSourceView{Start: 5, End: 9},
 			Identifier:          source.UnmanagedSourceView{Start: 5, End: 9},
 		},
@@ -44,7 +44,7 @@ func TestFunctionOneLine(t *testing.T) {
 	src := "func @foo { %0 = bar }\n"
 	expected := parse.FunctionNode{
 		UnmanagedSourceView: source.UnmanagedSourceView{Start: 0, End: 22},
-		Declaration: parse.FunctionDeclarationNode{
+		Signature: parse.FunctionSignatureNode{
 			UnmanagedSourceView: source.UnmanagedSourceView{Start: 5, End: 9},
 			Identifier:          source.UnmanagedSourceView{Start: 5, End: 9},
 		},

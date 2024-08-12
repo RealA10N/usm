@@ -23,7 +23,7 @@ func TestSingleFunction(t *testing.T) {
 		Functions: []parse.FunctionNode{
 			{
 				UnmanagedSourceView: srcView,
-				Declaration: parse.FunctionDeclarationNode{
+				Signature: parse.FunctionSignatureNode{
 					UnmanagedSourceView: srcView.Subview(5, 27),
 					Identifier:          srcView.Subview(9, 13),
 					Parameters: []parse.ParameterNode{
