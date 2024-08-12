@@ -34,7 +34,7 @@ type TypeFieldParser struct {
 	TypeParser  TypeParser
 }
 
-func (TypeFieldParser) String(ctx source.SourceContext) (s string) {
+func (TypeFieldParser) String() (s string) {
 	return // TODO: not implemented
 }
 

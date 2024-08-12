@@ -27,6 +27,14 @@ type TypeDeclarationParser struct {
 	FieldsParser BlockParser[TypeFieldNode]
 }
 
+func NewTypeDeclarationParser() TypeDeclarationParser {
+	return TypeDeclarationParser{
+		FieldsParser: BlockParser[TypeFieldNode]{
+			Parser: TypeFieldParser{},
+		},
+	}
+}
+
 func (TypeDeclarationParser) String() string {
 	return "type declaration"
 }
