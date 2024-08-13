@@ -74,7 +74,7 @@ func testExpectedInstruction(
 	assert.NoError(t, err)
 
 	tknView := parse.NewTokenView(tkns)
-	inst, perr := parse.InstructionParser{}.Parse(&tknView)
+	inst, perr := parse.NewInstructionParser().Parse(&tknView)
 	assert.Nil(t, perr)
 
 	assert.Equal(t, expected, inst)
