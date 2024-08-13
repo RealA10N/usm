@@ -1,3 +1,20 @@
+// The structure and syntax of a valid immediate custom type initialization is
+// quite complicated and is defined recursively. The following are examples of
+// a valid immediate, with the corresponding AST:
+
+//                     ┌---┬--> ImmediateValueNode
+// const @constant $32 #1337
+//                 └-------┴--> ImmediateNode
+// └-----------------------┴--> ConstantNode
+
+// const @global $outer {                     ----┐
+//   ┌----------┬--> ImmediateFieldNode           ├ ImmediateBlockNode (not
+// 	 .value #1234                                 | including $outer type),
+//          └---┴--> ImmediateFieldValueNode      | and ImmediateNode including
+//   .inner { .value #0 }                         | the $outer prefix.
+//          └-----------┴--> ImmediateBlockNode   |
+// }                                          ----┘
+
 package parse
 
 import (
