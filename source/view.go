@@ -23,10 +23,7 @@ type UnmanagedSourceView = view.UnmanagedView[rune, uint32]
 //
 // When paired with an UnamangedSourceView, creates a SourceView which
 // represents a concrete string from a source file.
-type SourceContext struct {
-	view.ViewContext[rune]
-	Indent int
-}
+type SourceContext = view.ViewContext[rune]
 
 func NewSourceView(data string) SourceView {
 	return view.NewView[rune, uint32]([]rune(data))

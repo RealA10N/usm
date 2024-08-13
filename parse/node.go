@@ -6,12 +6,17 @@ import (
 	"alon.kr/x/usm/source"
 )
 
+type ParseStringContext struct {
+	source.SourceContext
+	Indent int
+}
+
 type Node interface {
 	// Return a reference to the node substring in the source code
 	View() source.UnmanagedSourceView
 
 	// Regenerate ("format") the code to a unique, single representation.
-	String(ctx source.SourceContext) string
+	String(ctx ParseStringContext) string
 }
 
 // This function sorts the nodes according to their source order.
