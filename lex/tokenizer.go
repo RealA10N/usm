@@ -33,8 +33,9 @@ func NewTokenizer() Tokenizer {
 			KeywordTokenizer{"{", LeftCurlyBraceToken},
 			KeywordTokenizer{"}", RightCurlyBraceToken},
 			KeywordTokenizer{"func", FuncKeywordToken},
-			KeywordTokenizer{"global", GlobalToken},
 			KeywordTokenizer{"type", TypeKeywordToken},
+			KeywordTokenizer{"var", VarKeywordToken},
+			KeywordTokenizer{"const", ConstKeywordToken},
 			WordTokenizer{OperatorToken},
 		},
 	}

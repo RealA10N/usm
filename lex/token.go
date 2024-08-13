@@ -18,15 +18,22 @@ const (
 	LeftCurlyBraceToken
 	RightCurlyBraceToken
 	FuncKeywordToken
-	GlobalKeywordToken
 	TypeKeywordToken
+	VarKeywordToken
+	ConstKeywordToken
 	PointerToken
 	RepeatToken
 	OperatorToken
 	SeparatorToken
 )
 
-var TopLevelTokens = []TokenType{SeparatorToken, FuncKeywordToken, TypeKeywordToken}
+var TopLevelTokens = []TokenType{
+	SeparatorToken,
+	FuncKeywordToken,
+	TypeKeywordToken,
+	VarKeywordToken,
+	ConstKeywordToken,
+}
 
 var tokenNames = map[TokenType]string{
 	RegisterToken:        "Register",
@@ -37,9 +44,10 @@ var tokenNames = map[TokenType]string{
 	EqualToken:           "Equal",
 	LeftCurlyBraceToken:  "Left Curly Brace",
 	RightCurlyBraceToken: "Right Curly Brace",
-	GlobalKeywordToken:   "Global Keyword",
-	TypeKeywordToken:     "Type Keyword",
 	FuncKeywordToken:     "Func Keyword",
+	TypeKeywordToken:     "Type Keyword",
+	VarKeywordToken:      "Var Keyword",
+	ConstKeywordToken:    "Const Keyword",
 	PointerToken:         "Pointer",
 	RepeatToken:          "Repeat",
 	OperatorToken:        "Operator",
