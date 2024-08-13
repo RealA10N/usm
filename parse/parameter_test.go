@@ -22,7 +22,7 @@ func TestParameterParserSimpleCase(t *testing.T) {
 	tkns := parse.NewTokenView([]lex.Token{typTkn, regTkn, lblTkn})
 	expectedSubview := parse.TokenView{tkns.Subview(2, 3)}
 
-	node, err := parse.ParameterParser{}.Parse(&tkns)
+	node, err := parse.NewParameterParser().Parse(&tkns)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSubview, tkns)
 
@@ -36,7 +36,7 @@ func TestParameterParserSimpleCase(t *testing.T) {
 
 func TestParameterTypEofError(t *testing.T) {
 	view := parse.NewTokenView([]lex.Token{})
-	_, err := parse.ParameterParser{}.Parse(&view)
+	_, err := parse.NewParameterParser().Parse(&view)
 	expected := parse.EofError{Expected: []lex.TokenType{lex.TypeToken}}
 	assert.Equal(t, expected, err)
 }
@@ -50,6 +50,6 @@ func TestParameterRegEofError(t *testing.T) {
 		Expected: []lex.TokenType{lex.RegisterToken},
 	}
 
-	_, err := parse.ParameterParser{}.Parse(&view)
+	_, err := parse.NewParameterParser().Parse(&view)
 	assert.Equal(t, expected, err)
 }

@@ -1,29 +1,9 @@
 package parse
 
-import (
-	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/source"
-)
+import "alon.kr/x/usm/lex"
 
-type RegisterNode struct {
-	source.UnmanagedSourceView
-}
+type RegisterNode = TokenNode
 
-func (n RegisterNode) View() source.UnmanagedSourceView {
-	return n.UnmanagedSourceView
-}
-
-func (n RegisterNode) String(ctx *StringContext) string {
-	return string(n.UnmanagedSourceView.Raw(ctx.SourceContext))
-}
-
-type RegisterParser struct{}
-
-func (RegisterParser) Parse(v *TokenView) (node RegisterNode, err ParsingError) {
-	tkn, err := v.ConsumeToken(lex.RegisterToken)
-	if err != nil {
-		return
-	}
-
-	return RegisterNode{tkn.View}, nil
+func NewRegisterParser() Parser[RegisterNode] {
+	return TokenParser[RegisterNode]{lex.RegisterToken}
 }

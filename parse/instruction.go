@@ -68,13 +68,14 @@ func (n InstructionNode) String(ctx *StringContext) string {
 
 type InstructionParser struct {
 	LabelParser    Parser[LabelNode]
-	RegisterParser RegisterParser
+	RegisterParser Parser[RegisterNode]
 	ArgumentParser ArgumentParser
 }
 
 func NewInstructionParser() InstructionParser {
 	return InstructionParser{
 		LabelParser:    NewLabelParser(),
+		RegisterParser: NewRegisterParser(),
 		ArgumentParser: NewArgumentParser(),
 	}
 }

@@ -21,7 +21,13 @@ func (n ParameterNode) String(ctx *StringContext) string {
 
 type ParameterParser struct {
 	TypeParser     TypeParser
-	RegisterParser RegisterParser
+	RegisterParser Parser[RegisterNode]
+}
+
+func NewParameterParser() ParameterParser {
+	return ParameterParser{
+		RegisterParser: NewRegisterParser(),
+	}
 }
 
 func (p ParameterParser) Parse(v *TokenView) (node ParameterNode, err ParsingError) {

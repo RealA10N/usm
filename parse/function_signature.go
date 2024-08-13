@@ -35,6 +35,12 @@ type FunctionSignatureParser struct {
 	TypeParser      TypeParser
 }
 
+func NewFunctionSignatureParser() FunctionSignatureParser {
+	return FunctionSignatureParser{
+		ParameterParser: NewParameterParser(),
+	}
+}
+
 func (FunctionSignatureParser) parseIdentifier(v *TokenView, node *FunctionSignatureNode) ParsingError {
 	id, err := v.ConsumeToken(lex.GlobalToken)
 	if err != nil {

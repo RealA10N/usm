@@ -3,7 +3,7 @@ package parse
 type ArgumentNode Node
 
 type ArgumentParser struct {
-	RegisterParser  RegisterParser
+	RegisterParser  Parser[RegisterNode]
 	ImmediateParser *ImmediateParser
 	LabelParser     Parser[LabelNode]
 	GlobalParser    GlobalParser
@@ -11,6 +11,7 @@ type ArgumentParser struct {
 
 func NewArgumentParser() ArgumentParser {
 	return ArgumentParser{
+		RegisterParser:  NewRegisterParser(),
 		ImmediateParser: NewImmediateParser(),
 		LabelParser:     NewLabelParser(),
 	}

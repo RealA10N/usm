@@ -31,6 +31,7 @@ type FunctionParser struct {
 
 func NewFunctionParser() FunctionParser {
 	return FunctionParser{
+		FunctionSignatureParser: NewFunctionSignatureParser(),
 		InstructionBlockParser: BlockParser[InstructionNode]{
 			Parser: NewInstructionParser(),
 		},

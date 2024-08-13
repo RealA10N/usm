@@ -20,7 +20,7 @@ func TestSignatureParserOnlyIdentifier(t *testing.T) {
 		Identifier:          v,
 	}
 
-	sig, err := parse.FunctionSignatureParser{}.Parse(&tknView)
+	sig, err := parse.NewFunctionSignatureParser().Parse(&tknView)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSig, sig)
 
@@ -47,7 +47,7 @@ func TestSignatureParserVoidFunction(t *testing.T) {
 		},
 	}
 
-	sig, err := parse.FunctionSignatureParser{}.Parse(&tknView)
+	sig, err := parse.NewFunctionSignatureParser().Parse(&tknView)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSig, sig)
 	assert.Equal(t, v.Subview(4, 25), sig.View())
@@ -85,7 +85,7 @@ func TestSignatureParserSingleReturn(t *testing.T) {
 		},
 	}
 
-	sig, err := parse.FunctionSignatureParser{}.Parse(&tknView)
+	sig, err := parse.NewFunctionSignatureParser().Parse(&tknView)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSig, sig)
 	assert.Equal(t, v, sig.View())
@@ -125,7 +125,7 @@ func TestSignatureParserMutltiReturn(t *testing.T) {
 		},
 	}
 
-	sig, err := parse.FunctionSignatureParser{}.Parse(&tknView)
+	sig, err := parse.NewFunctionSignatureParser().Parse(&tknView)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSig, sig)
 	assert.Equal(t, v, sig.View())
@@ -143,7 +143,7 @@ func TestSignatureParserIdentifierNotGlobal(t *testing.T) {
 		Actual:   opr,
 	}
 
-	_, err := parse.FunctionSignatureParser{}.Parse(&tknView)
+	_, err := parse.NewFunctionSignatureParser().Parse(&tknView)
 	assert.NotNil(t, err)
 
 	details, ok := err.(parse.UnexpectedTokenError)
