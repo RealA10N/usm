@@ -9,7 +9,7 @@
 
 // const @global $outer {                     ----┐
 //   ┌----------┬--> ImmediateFieldNode           ├ ImmediateBlockNode (not
-// 	 .value #1234                                 | including $outer type),
+//   .value #1234                                 | including $outer type),
 //          └---┴--> ImmediateFieldValueNode      | and ImmediateNode including
 //   .inner { .value #0 }                         | the $outer prefix.
 //          └-----------┴--> ImmediateBlockNode   |
