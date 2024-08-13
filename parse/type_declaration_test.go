@@ -68,5 +68,5 @@ func testExpectedTypeDeclaration(t *testing.T, src, expected string) {
 	typ, perr := p.Parse(&tknView)
 	assert.Nil(t, perr)
 
-	assert.Equal(t, expected, typ.String(srcView.Ctx()))
+	assert.Equal(t, expected, typ.String(source.SourceContext{ViewContext: srcView.Ctx()}))
 }

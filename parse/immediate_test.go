@@ -24,12 +24,26 @@ func TestImmediateBlockOneLine(t *testing.T) {
 	testExpectedImmediate(t, src, expected)
 }
 
+func TestImmediateBlockNested(t *testing.T) {
+	src := "$outer { .a #1337 .b { .c #2902 #1234 } }"
+	expected := `$outer {
+	.a #1337
+	.b {
+		.c #2902
+		#1234
+	}
+}`
+
+	testExpectedImmediate(t, src, expected)
+}
+
 // MARK: Helpers
 
 func testExpectedImmediate(t *testing.T, src, expected string) {
 	t.Helper()
 
 	srcView := source.NewSourceView(src)
+	srcCtx := source.SourceContext{ViewContext: srcView.Ctx()}
 	tkns, err := lex.NewTokenizer().Tokenize(srcView)
 	assert.NoError(t, err)
 
@@ -37,5 +51,5 @@ func testExpectedImmediate(t *testing.T, src, expected string) {
 	immediate, perr := parse.NewImmediateParser().Parse(&v)
 	assert.Nil(t, perr)
 
-	assert.Equal(t, expected, immediate.String(srcView.Ctx()))
+	assert.Equal(t, expected, immediate.String(srcCtx))
 }

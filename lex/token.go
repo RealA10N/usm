@@ -66,7 +66,7 @@ func (tkn Token) String(ctx source.SourceContext) string {
 	}
 
 	if tkn.View.Len() > 0 {
-		return fmt.Sprintf(`<%s "%s">`, typeName, string(tkn.View.Raw(ctx)))
+		return fmt.Sprintf(`<%s "%s">`, typeName, string(tkn.View.Raw(ctx.ViewContext)))
 	} else {
 		return fmt.Sprintf(typeName)
 	}

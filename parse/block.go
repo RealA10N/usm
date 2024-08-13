@@ -1,6 +1,8 @@
 package parse
 
 import (
+	"strings"
+
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/source"
 )
@@ -20,10 +22,13 @@ func (n BlockNode[NodeT]) String(ctx source.SourceContext) (s string) {
 	}
 
 	s = "{\n"
+	ctx.Indent++
 	for _, node := range n.Nodes {
 		s += node.String(ctx)
 	}
-	s += "}"
+
+	ctx.Indent--
+	s += strings.Repeat("\t", ctx.Indent) + "}"
 
 	return
 }

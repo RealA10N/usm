@@ -18,6 +18,8 @@
 package parse
 
 import (
+	"strings"
+
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/source"
 )
@@ -34,7 +36,7 @@ func (n ImmediateFinalValueNode) View() source.UnmanagedSourceView {
 }
 
 func (n ImmediateFinalValueNode) String(ctx source.SourceContext) string {
-	return string(n.UnmanagedSourceView.Raw(ctx))
+	return string(n.UnmanagedSourceView.Raw(ctx.ViewContext))
 }
 
 type ImmediateFinalValueParser struct{}
@@ -62,14 +64,8 @@ type ImmediateValueNode interface {
 }
 
 type ImmediateValueParser struct {
-	ImmediateFinalValueParser ImmediateFinalValueParser
-	ImmediateBlockParser      ImmediateBlockParser
-}
-
-func NewImmediateValueParser() ImmediateValueParser {
-	return ImmediateValueParser{
-		ImmediateBlockParser: NewImmediateBlockParser(),
-	}
+	ImmediateFinalValueParser *ImmediateFinalValueParser
+	ImmediateBlockParser      *ImmediateBlockParser
 }
 
 func (p ImmediateValueParser) Parse(v *TokenView) (
@@ -111,17 +107,23 @@ func (n ImmediateFieldNode) View() source.UnmanagedSourceView {
 	}
 }
 
-func (n ImmediateFieldNode) String(ctx source.SourceContext) string {
+func (n ImmediateFieldNode) stringLabel(ctx source.SourceContext) (s string) {
 	if n.Label != nil {
-		return "\t" + n.Label.String(ctx) + " " + n.Value.String(ctx) + "\n"
-	} else {
-		return "\t" + n.Value.String(ctx) + "\n"
+		return n.Label.String(ctx) + " "
 	}
+	return
+}
+
+func (n ImmediateFieldNode) String(ctx source.SourceContext) string {
+	prefix := strings.Repeat("\t", ctx.Indent)
+	label := n.stringLabel(ctx)
+	value := n.Value.String(ctx)
+	return prefix + label + value + "\n"
 }
 
 type ImmediateFieldParser struct {
-	LabelParser          LabelParser
-	ImmediateValueParser ImmediateValueParser
+	LabelParser          *LabelParser
+	ImmediateValueParser *ImmediateValueParser
 }
 
 func (p ImmediateFieldParser) tryParsingLabel(v *TokenView, node *ImmediateFieldNode) {
@@ -150,15 +152,6 @@ func (p ImmediateFieldParser) Parse(v *TokenView) (node ImmediateFieldNode, err 
 type ImmediateBlockNode = BlockNode[ImmediateFieldNode]
 type ImmediateBlockParser = BlockParser[ImmediateFieldNode]
 
-func NewImmediateBlockParser() ImmediateBlockParser {
-	return ImmediateBlockParser{
-		Parser: ImmediateFieldParser{
-			LabelParser:          LabelParser{},
-			ImmediateValueParser: ImmediateValueParser{},
-		},
-	}
-}
-
 // MARK: Immediate
 
 type ImmediateNode struct {
@@ -175,15 +168,8 @@ func (n ImmediateNode) String(ctx source.SourceContext) string {
 }
 
 type ImmediateParser struct {
-	TypeParser           TypeParser
-	ImmediateValueParser ImmediateValueParser
-}
-
-func NewImmediateParser() ImmediateParser {
-	return ImmediateParser{
-		TypeParser:           TypeParser{},
-		ImmediateValueParser: NewImmediateValueParser(),
-	}
+	TypeParser           *TypeParser
+	ImmediateValueParser *ImmediateValueParser
 }
 
 func (p ImmediateParser) Parse(v *TokenView) (node ImmediateNode, err ParsingError) {
@@ -198,4 +184,32 @@ func (p ImmediateParser) Parse(v *TokenView) (node ImmediateNode, err ParsingErr
 	}
 
 	return node, nil
+}
+
+// MARK: New
+
+func NewImmediateParser() *ImmediateParser {
+	return &ImmediateParser{
+		TypeParser:           &TypeParser{},
+		ImmediateValueParser: NewImmediateValueParser(),
+	}
+}
+
+func NewImmediateValueParser() *ImmediateValueParser {
+	valueParser := &ImmediateValueParser{
+		ImmediateFinalValueParser: &ImmediateFinalValueParser{},
+	}
+	valueParser.ImmediateBlockParser = NewImmediateBlockParser(valueParser)
+	return valueParser
+}
+
+func NewImmediateBlockParser(valueParser *ImmediateValueParser) *ImmediateBlockParser {
+	return &ImmediateBlockParser{NewImmediateFieldParser(valueParser)}
+}
+
+func NewImmediateFieldParser(valueParser *ImmediateValueParser) *ImmediateFieldParser {
+	return &ImmediateFieldParser{
+		LabelParser:          &LabelParser{},
+		ImmediateValueParser: valueParser,
+	}
 }

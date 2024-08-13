@@ -25,7 +25,7 @@ func TestSignatureParserOnlyIdentifier(t *testing.T) {
 	assert.Equal(t, expectedSig, sig)
 
 	assert.Equal(t, v, sig.View())
-	assert.Equal(t, "@fibonacci", sig.String(ctx))
+	assert.Equal(t, "@fibonacci", sig.String(source.SourceContext{ViewContext: ctx}))
 }
 
 func TestSignatureParserVoidFunction(t *testing.T) {
@@ -50,7 +50,7 @@ func TestSignatureParserVoidFunction(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSig, sig)
 	assert.Equal(t, v.Subview(4, 25), sig.View())
-	assert.Equal(t, "@printNumber $i32 %x", sig.String(ctx))
+	assert.Equal(t, "@printNumber $i32 %x", sig.String(source.SourceContext{ViewContext: ctx}))
 }
 
 func TestSignatureParserSingleReturn(t *testing.T) {
@@ -87,7 +87,7 @@ func TestSignatureParserSingleReturn(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSig, sig)
 	assert.Equal(t, v, sig.View())
-	assert.Equal(t, "$i32 @add $i32 %x $i32 %y", sig.String(ctx))
+	assert.Equal(t, "$i32 @add $i32 %x $i32 %y", sig.String(source.SourceContext{ViewContext: ctx}))
 }
 
 func TestSignatureParserMutltiReturn(t *testing.T) {
@@ -126,7 +126,7 @@ func TestSignatureParserMutltiReturn(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, expectedSig, sig)
 	assert.Equal(t, v, sig.View())
-	assert.Equal(t, "$i32 $i32 @divmod $i32 %n $i32 %m", sig.String(ctx))
+	assert.Equal(t, "$i32 $i32 @divmod $i32 %n $i32 %m", sig.String(source.SourceContext{ViewContext: ctx}))
 }
 
 func TestSignatureParserIdentifierNotGlobal(t *testing.T) {

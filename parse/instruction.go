@@ -1,11 +1,11 @@
 package parse
 
 import (
+	"strings"
+
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/source"
 )
-
-// TODO add function labels before each instruction.
 
 type InstructionNode struct {
 	Operator  source.UnmanagedSourceView
@@ -29,10 +29,10 @@ func (n InstructionNode) View() (v source.UnmanagedSourceView) {
 }
 
 func (n InstructionNode) stringLabels(ctx source.SourceContext) (s string) {
+	prefix := strings.Repeat("\t", max(0, ctx.Indent-1))
 	for _, label := range n.Labels {
-		s += label.String(ctx) + "\n"
+		s += prefix + label.String(ctx) + "\n"
 	}
-
 	return
 }
 
@@ -59,10 +59,11 @@ func (n InstructionNode) stringTargets(ctx source.SourceContext) (s string) {
 
 func (n InstructionNode) String(ctx source.SourceContext) string {
 	labels := n.stringLabels(ctx)
+	prefix := strings.Repeat("\t", ctx.Indent)
 	targets := n.stringTargets(ctx)
-	op := string(n.Operator.Raw(ctx))
+	op := string(n.Operator.Raw(ctx.ViewContext))
 	arguments := n.stringArguments(ctx)
-	return labels + "\t" + targets + op + arguments + "\n"
+	return labels + prefix + targets + op + arguments + "\n"
 }
 
 type InstructionParser struct {

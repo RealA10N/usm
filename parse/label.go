@@ -14,7 +14,7 @@ func (n LabelNode) View() source.UnmanagedSourceView {
 }
 
 func (n LabelNode) String(ctx source.SourceContext) string {
-	return string(n.UnmanagedSourceView.Raw(ctx))
+	return string(n.UnmanagedSourceView.Raw(ctx.ViewContext))
 }
 
 type LabelParser struct{}

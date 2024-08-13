@@ -11,34 +11,24 @@ import (
 )
 
 func TestInstructionParserMultipleTargets(t *testing.T) {
-	v, ctx := source.NewSourceView("%div %mod = divmod %x %y").Detach()
-	t1 := lex.Token{Type: lex.RegisterToken, View: v.Subview(0, 4)}
-	t2 := lex.Token{Type: lex.RegisterToken, View: v.Subview(5, 9)}
-	eq := lex.Token{Type: lex.EqualToken, View: v.Subview(10, 11)}
-	op := lex.Token{Type: lex.OperatorToken, View: v.Subview(12, 18)}
-	a1 := lex.Token{Type: lex.RegisterToken, View: v.Subview(19, 21)}
-	a2 := lex.Token{Type: lex.RegisterToken, View: v.Subview(22, 24)}
-	tknView := parse.NewTokenView([]lex.Token{
-		t1, t2, eq, op, a1, a2,
-	})
+	srcView := source.NewSourceView("%div %mod = divmod %x %y")
+	unmanaged := srcView.Unmanaged()
 
 	expected := parse.InstructionNode{
-		Operator: v.Subview(12, 18),
+		Operator: unmanaged.Subview(12, 18),
 		Arguments: []parse.ArgumentNode{
-			parse.RegisterNode{v.Subview(19, 21)},
-			parse.RegisterNode{v.Subview(22, 24)},
+			parse.RegisterNode{unmanaged.Subview(19, 21)},
+			parse.RegisterNode{unmanaged.Subview(22, 24)},
 		},
 		Targets: []parse.RegisterNode{
-			{v.Subview(0, 4)},
-			{v.Subview(5, 9)},
+			{unmanaged.Subview(0, 4)},
+			{unmanaged.Subview(5, 9)},
 		},
 	}
 
-	inst, err := parse.InstructionParser{}.Parse(&tknView)
-	assert.Nil(t, err)
-	assert.Equal(t, expected, inst)
-	assert.Equal(t, v, inst.View())
-	assert.Equal(t, "\t%div %mod = divmod %x %y\n", inst.String(ctx))
+	expectedString := "\t%div %mod = divmod %x %y\n"
+
+	testExpectedInstruction(t, srcView, expected, expectedString)
 }
 
 func TestInstructionWithImmediateValuesAndLabel(t *testing.T) {
@@ -65,13 +55,28 @@ func TestInstructionWithImmediateValuesAndLabel(t *testing.T) {
 		},
 	}
 
+	expectedString := ".entry\n\t%res = add %x $32 #1 .arg\n"
+
+	testExpectedInstruction(t, srcView, expected, expectedString)
+}
+
+// MARK: Helpers
+
+func testExpectedInstruction(
+	t *testing.T,
+	srcView source.SourceView,
+	expected parse.InstructionNode,
+	expectedString string,
+) {
+	t.Helper()
+
 	tkns, err := lex.NewTokenizer().Tokenize(srcView)
 	assert.NoError(t, err)
 
 	tknView := parse.NewTokenView(tkns)
 	inst, perr := parse.InstructionParser{}.Parse(&tknView)
 	assert.Nil(t, perr)
-	assert.Equal(t, expected, inst)
 
-	assert.Equal(t, ".entry\n\t%res = add %x $32 #1 .arg\n", inst.String(srcView.Ctx()))
+	assert.Equal(t, expected, inst)
+	assert.Equal(t, expectedString, inst.String(source.SourceContext{ViewContext: srcView.Ctx()}))
 }

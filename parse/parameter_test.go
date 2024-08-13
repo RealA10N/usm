@@ -35,22 +35,22 @@ func TestParameterParserSimpleCase(t *testing.T) {
 }
 
 func TestParameterTypEofError(t *testing.T) {
-	_, ctx := source.NewSourceView("").Detach()
 	view := parse.NewTokenView([]lex.Token{})
-
 	_, err := parse.ParameterParser{}.Parse(&view)
-	assert.NotNil(t, err)
-	assert.EqualValues(t, 0, view.Len())
-	assert.EqualValues(t, "reached end of file (expected <Type>)", err.Error(ctx))
+	expected := parse.EofError{Expected: []lex.TokenType{lex.TypeToken}}
+	assert.Equal(t, expected, err)
 }
 
 func TestParameterRegEofError(t *testing.T) {
-	v, ctx := source.NewSourceView("$i32").Detach()
+	v := source.NewSourceView("$i32").Unmanaged()
 	tkn := lex.Token{Type: lex.TypeToken, View: v}
 	view := parse.NewTokenView([]lex.Token{tkn})
 
+	expected := parse.UnexpectedTokenError{
+		Expected: []lex.TokenType{lex.RegisterToken},
+		Actual:   tkn,
+	}
+
 	_, err := parse.ParameterParser{}.Parse(&view)
-	assert.NotNil(t, err)
-	assert.EqualValues(t, 0, view.Len())
-	assert.EqualValues(t, "reached end of file (expected <Register>)", err.Error(ctx))
+	assert.Equal(t, expected, err)
 }

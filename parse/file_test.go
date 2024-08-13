@@ -157,6 +157,6 @@ func testExpectedFileFormat(t *testing.T, src string, expected string) {
 	file, perr := parse.NewFileParser().Parse(&tknsView)
 	assert.Nil(t, perr)
 
-	got := file.String(ctx)
+	got := file.String(source.SourceContext{ViewContext: ctx})
 	assert.Equal(t, expected, got)
 }

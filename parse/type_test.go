@@ -16,7 +16,7 @@ func TestTypeNodeStringer(t *testing.T) {
 	tkns := parse.NewTokenView([]lex.Token{typTok})
 	node, err := parse.TypeParser{}.Parse(&tkns)
 	assert.Nil(t, err)
-	assert.Equal(t, "$i32", node.String(ctx))
+	assert.Equal(t, "$i32", node.String(source.SourceContext{ViewContext: ctx}))
 }
 
 func TestTypeParserSimpleCase(t *testing.T) {
@@ -35,22 +35,24 @@ func TestTypeParserSimpleCase(t *testing.T) {
 }
 
 func TestTypeParserEofError(t *testing.T) {
-	_, ctx := source.NewSourceView("").Detach()
 	tkns := []lex.Token{}
 	view := parse.NewTokenView(tkns)
+	expected := parse.EofError{Expected: []lex.TokenType{lex.TypeToken}}
 
 	_, err := parse.TypeParser{}.Parse(&view)
-	assert.NotNil(t, err)
-	assert.EqualValues(t, 0, view.Len())
-	assert.EqualValues(t, "reached end of file (expected <Type>)", err.Error(ctx))
+	assert.Equal(t, expected, err)
 }
 
 func TestTypeParserUnexpectedTokenError(t *testing.T) {
-	regView, ctx := source.NewSourceView("%0").Detach()
+	regView := source.NewSourceView("%0").Unmanaged()
 	regTkn := lex.Token{Type: lex.RegisterToken, View: regView}
 	tkns := parse.NewTokenView([]lex.Token{regTkn})
 
+	expected := parse.UnexpectedTokenError{
+		Expected: []lex.TokenType{lex.TypeToken},
+		Actual:   regTkn,
+	}
+
 	_, err := parse.TypeParser{}.Parse(&tkns)
-	assert.NotNil(t, err)
-	assert.EqualValues(t, "got token <Register \"%0\"> (expected <Type>)", err.Error(ctx))
+	assert.Equal(t, expected, err)
 }

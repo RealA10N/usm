@@ -1,6 +1,10 @@
 package parse
 
-import "alon.kr/x/usm/source"
+import (
+	"strings"
+
+	"alon.kr/x/usm/source"
+)
 
 type TypeFieldNode struct {
 	Type   TypeNode
@@ -26,7 +30,10 @@ func (n TypeFieldNode) stringLabels(ctx source.SourceContext) (s string) {
 }
 
 func (n TypeFieldNode) String(ctx source.SourceContext) (s string) {
-	return "\t" + n.stringLabels(ctx) + n.Type.String(ctx) + "\n"
+	prefix := strings.Repeat("\t", ctx.Indent)
+	labels := n.stringLabels(ctx)
+	typ := n.Type.String(ctx)
+	return prefix + labels + typ + "\n"
 }
 
 type TypeFieldParser struct {

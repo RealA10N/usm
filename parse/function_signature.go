@@ -21,7 +21,7 @@ func (n FunctionSignatureNode) String(ctx source.SourceContext) (s string) {
 		s += ret.String(ctx) + " "
 	}
 
-	s += string(n.Identifier.Raw(ctx))
+	s += string(n.Identifier.Raw(ctx.ViewContext))
 
 	for _, arg := range n.Parameters {
 		s += " " + arg.String(ctx)

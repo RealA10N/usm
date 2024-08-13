@@ -35,9 +35,9 @@ func (n TypeNode) View() source.UnmanagedSourceView {
 }
 
 func (n TypeNode) String(ctx source.SourceContext) string {
-	s := string(n.Identifier.Raw(ctx))
+	s := string(n.Identifier.Raw(ctx.ViewContext))
 	for _, decorator := range n.Decorators {
-		s += " " + string(decorator.Raw(ctx))
+		s += " " + string(decorator.Raw(ctx.ViewContext))
 	}
 	return s
 }
