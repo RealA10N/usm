@@ -78,6 +78,6 @@ func testExpectedInstruction(
 	assert.Nil(t, perr)
 
 	assert.Equal(t, expected, inst)
-	strCtx := parse.StringContext{SourceContext: srcView.Ctx()}
+	strCtx := parse.StringContext{SourceContext: srcView.Ctx(), Indent: 1}
 	assert.Equal(t, expectedString, inst.String(&strCtx))
 }
