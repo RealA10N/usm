@@ -149,7 +149,6 @@ func testExpectedFileFormat(t *testing.T, src string, expected string) {
 	t.Helper()
 
 	v := source.NewSourceView(src)
-	_, ctx := v.Detach()
 	tkns, err := lex.NewTokenizer().Tokenize(v)
 	assert.NoError(t, err)
 
@@ -157,6 +156,6 @@ func testExpectedFileFormat(t *testing.T, src string, expected string) {
 	file, perr := parse.NewFileParser().Parse(&tknsView)
 	assert.Nil(t, perr)
 
-	got := file.String(source.SourceContext{ViewContext: ctx})
-	assert.Equal(t, expected, got)
+	strCtx := parse.StringContext{SourceContext: v.Ctx()}
+	assert.Equal(t, expected, file.String(&strCtx))
 }

@@ -16,7 +16,7 @@ func (n BlockNode[NodeT]) View() source.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 
-func (n BlockNode[NodeT]) String(ctx source.SourceContext) (s string) {
+func (n BlockNode[NodeT]) String(ctx *StringContext) (s string) {
 	if len(n.Nodes) == 0 {
 		return "{ }"
 	}

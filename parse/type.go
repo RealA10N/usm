@@ -34,10 +34,10 @@ func (n TypeNode) View() source.UnmanagedSourceView {
 	}
 }
 
-func (n TypeNode) String(ctx source.SourceContext) string {
-	s := string(n.Identifier.Raw(ctx.ViewContext))
+func (n TypeNode) String(ctx *StringContext) string {
+	s := string(n.Identifier.Raw(ctx.SourceContext))
 	for _, decorator := range n.Decorators {
-		s += " " + string(decorator.Raw(ctx.ViewContext))
+		s += " " + string(decorator.Raw(ctx.SourceContext))
 	}
 	return s
 }

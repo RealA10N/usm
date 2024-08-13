@@ -43,7 +43,6 @@ func testExpectedImmediate(t *testing.T, src, expected string) {
 	t.Helper()
 
 	srcView := source.NewSourceView(src)
-	srcCtx := source.SourceContext{ViewContext: srcView.Ctx()}
 	tkns, err := lex.NewTokenizer().Tokenize(srcView)
 	assert.NoError(t, err)
 
@@ -51,5 +50,6 @@ func testExpectedImmediate(t *testing.T, src, expected string) {
 	immediate, perr := parse.NewImmediateParser().Parse(&v)
 	assert.Nil(t, perr)
 
-	assert.Equal(t, expected, immediate.String(srcCtx))
+	strCtx := parse.StringContext{SourceContext: srcView.Ctx()}
+	assert.Equal(t, expected, immediate.String(&strCtx))
 }

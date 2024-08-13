@@ -16,12 +16,12 @@ func (n FunctionSignatureNode) View() source.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 
-func (n FunctionSignatureNode) String(ctx source.SourceContext) (s string) {
+func (n FunctionSignatureNode) String(ctx *StringContext) (s string) {
 	for _, ret := range n.Returns {
 		s += ret.String(ctx) + " "
 	}
 
-	s += string(n.Identifier.Raw(ctx.ViewContext))
+	s += string(n.Identifier.Raw(ctx.SourceContext))
 
 	for _, arg := range n.Parameters {
 		s += " " + arg.String(ctx)

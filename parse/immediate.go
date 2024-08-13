@@ -35,8 +35,8 @@ func (n ImmediateFinalValueNode) View() source.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 
-func (n ImmediateFinalValueNode) String(ctx source.SourceContext) string {
-	return string(n.UnmanagedSourceView.Raw(ctx.ViewContext))
+func (n ImmediateFinalValueNode) String(ctx *StringContext) string {
+	return string(n.UnmanagedSourceView.Raw(ctx.SourceContext))
 }
 
 type ImmediateFinalValueParser struct{}
@@ -107,14 +107,14 @@ func (n ImmediateFieldNode) View() source.UnmanagedSourceView {
 	}
 }
 
-func (n ImmediateFieldNode) stringLabel(ctx source.SourceContext) (s string) {
+func (n ImmediateFieldNode) stringLabel(ctx *StringContext) (s string) {
 	if n.Label != nil {
 		return n.Label.String(ctx) + " "
 	}
 	return
 }
 
-func (n ImmediateFieldNode) String(ctx source.SourceContext) string {
+func (n ImmediateFieldNode) String(ctx *StringContext) string {
 	prefix := strings.Repeat("\t", ctx.Indent)
 	label := n.stringLabel(ctx)
 	value := n.Value.String(ctx)
@@ -163,7 +163,7 @@ func (n ImmediateNode) View() source.UnmanagedSourceView {
 	return n.Type.View().MergeEnd(n.Value.View())
 }
 
-func (n ImmediateNode) String(ctx source.SourceContext) string {
+func (n ImmediateNode) String(ctx *StringContext) string {
 	return n.Type.String(ctx) + " " + n.Value.String(ctx)
 }
 

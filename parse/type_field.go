@@ -21,7 +21,7 @@ func (n TypeFieldNode) View() source.UnmanagedSourceView {
 	return v
 }
 
-func (n TypeFieldNode) stringLabels(ctx source.SourceContext) (s string) {
+func (n TypeFieldNode) stringLabels(ctx *StringContext) (s string) {
 	for _, label := range n.Labels {
 		s += label.String(ctx) + " "
 	}
@@ -29,7 +29,7 @@ func (n TypeFieldNode) stringLabels(ctx source.SourceContext) (s string) {
 	return
 }
 
-func (n TypeFieldNode) String(ctx source.SourceContext) (s string) {
+func (n TypeFieldNode) String(ctx *StringContext) (s string) {
 	prefix := strings.Repeat("\t", ctx.Indent)
 	labels := n.stringLabels(ctx)
 	typ := n.Type.String(ctx)

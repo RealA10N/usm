@@ -16,7 +16,7 @@ func TestTypeNodeStringer(t *testing.T) {
 	tkns := parse.NewTokenView([]lex.Token{typTok})
 	node, err := parse.TypeParser{}.Parse(&tkns)
 	assert.Nil(t, err)
-	assert.Equal(t, "$i32", node.String(source.SourceContext{ViewContext: ctx}))
+	assert.Equal(t, "$i32", node.String(&parse.StringContext{SourceContext: ctx}))
 }
 
 func TestTypeParserSimpleCase(t *testing.T) {

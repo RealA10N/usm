@@ -4,9 +4,15 @@ type ArgumentNode Node
 
 type ArgumentParser struct {
 	RegisterParser  RegisterParser
-	ImmediateParser ImmediateParser
+	ImmediateParser *ImmediateParser
 	LabelParser     LabelParser
 	GlobalParser    GlobalParser
+}
+
+func NewArgumentParser() ArgumentParser {
+	return ArgumentParser{
+		ImmediateParser: NewImmediateParser(),
+	}
 }
 
 func (p ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError) {

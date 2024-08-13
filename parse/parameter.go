@@ -15,7 +15,7 @@ func (n ParameterNode) View() source.UnmanagedSourceView {
 	return n.Type.View().Merge(n.Register.View())
 }
 
-func (n ParameterNode) String(ctx source.SourceContext) string {
+func (n ParameterNode) String(ctx *StringContext) string {
 	return fmt.Sprintf("%s %s", n.Type.String(ctx), n.Register.String(ctx))
 }
 

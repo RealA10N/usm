@@ -15,7 +15,7 @@ func (n FunctionNode) View() source.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 
-func (n FunctionNode) String(ctx source.SourceContext) string {
+func (n FunctionNode) String(ctx *StringContext) string {
 	s := "func " + n.Signature.String(ctx)
 	if n.Instructions != nil {
 		s += " " + n.Instructions.String(ctx)
@@ -32,7 +32,7 @@ type FunctionParser struct {
 func NewFunctionParser() FunctionParser {
 	return FunctionParser{
 		InstructionBlockParser: BlockParser[InstructionNode]{
-			Parser: InstructionParser{},
+			Parser: NewInstructionParser(),
 		},
 	}
 }

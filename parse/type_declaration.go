@@ -17,8 +17,8 @@ func (n TypeDeclarationNode) View() source.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 
-func (n TypeDeclarationNode) String(ctx source.SourceContext) string {
-	id := string(n.Identifier.Raw(ctx.ViewContext))
+func (n TypeDeclarationNode) String(ctx *StringContext) string {
+	id := string(n.Identifier.Raw(ctx.SourceContext))
 	fields := n.Fields.String(ctx)
 	return "type " + id + " " + fields
 }

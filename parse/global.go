@@ -13,8 +13,8 @@ func (n GlobalNode) View() source.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 
-func (n GlobalNode) String(ctx source.SourceContext) string {
-	return string(n.UnmanagedSourceView.Raw(ctx.ViewContext))
+func (n GlobalNode) String(ctx *StringContext) string {
+	return string(n.UnmanagedSourceView.Raw(ctx.SourceContext))
 }
 
 type GlobalParser struct{}

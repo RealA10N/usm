@@ -13,8 +13,8 @@ func (n RegisterNode) View() source.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 
-func (n RegisterNode) String(ctx source.SourceContext) string {
-	return string(n.UnmanagedSourceView.Raw(ctx.ViewContext))
+func (n RegisterNode) String(ctx *StringContext) string {
+	return string(n.UnmanagedSourceView.Raw(ctx.SourceContext))
 }
 
 type RegisterParser struct{}

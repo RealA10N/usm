@@ -2,7 +2,6 @@ package parse
 
 import (
 	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/source"
 )
 
 type FileNode struct {
@@ -25,7 +24,7 @@ func (n FileNode) collectAllNodes() (nodes []Node) {
 	return
 }
 
-func (n FileNode) String(ctx source.SourceContext) (s string) {
+func (n FileNode) String(ctx *StringContext) (s string) {
 	nodes := n.collectAllNodes()
 	SortNodesBySourceOrder(nodes)
 	// TODO: efficiency improvement, we do not need to sort here in O(n log n),

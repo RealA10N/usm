@@ -77,7 +77,6 @@ func testExpectedFunctionParsing(
 	t.Helper()
 
 	srcView := source.NewSourceView(src)
-	ctx := source.SourceContext{ViewContext: srcView.Ctx()}
 	tkns, err := lex.NewTokenizer().Tokenize(srcView)
 	assert.NoError(t, err)
 
@@ -86,5 +85,6 @@ func testExpectedFunctionParsing(
 	assert.Nil(t, perr)
 
 	assert.Equal(t, expectedStructure, function)
-	assert.Equal(t, expectedString, function.String(ctx))
+	strCtx := parse.StringContext{SourceContext: srcView.Ctx()}
+	assert.Equal(t, expectedString, function.String(&strCtx))
 }

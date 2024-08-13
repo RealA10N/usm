@@ -60,6 +60,7 @@ func testExpectedTypeDeclaration(t *testing.T, src, expected string) {
 	t.Helper()
 
 	srcView := source.NewSourceView(src)
+	ctx := srcView.Ctx()
 	tkns, err := lex.NewTokenizer().Tokenize(srcView)
 	assert.NoError(t, err)
 
@@ -68,5 +69,5 @@ func testExpectedTypeDeclaration(t *testing.T, src, expected string) {
 	typ, perr := p.Parse(&tknView)
 	assert.Nil(t, perr)
 
-	assert.Equal(t, expected, typ.String(source.SourceContext{ViewContext: srcView.Ctx()}))
+	assert.Equal(t, expected, typ.String(&parse.StringContext{SourceContext: ctx}))
 }

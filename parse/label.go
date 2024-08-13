@@ -13,8 +13,8 @@ func (n LabelNode) View() source.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 
-func (n LabelNode) String(ctx source.SourceContext) string {
-	return string(n.UnmanagedSourceView.Raw(ctx.ViewContext))
+func (n LabelNode) String(ctx *StringContext) string {
+	return string(n.UnmanagedSourceView.Raw(ctx.SourceContext))
 }
 
 type LabelParser struct{}

@@ -28,7 +28,7 @@ func (n InstructionNode) View() (v source.UnmanagedSourceView) {
 	return
 }
 
-func (n InstructionNode) stringLabels(ctx source.SourceContext) (s string) {
+func (n InstructionNode) stringLabels(ctx *StringContext) (s string) {
 	prefix := strings.Repeat("\t", max(0, ctx.Indent-1))
 	for _, label := range n.Labels {
 		s += prefix + label.String(ctx) + "\n"
@@ -36,7 +36,7 @@ func (n InstructionNode) stringLabels(ctx source.SourceContext) (s string) {
 	return
 }
 
-func (n InstructionNode) stringArguments(ctx source.SourceContext) (s string) {
+func (n InstructionNode) stringArguments(ctx *StringContext) (s string) {
 	for _, arg := range n.Arguments {
 		s += " " + arg.String(ctx)
 	}
@@ -44,7 +44,7 @@ func (n InstructionNode) stringArguments(ctx source.SourceContext) (s string) {
 	return
 }
 
-func (n InstructionNode) stringTargets(ctx source.SourceContext) (s string) {
+func (n InstructionNode) stringTargets(ctx *StringContext) (s string) {
 	if len(n.Targets) == 0 {
 		return
 	}
@@ -57,11 +57,11 @@ func (n InstructionNode) stringTargets(ctx source.SourceContext) (s string) {
 	return
 }
 
-func (n InstructionNode) String(ctx source.SourceContext) string {
+func (n InstructionNode) String(ctx *StringContext) string {
 	labels := n.stringLabels(ctx)
 	prefix := strings.Repeat("\t", ctx.Indent)
 	targets := n.stringTargets(ctx)
-	op := string(n.Operator.Raw(ctx.ViewContext))
+	op := string(n.Operator.Raw(ctx.SourceContext))
 	arguments := n.stringArguments(ctx)
 	return labels + prefix + targets + op + arguments + "\n"
 }
@@ -70,6 +70,12 @@ type InstructionParser struct {
 	LabelParser    LabelParser
 	RegisterParser RegisterParser
 	ArgumentParser ArgumentParser
+}
+
+func NewInstructionParser() InstructionParser {
+	return InstructionParser{
+		ArgumentParser: NewArgumentParser(),
+	}
 }
 
 func (InstructionParser) parseEquals(v *TokenView, node *InstructionNode) (err ParsingError) {
