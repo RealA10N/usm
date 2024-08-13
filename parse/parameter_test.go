@@ -46,9 +46,8 @@ func TestParameterRegEofError(t *testing.T) {
 	tkn := lex.Token{Type: lex.TypeToken, View: v}
 	view := parse.NewTokenView([]lex.Token{tkn})
 
-	expected := parse.UnexpectedTokenError{
+	expected := parse.EofError{
 		Expected: []lex.TokenType{lex.RegisterToken},
-		Actual:   tkn,
 	}
 
 	_, err := parse.ParameterParser{}.Parse(&view)
