@@ -43,6 +43,7 @@ type GlobalDeclarationParser struct {
 
 func NewGlobalDeclarationParser() GlobalDeclarationParser {
 	return GlobalDeclarationParser{
+		GlobalParser:         NewGlobalParser(),
 		ImmediateValueParser: NewImmediateValueParser(),
 	}
 }
