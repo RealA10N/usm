@@ -143,6 +143,44 @@ type $qux {
 	testExpectedFileFormat(t, src, src)
 }
 
+func TestFileInstructionWithImmediateSingleLine(t *testing.T) {
+	src := `func @foo {
+	%a = operator $struct { #1 #2 .a #3 { .b #4 } } %other
+	ret
+}
+`
+	expected := `func @foo {
+	%a = operator $struct {
+		#1
+		#2
+		.a #3
+		{
+			.b #4
+		}
+	} %other
+	ret
+}
+`
+
+	testExpectedFileFormat(t, src, expected)
+}
+
+func TestFileInstructionWithImmediateMultiLine(t *testing.T) {
+	src := `func @foo {
+	%a = operator $struct {
+		#1
+		#2
+		.a #3
+		{
+			.b #4
+		}
+	} %other
+	ret
+}
+`
+	testExpectedFileFormat(t, src, src)
+}
+
 // MARK: Helpers
 
 func testExpectedFileFormat(t *testing.T, src string, expected string) {
