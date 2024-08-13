@@ -47,7 +47,7 @@ func (FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) Par
 	return nil
 }
 
-func (p FunctionParser) parseBlockMaybe(v *TokenView, node *FunctionNode) {
+func (p FunctionParser) parseBlock(v *TokenView, node *FunctionNode) {
 	instructions, err := p.InstructionBlockParser.Parse(v)
 	if err == nil {
 		node.Instructions = &instructions
@@ -68,6 +68,6 @@ func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError
 		return
 	}
 
-	p.parseBlockMaybe(v, &node)
+	p.parseBlock(v, &node)
 	return
 }

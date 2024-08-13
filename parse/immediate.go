@@ -126,7 +126,7 @@ type ImmediateFieldParser struct {
 	ImmediateValueParser *ImmediateValueParser
 }
 
-func (p ImmediateFieldParser) tryParsingLabel(v *TokenView, node *ImmediateFieldNode) {
+func (p ImmediateFieldParser) parseLabel(v *TokenView, node *ImmediateFieldNode) {
 	label, err := p.LabelParser.Parse(v)
 	if err != nil {
 		return
@@ -136,7 +136,7 @@ func (p ImmediateFieldParser) tryParsingLabel(v *TokenView, node *ImmediateField
 }
 
 func (p ImmediateFieldParser) Parse(v *TokenView) (node ImmediateFieldNode, err ParsingError) {
-	p.tryParsingLabel(v, &node)
+	p.parseLabel(v, &node)
 
 	val, err := p.ImmediateValueParser.Parse(v)
 	if err != nil {
