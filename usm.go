@@ -34,7 +34,7 @@ func lexCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	_, ctx := view.Detach()
+	ctx := source.SourceContext{ViewContext: view.Ctx()}
 	for _, tkn := range tokens {
 		fmt.Printf("%s ", tkn.String(ctx))
 		if tkn.Type == lex.SeparatorToken {
@@ -57,11 +57,12 @@ func fmtCommand(cmd *cobra.Command, args []string) {
 	}
 
 	tknView := parse.NewTokenView(tokens)
+	ctx := source.SourceContext{ViewContext: view.Ctx()}
 	file, perr := parse.NewFileParser().Parse(&tknView)
 	if perr == nil {
-		fmt.Print(file.String(view.Ctx()))
+		fmt.Print(file.String(ctx))
 	} else {
-		fmt.Println(perr.Error(view.Ctx()))
+		fmt.Println(perr.Error(ctx))
 	}
 }
 
