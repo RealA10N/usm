@@ -122,7 +122,7 @@ func (n ImmediateFieldNode) String(ctx *StringContext) string {
 }
 
 type ImmediateFieldParser struct {
-	LabelParser          *LabelParser
+	LabelParser          Parser[LabelNode]
 	ImmediateValueParser *ImmediateValueParser
 }
 
@@ -210,7 +210,7 @@ func NewImmediateBlockParser(valueParser *ImmediateValueParser) *ImmediateBlockP
 
 func NewImmediateFieldParser(valueParser *ImmediateValueParser) *ImmediateFieldParser {
 	return &ImmediateFieldParser{
-		LabelParser:          &LabelParser{},
+		LabelParser:          NewLabelParser(),
 		ImmediateValueParser: valueParser,
 	}
 }

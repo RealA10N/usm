@@ -37,8 +37,14 @@ func (n TypeFieldNode) String(ctx *StringContext) (s string) {
 }
 
 type TypeFieldParser struct {
-	LabelParser LabelParser
+	LabelParser Parser[LabelNode]
 	TypeParser  TypeParser
+}
+
+func NewTypeFieldParser() Parser[TypeFieldNode] {
+	return TypeFieldParser{
+		LabelParser: NewLabelParser(),
+	}
 }
 
 func (p TypeFieldParser) Parse(v *TokenView) (node TypeFieldNode, err ParsingError) {

@@ -5,13 +5,14 @@ type ArgumentNode Node
 type ArgumentParser struct {
 	RegisterParser  RegisterParser
 	ImmediateParser *ImmediateParser
-	LabelParser     LabelParser
+	LabelParser     Parser[LabelNode]
 	GlobalParser    GlobalParser
 }
 
 func NewArgumentParser() ArgumentParser {
 	return ArgumentParser{
 		ImmediateParser: NewImmediateParser(),
+		LabelParser:     NewLabelParser(),
 	}
 }
 

@@ -32,13 +32,9 @@ type TypeDeclarationParser struct {
 func NewTypeDeclarationParser() TypeDeclarationParser {
 	return TypeDeclarationParser{
 		FieldsParser: BlockParser[TypeFieldNode]{
-			Parser: TypeFieldParser{},
+			Parser: NewTypeFieldParser(),
 		},
 	}
-}
-
-func (TypeDeclarationParser) String() string {
-	return "type declaration"
 }
 
 func (TypeDeclarationParser) parseTypeKeyword(v *TokenView, node *TypeDeclarationNode) (err ParsingError) {
