@@ -15,7 +15,7 @@ type UnexpectedTokenError struct {
 }
 
 func (e UnexpectedTokenError) Error(ctx source.SourceContext) string {
-	s := "got token " + e.Actual.String(ctx)
+	s := "unexpected token " + e.Actual.String(ctx)
 	if len(e.Expected) > 0 {
 		s += " (expected " + stringManyTokenTypes(e.Expected) + ")"
 	}
