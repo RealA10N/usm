@@ -7,10 +7,12 @@ import (
 type FileNode struct {
 	Functions []FunctionNode
 	Types     []TypeDeclarationNode
+	Constants []ConstDeclarationNode
+	Variables []VarDeclarationNode
 }
 
 func (n FileNode) countAllNodes() int {
-	return len(n.Functions) + len(n.Types)
+	return len(n.Functions) + len(n.Types) + len(n.Constants) + len(n.Variables)
 }
 
 func (n FileNode) collectAllNodes() (nodes []Node) {
@@ -20,6 +22,12 @@ func (n FileNode) collectAllNodes() (nodes []Node) {
 	}
 	for _, typ := range n.Types {
 		nodes = append(nodes, Node(typ))
+	}
+	for _, constant := range n.Constants {
+		nodes = append(nodes, Node(constant))
+	}
+	for _, variable := range n.Variables {
+		nodes = append(nodes, Node(variable))
 	}
 	return
 }
@@ -42,8 +50,19 @@ func (n FileNode) String(ctx *StringContext) (s string) {
 }
 
 type FileParser struct {
-	FunctionParser        FunctionParser
-	TypeDeclarationParser TypeDeclarationParser
+	FunctionParser         FunctionParser
+	TypeDeclarationParser  TypeDeclarationParser
+	ConstDeclarationParser Parser[ConstDeclarationNode]
+	VarDeclarationParser   Parser[VarDeclarationNode]
+}
+
+func NewFileParser() FileParser {
+	return FileParser{
+		FunctionParser:         NewFunctionParser(),
+		TypeDeclarationParser:  NewTypeDeclarationParser(),
+		ConstDeclarationParser: NewConstDeclarationParser(),
+		VarDeclarationParser:   NewVarDeclarationParser(),
+	}
 }
 
 func (p FileParser) parseNextNode(v *TokenView, node *FileNode) ParsingError {
@@ -70,6 +89,18 @@ func (p FileParser) parseNextNode(v *TokenView, node *FileNode) ParsingError {
 			return err
 		}
 		node.Types = append(node.Types, typ)
+	case lex.ConstKeywordToken:
+		constant, err := p.ConstDeclarationParser.Parse(v)
+		if err != nil {
+			return err
+		}
+		node.Constants = append(node.Constants, constant)
+	case lex.VarKeywordToken:
+		variable, err := p.VarDeclarationParser.Parse(v)
+		if err != nil {
+			return err
+		}
+		node.Variables = append(node.Variables, variable)
 	default:
 		panic("unreachable")
 	}
@@ -85,11 +116,4 @@ func (p FileParser) Parse(v *TokenView) (node FileNode, err ParsingError) {
 		}
 	}
 	return
-}
-
-func NewFileParser() FileParser {
-	return FileParser{
-		FunctionParser:        NewFunctionParser(),
-		TypeDeclarationParser: NewTypeDeclarationParser(),
-	}
 }

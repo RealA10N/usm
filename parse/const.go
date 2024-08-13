@@ -1,6 +1,9 @@
 package parse
 
-import "alon.kr/x/usm/lex"
+import (
+	"alon.kr/x/usm/lex"
+	"alon.kr/x/usm/source"
+)
 
 // MARK: Const
 
@@ -11,8 +14,21 @@ func NewConstParser() Parser[ConstNode] {
 }
 
 // MARK: Declaration
+// TODO: the ConstDeclaration and VarDeclaration are very similar, and there is
+// a lot of duplicated code.
 
-type ConstDeclarationNode = GlobalDeclarationNode
+type ConstDeclarationNode struct {
+	Declaration GlobalDeclarationNode
+}
+
+func (n ConstDeclarationNode) View() source.UnmanagedSourceView {
+	// TODO: not accurate, this does not include the 'const' keyword.
+	return n.Declaration.View()
+}
+
+func (n ConstDeclarationNode) String(ctx *StringContext) string {
+	return "const " + n.Declaration.String(ctx)
+}
 
 type ConstDeclarationParser struct {
 	ConstParser             Parser[ConstNode]
@@ -35,11 +51,11 @@ func (p ConstDeclarationParser) Parse(v *TokenView) (
 		return
 	}
 
-	global, err := p.GlobalDeclarationParser.Parse(v)
+	declaration, err := p.GlobalDeclarationParser.Parse(v)
 	if err != nil {
 		return
 	}
 
-	node = ConstDeclarationNode(global)
+	node = ConstDeclarationNode{Declaration: declaration}
 	return node, nil
 }

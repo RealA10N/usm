@@ -181,6 +181,22 @@ func TestFileInstructionWithImmediateMultiLine(t *testing.T) {
 	testExpectedFileFormat(t, src, src)
 }
 
+func TestFileWithGlobals(t *testing.T) {
+	src := `var @foo $struct {
+	#1
+	.b #2
+	#3
+}
+
+const @bar $struct {
+	.a #1
+	#2
+	.c #3
+}
+`
+	testExpectedFileFormat(t, src, src)
+}
+
 // MARK: Helpers
 
 func testExpectedFileFormat(t *testing.T, src string, expected string) {

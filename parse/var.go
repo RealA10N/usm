@@ -1,6 +1,9 @@
 package parse
 
-import "alon.kr/x/usm/lex"
+import (
+	"alon.kr/x/usm/lex"
+	"alon.kr/x/usm/source"
+)
 
 // MARK: Var
 
@@ -12,7 +15,18 @@ func NewVarParser() Parser[VarNode] {
 
 // MARK: Declaration
 
-type VarDeclarationNode = GlobalDeclarationNode
+type VarDeclarationNode struct {
+	Declaration GlobalDeclarationNode
+}
+
+func (n VarDeclarationNode) View() source.UnmanagedSourceView {
+	// TODO: not accurate, this does not include the 'var' keyword.
+	return n.Declaration.View()
+}
+
+func (n VarDeclarationNode) String(ctx *StringContext) string {
+	return "var " + n.Declaration.String(ctx)
+}
 
 type VarDeclarationParser struct {
 	VarParser               Parser[VarNode]
@@ -35,11 +49,11 @@ func (p VarDeclarationParser) Parse(v *TokenView) (
 		return
 	}
 
-	global, err := p.GlobalDeclarationParser.Parse(v)
+	declaration, err := p.GlobalDeclarationParser.Parse(v)
 	if err != nil {
 		return
 	}
 
-	node = VarDeclarationNode(global)
+	node = VarDeclarationNode{Declaration: declaration}
 	return node, nil
 }
