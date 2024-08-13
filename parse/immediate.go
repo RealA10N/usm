@@ -22,30 +22,74 @@ import (
 	"alon.kr/x/usm/source"
 )
 
-// MARK: Value
-// ImmediateValue Node & Parser are responsible for the #immediate token only.
+// MARK: Final Value
+// ImmediateFinalValue Node & Parser are responsible for the #immediate token only.
 
-type ImmediateValueNode struct {
+type ImmediateFinalValueNode struct {
 	source.UnmanagedSourceView
 }
 
-func (n ImmediateValueNode) View() source.UnmanagedSourceView {
+func (n ImmediateFinalValueNode) View() source.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 
-func (n ImmediateValueNode) String(ctx source.SourceContext) string {
+func (n ImmediateFinalValueNode) String(ctx source.SourceContext) string {
 	return string(n.UnmanagedSourceView.Raw(ctx))
 }
 
-type ImmediateValueParser struct{}
+type ImmediateFinalValueParser struct{}
 
-func (ImmediateValueParser) Parse(v *TokenView) (node ImmediateValueNode, err ParsingError) {
+func (ImmediateFinalValueParser) Parse(v *TokenView) (
+	node ImmediateFinalValueNode,
+	err ParsingError,
+) {
 	tkn, err := v.ConsumeToken(lex.ImmediateToken)
 	if err != nil {
 		return
 	}
 
-	return ImmediateValueNode{tkn.View}, nil
+	return ImmediateFinalValueNode{tkn.View}, nil
+}
+
+// MARK: Value
+
+// This is an interface of the type that appear as a value in a field of a custom
+// type initialization. It can be either
+// (1.) an ImmediateFinalValueNode (#1234), or
+// (2.) an ImmediateBlockNode ({ ... }).
+type ImmediateValueNode interface {
+	Node
+}
+
+type ImmediateValueParser struct {
+	ImmediateFinalValueParser ImmediateFinalValueParser
+	ImmediateBlockParser      ImmediateBlockParser
+}
+
+func NewImmediateValueParser() ImmediateValueParser {
+	return ImmediateValueParser{
+		ImmediateBlockParser: NewImmediateBlockParser(),
+	}
+}
+
+func (p ImmediateValueParser) Parse(v *TokenView) (
+	node ImmediateValueNode,
+	err ParsingError,
+) {
+	tkn, err := v.PeekToken(lex.ImmediateToken, lex.LeftCurlyBraceToken)
+	if err != nil {
+		// TODO: improve propagated error message
+		return
+	}
+
+	switch tkn.Type {
+	case lex.ImmediateToken:
+		return p.ImmediateFinalValueParser.Parse(v)
+	case lex.LeftCurlyBraceToken:
+		return p.ImmediateBlockParser.Parse(v)
+	default:
+		panic("unreachable")
+	}
 }
 
 // MARK: Field
@@ -69,9 +113,9 @@ func (n ImmediateFieldNode) View() source.UnmanagedSourceView {
 
 func (n ImmediateFieldNode) String(ctx source.SourceContext) string {
 	if n.Label != nil {
-		return n.Label.String(ctx) + " " + n.Value.String(ctx)
+		return "\t" + n.Label.String(ctx) + " " + n.Value.String(ctx) + "\n"
 	} else {
-		return n.Value.String(ctx)
+		return "\t" + n.Value.String(ctx) + "\n"
 	}
 }
 
@@ -101,23 +145,45 @@ func (p ImmediateFieldParser) Parse(v *TokenView) (node ImmediateFieldNode, err 
 	return
 }
 
+// MARK: Block
+
+type ImmediateBlockNode = BlockNode[ImmediateFieldNode]
+type ImmediateBlockParser = BlockParser[ImmediateFieldNode]
+
+func NewImmediateBlockParser() ImmediateBlockParser {
+	return ImmediateBlockParser{
+		Parser: ImmediateFieldParser{
+			LabelParser:          LabelParser{},
+			ImmediateValueParser: ImmediateValueParser{},
+		},
+	}
+}
+
 // MARK: Immediate
 
 type ImmediateNode struct {
 	Type  TypeNode
-	Value source.UnmanagedSourceView
+	Value ImmediateValueNode
 }
 
 func (n ImmediateNode) View() source.UnmanagedSourceView {
-	return n.Type.View().MergeEnd(n.Value)
+	return n.Type.View().MergeEnd(n.Value.View())
 }
 
 func (n ImmediateNode) String(ctx source.SourceContext) string {
-	return n.Type.String(ctx) + " " + string(n.Value.Raw(ctx))
+	return n.Type.String(ctx) + " " + n.Value.String(ctx)
 }
 
 type ImmediateParser struct {
-	TypeParser TypeParser
+	TypeParser           TypeParser
+	ImmediateValueParser ImmediateValueParser
+}
+
+func NewImmediateParser() ImmediateParser {
+	return ImmediateParser{
+		TypeParser:           TypeParser{},
+		ImmediateValueParser: NewImmediateValueParser(),
+	}
 }
 
 func (p ImmediateParser) Parse(v *TokenView) (node ImmediateNode, err ParsingError) {
@@ -126,14 +192,10 @@ func (p ImmediateParser) Parse(v *TokenView) (node ImmediateNode, err ParsingErr
 		return
 	}
 
-	tkn, err := v.ConsumeToken(lex.ImmediateToken)
+	node.Value, err = p.ImmediateValueParser.Parse(v)
 	if err != nil {
 		return
 	}
 
-	node.Value = tkn.View
 	return node, nil
 }
-
-// func (p ImmediateFieldParser) Parse(v *TokenView) (node ImmediateNode, err ParsingError) {
-// }

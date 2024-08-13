@@ -43,22 +43,25 @@ func TestInstructionParserMultipleTargets(t *testing.T) {
 
 func TestInstructionWithImmediateValuesAndLabel(t *testing.T) {
 	srcView := source.NewSourceView(".entry %res = add %x $32 #1 .arg")
+	unmanaged := srcView.Unmanaged()
 
 	expected := parse.InstructionNode{
-		Operator: srcView.Unmanaged().Subview(14, 17),
+		Operator: unmanaged.Subview(14, 17),
 		Arguments: []parse.ArgumentNode{
-			parse.RegisterNode{srcView.Unmanaged().Subview(18, 20)},
+			parse.RegisterNode{unmanaged.Subview(18, 20)},
 			parse.ImmediateNode{
-				Type:  parse.TypeNode{Identifier: srcView.Unmanaged().Subview(21, 24)},
-				Value: srcView.Unmanaged().Subview(25, 27),
+				Type: parse.TypeNode{Identifier: unmanaged.Subview(21, 24)},
+				Value: parse.ImmediateFinalValueNode{
+					unmanaged.Subview(25, 27),
+				},
 			},
-			parse.LabelNode{srcView.Unmanaged().Subview(28, 32)},
+			parse.LabelNode{unmanaged.Subview(28, 32)},
 		},
 		Targets: []parse.RegisterNode{
-			{srcView.Unmanaged().Subview(7, 11)},
+			{unmanaged.Subview(7, 11)},
 		},
 		Labels: []parse.LabelNode{
-			{srcView.Unmanaged().Subview(0, 6)},
+			{unmanaged.Subview(0, 6)},
 		},
 	}
 
