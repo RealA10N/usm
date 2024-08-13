@@ -36,7 +36,7 @@ func (n GlobalDeclarationNode) View() source.UnmanagedSourceView {
 // MARK: Parser
 
 type GlobalDeclarationParser struct {
-	GlobalParser         GlobalParser
+	GlobalParser         Parser[GlobalNode]
 	TypeParser           TypeParser
 	ImmediateValueParser *ImmediateValueParser
 }

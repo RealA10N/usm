@@ -6,7 +6,7 @@ type ArgumentParser struct {
 	RegisterParser  Parser[RegisterNode]
 	ImmediateParser *ImmediateParser
 	LabelParser     Parser[LabelNode]
-	GlobalParser    GlobalParser
+	GlobalParser    Parser[GlobalNode]
 }
 
 func NewArgumentParser() ArgumentParser {
@@ -14,6 +14,7 @@ func NewArgumentParser() ArgumentParser {
 		RegisterParser:  NewRegisterParser(),
 		ImmediateParser: NewImmediateParser(),
 		LabelParser:     NewLabelParser(),
+		GlobalParser:    NewGlobalParser(),
 	}
 }
 
