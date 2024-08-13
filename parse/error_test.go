@@ -64,3 +64,10 @@ func TestUnexpectedTokenMultipleExpected(t *testing.T) {
 	expected := `unexpected token <Register "%reg"> (expected <Equal>, <Type>)`
 	assert.Equal(t, expected, err.Error(v.Ctx()))
 }
+
+func TestGenericUnexpectedError(t *testing.T) {
+	v := source.NewSourceView("")
+	err := parse.GenericUnexpectedError{"argument"}
+	expected := "expected argument"
+	assert.Equal(t, expected, err.Error(v.Ctx()))
+}

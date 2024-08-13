@@ -46,6 +46,6 @@ type GenericUnexpectedError struct {
 	Expected string
 }
 
-func (e GenericUnexpectedError) Error(ctx source.SourceContext) string {
+func (e GenericUnexpectedError) Error(source.SourceContext) string {
 	return "expected " + e.Expected
 }
