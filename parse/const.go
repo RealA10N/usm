@@ -19,6 +19,13 @@ type ConstDeclarationParser struct {
 	GlobalDeclarationParser GlobalDeclarationParser
 }
 
+func NewConstDeclarationParser() Parser[ConstDeclarationNode] {
+	return ConstDeclarationParser{
+		ConstParser:             NewConstParser(),
+		GlobalDeclarationParser: NewGlobalDeclarationParser(),
+	}
+}
+
 func (p ConstDeclarationParser) Parse(v *TokenView) (
 	node ConstDeclarationNode,
 	err ParsingError,
