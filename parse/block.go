@@ -45,7 +45,7 @@ func (p BlockParser[NodeT]) Parse(v *TokenView) (block BlockNode[NodeT], err Par
 	}
 
 	block.Start = leftCurly.View.Start
-	block.Nodes = ParseMany(p.Parser, v)
+	block.Nodes, _ = ParseManyIgnoreSeparators(p.Parser, v)
 
 	rightCurly, err := v.ConsumeTokenIgnoreSeparator(lex.RightCurlyBraceToken)
 	if err != nil {

@@ -40,7 +40,7 @@ func TestInstructionWithImmediateValuesAndLabel(t *testing.T) {
 		Arguments: []parse.ArgumentNode{
 			parse.RegisterNode{unmanaged.Subview(18, 20)},
 			parse.ImmediateNode{
-				Type: parse.TypeNode{Identifier: unmanaged.Subview(21, 24)},
+				Type: unmanaged.Subview(21, 24),
 				Value: parse.ImmediateFinalValueNode{
 					unmanaged.Subview(25, 27),
 				},

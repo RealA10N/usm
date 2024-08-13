@@ -37,6 +37,22 @@ func TestImmediateBlockNested(t *testing.T) {
 	testExpectedImmediate(t, src, expected)
 }
 
+func TestImmediateMultipleNested(t *testing.T) {
+	src := `$outer {
+	.a #1337
+	#1338
+	{
+		#1339
+		.b #1340
+		#1341
+	}
+	.c #1342
+	#1343
+}`
+
+	testExpectedImmediate(t, src, src)
+}
+
 // MARK: Helpers
 
 func testExpectedImmediate(t *testing.T, src, expected string) {

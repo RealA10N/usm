@@ -155,28 +155,30 @@ type ImmediateBlockParser = BlockParser[ImmediateFieldNode]
 // MARK: Immediate
 
 type ImmediateNode struct {
-	Type  TypeNode
+	Type  source.UnmanagedSourceView
 	Value ImmediateValueNode
 }
 
 func (n ImmediateNode) View() source.UnmanagedSourceView {
-	return n.Type.View().MergeEnd(n.Value.View())
+	return n.Type.MergeEnd(n.Value.View())
 }
 
 func (n ImmediateNode) String(ctx *StringContext) string {
-	return n.Type.String(ctx) + " " + n.Value.String(ctx)
+	typ := string(n.Type.Raw(ctx.SourceContext))
+	val := n.Value.String(ctx)
+	return typ + " " + val
 }
 
 type ImmediateParser struct {
-	TypeParser           *TypeParser
 	ImmediateValueParser *ImmediateValueParser
 }
 
 func (p ImmediateParser) Parse(v *TokenView) (node ImmediateNode, err ParsingError) {
-	node.Type, err = p.TypeParser.Parse(v)
+	tkn, err := v.ConsumeToken(lex.TypeToken)
 	if err != nil {
 		return
 	}
+	node.Type = tkn.View
 
 	node.Value, err = p.ImmediateValueParser.Parse(v)
 	if err != nil {
@@ -190,7 +192,6 @@ func (p ImmediateParser) Parse(v *TokenView) (node ImmediateNode, err ParsingErr
 
 func NewImmediateParser() *ImmediateParser {
 	return &ImmediateParser{
-		TypeParser:           &TypeParser{},
 		ImmediateValueParser: NewImmediateValueParser(),
 	}
 }
