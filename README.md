@@ -6,27 +6,25 @@
 
 One Universal assembly language to rule them all.
 
-<!-- mdformat-toc start --slug=github --maxlevel=6 --minlevel=2 -->
+<!-- mdformat-toc start --slug=github --maxlevel=3 --minlevel=2 -->
 
-- [Registers](#registers)
-- [Types](#types)
-  - [Standard Integer Types](#standard-integer-types)
-    - [Type Descriptors](#type-descriptors)
-  - [Custom Types](#custom-types)
-    - [Function Pointer Types](#function-pointer-types)
-- [Functions](#functions)
-- [Instructions](#instructions)
-  - [Expressions](#expressions)
-- [Immediate Values](#immediate-values)
-  - [Integer Immediate Value](#integer-immediate-value)
-  - [Character Immediate Value](#character-immediate-value)
-  - [Pointer Immediate Value](#pointer-immediate-value)
-- [Globals](#globals)
-  - [Global Initialization](#global-initialization)
+- [USM Language Reference](#usm-language-reference)
+  - [Registers](#registers)
+  - [Types](#types)
+  - [Functions](#functions)
+  - [Instructions](#instructions)
+  - [Immediate Values](#immediate-values)
+  - [Globals](#globals)
+- [Similar Projects](#similar-projects)
+  - [LLVM](#llvm)
+  - [QBE](#qbe)
+  - [MIR](#mir)
 
 <!-- mdformat-toc end -->
 
-## Registers<a name="registers"></a>
+## USM Language Reference<a name="usm-language-reference"></a>
+
+### Registers<a name="registers"></a>
 
 A register is a location that can store values of a certain type. Registers are
 defined and bounded to the context of a single function. The first assignment of
@@ -41,11 +39,11 @@ whitespace[^1] unicode characters, prefixed by `%`.
 Registers are not necessarily stored in memory, and thus can't be directly
 dereferenced.
 
-## Types<a name="types"></a>
+### Types<a name="types"></a>
 
 Each value in USM has a distinct type. A type name is prefixed with `$`.
 
-### Standard Integer Types<a name="standard-integer-types"></a>
+#### Standard Integer Types<a name="standard-integer-types"></a>
 
 For any strictly positive integer `n`, there exists a builtin standard integer
 type named `$<n>` where `<n>` is the decimal representation of `n`. The `$<n>`
@@ -57,7 +55,7 @@ unsigned values.
 %integer = $32
 ```
 
-#### Type Descriptors<a name="type-descriptors"></a>
+##### Type Descriptors<a name="type-descriptors"></a>
 
 The `*` descriptor represents a pointer. `*<n>` is a nested pointer (pointer of
 a pointer of a...) exactly `n` times, where `<n>` is the decimal representation
@@ -73,7 +71,7 @@ pointer to an array of 100 bytes, and `$8 * ^100` is an array of 100 pointers.
 The number of descriptors si not bounded. e.g. `$8 * ^100 *` is a pointer to an
 array of pointers.
 
-### Custom Types<a name="custom-types"></a>
+#### Custom Types<a name="custom-types"></a>
 
 A custom type declaration begins with the top level token `type`. Then, follows
 the new type name, prefixed with `$` and a non-digit character. After that comes
@@ -109,7 +107,7 @@ type $peopleArray { $person * ^100 }
 > The type definitions above will be used in examples throughout the
 > specification.
 
-#### Function Pointer Types<a name="function-pointer-types"></a>
+##### Function Pointer Types<a name="function-pointer-types"></a>
 
 If a type field contains the `@` token, it is treaded as a function pointer. The
 (possibly empty) type list before the `@` token represents the function return
@@ -127,7 +125,7 @@ type $funcDescriptor {
 }
 ```
 
-## Functions<a name="functions"></a>
+### Functions<a name="functions"></a>
 
 A function declaration always begins with the top level token `func`. Then
 follows a list of (possibly zero) return types, than the function global name
@@ -156,7 +154,7 @@ func $32 @add $32 %a $32 %b {
 }
 ```
 
-## Instructions<a name="instructions"></a>
+### Instructions<a name="instructions"></a>
 
 An instruction consists of (possibly zero) target registers, and an expression.
 The return types from an expression is always known, and should match the target
@@ -194,7 +192,7 @@ are ignored, the `=` token should be emitted.
 divmod %a %b
 ```
 
-### Expressions<a name="expressions"></a>
+#### Expressions<a name="expressions"></a>
 
 There are two distinct expression types: an *operator expression*, and an
 *immediate values expression*.
@@ -223,11 +221,11 @@ immediate values.
           imm #0     imm #1
 ```
 
-## Immediate Values<a name="immediate-values"></a>
+### Immediate Values<a name="immediate-values"></a>
 
 Immediate values are used to initialize registers and globals.
 
-### Integer Immediate Value<a name="integer-immediate-value"></a>
+#### Integer Immediate Value<a name="integer-immediate-value"></a>
 
 Initialize an integer value using the syntax `#<n><b>` where `<b>` is replaced
 with the immediate base (as described below), and `<n>` is replaced with a
@@ -251,44 +249,56 @@ func @main {
 }
 ```
 
-### Character Immediate Value<a name="character-immediate-value"></a>
+#### Character Immediate Value<a name="character-immediate-value"></a>
 
 For convenience, an initialization of integers can be also done via a unicode
 character. Using the syntax `#'<c>'`, where `<c>` is replaced by a unicode
 character, the immediate value will be translated to the appropriate
 [unicode code point](https://en.wikipedia.org/wiki/Code_point#In_Unicode).
 
-### Pointer Immediate Value<a name="pointer-immediate-value"></a>
+#### Pointer Immediate Value<a name="pointer-immediate-value"></a>
 
 A pointer type can be only explicitly initialized to the zero immediate `#0` (or
 to a global with the same type).
 
-## Globals<a name="globals"></a>
+### Globals<a name="globals"></a>
 
-It is possible to declare a global without initialization. In that case the
-initial value of the global is undefined.
+There are two types of globals
+
+1. Constants (`const`), which are not modifiable, and
+2. Variables (`var`), which are modifiable.
+
+It is possible to declare a global without initialization. In that case, the
+compiler should expect to find the reference to symbol in another object file
+that should be eventually linked.
 
 ```usm
-glob $person @author  ; undefined value
+var @author $person
+const @author $32
 ```
 
-### Global Initialization<a name="global-initialization"></a>
+#### Global Initialization<a name="global-initialization"></a>
 
 Global initialization is done by initializing the global underlying standard
-types, in order of declaration of the global type. The initialization should be
+types, in order of declaration of the global type. If the underlying type
+consists of a single type (an integer, or an alias to an integer), then
+initialization can be done by
+
 provided after the declaration of the global and the `=` token.
 
 If not all fields of the global are initialized (possibly, none), the
 uninitialized fields are implicitly initialized to zero.
 
 ```usm
-glob $32 @authorAge = #1337
+const @authorAge $32 #1337
 
-glob $8 ^5 @authorName = #'A' #'l' #'o' #'n'
+const @authorName $8 ^5 { #'A' #'l' #'o' #'n' }
+; last cell is implicitly initialized to zero
 
-glob $person @author =
+var $person @author {
     @authorName
     @authorAge            ; .isMale is implicitly initialized to #0
+}
 ```
 
 Using type labels, it is possible to start initialize fields from a different
@@ -310,6 +320,36 @@ glob $person @author =
 If a type field is initialized more than once, the value of the whole structure
 is undefined (that is, including other fields).
 
+## Similar Projects<a name="similar-projects"></a>
+
+### LLVM<a name="llvm"></a>
+
+[LLVM] is a fully fledge compiler backend, originally developed by Apple and
+used in the *clang* C/C++ compiler and the rust's compiler *rustc*.
+
+### QBE<a name="qbe"></a>
+
+[QBE] (Quick Backend) is a compiler backend that
+
+> aims to provide 70% of the performance of industrial optimizing compilers in
+> 10% of the code
+
+It's goal is very similar to USM's goal. It aims to be a hobby-scale, small
+backend. However, it still differs from USM:
+
+- QBE is not type safe. It also lacks in it's custom type definition support.
+- QBE is less flexible: it defines a very limited instruction set and only 4
+  basic types.
+- QBE is not an assembler: it generates assembler textual code. It QBE slower,
+  not self contained, and harder to port and use for cross compilation.
+
+### MIR<a name="mir"></a>
+
+[MIR] (Medium Internal Representation) is a lightweight IR backend, which mainly
+used to implement JITs.
+
+It looks mature and decent in terms of generated code, and speed.
+
 [^1]: A unicode whitespace character is one that has the ["WSpace=Y" property].
     For reference, see [Go's unicode.IsSpace standard function].
 
@@ -317,4 +357,7 @@ is undefined (that is, including other fields).
 [ci]: https://github.com/RealA10N/usm/actions/workflows/ci.yml/badge.svg
 [codecov]: https://codecov.io/gh/RealA10N/usm/graph/badge.svg?token=ZXVrTG9OxC
 [go's unicode.isspace standard function]: https://pkg.go.dev/unicode#IsSpace
+[llvm]: https://github.com/llvm/llvm-project
+[mir]: https://github.com/vnmakarov/mir
 [pre-commit.ci status]: https://results.pre-commit.ci/badge/github/RealA10N/usm/main.svg
+[qbe]: https://c9x.me/compile/
