@@ -13,7 +13,7 @@ import (
 // The purpose of the test is to verify the structure of "simple" source file.
 func TestSingleFunction(t *testing.T) {
 	src := `func $32 @add $32 %x $32 %y {
-	%res = add %x %y
+	$32 %res = add %x %y
 	ret %res
 }`
 	v := source.NewSourceView(src)
@@ -41,22 +41,25 @@ func TestSingleFunction(t *testing.T) {
 					},
 				},
 				Instructions: &parse.BlockNode[parse.InstructionNode]{
-					UnmanagedSourceView: srcView.Subview(28, 69),
+					UnmanagedSourceView: srcView.Subview(28, 63),
 					Nodes: []parse.InstructionNode{
 						{
-							Operator: srcView.Subview(38, 41),
+							Operator: srcView.Subview(42, 45),
 							Arguments: []parse.ArgumentNode{
-								parse.RegisterNode{srcView.Subview(42, 44)},
-								parse.RegisterNode{srcView.Subview(45, 47)},
+								parse.RegisterNode{srcView.Subview(46, 48)},
+								parse.RegisterNode{srcView.Subview(49, 51)},
 							},
-							Targets: []parse.RegisterNode{
-								{srcView.Subview(31, 35)},
+							Targets: []parse.ParameterNode{
+								{
+									Type:     parse.TypeNode{Identifier: srcView.Subview(31, 34)},
+									Register: parse.RegisterNode{srcView.Subview(35, 39)},
+								},
 							},
 						},
 						{
-							Operator: srcView.Subview(49, 52),
+							Operator: srcView.Subview(53, 56),
 							Arguments: []parse.ArgumentNode{
-								parse.RegisterNode{srcView.Subview(53, 57)},
+								parse.RegisterNode{srcView.Subview(57, 61)},
 							},
 						},
 					},
