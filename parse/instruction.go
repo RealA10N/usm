@@ -10,7 +10,7 @@ import (
 type InstructionNode struct {
 	Operator  source.UnmanagedSourceView
 	Arguments []ArgumentNode
-	Targets   []RegisterNode
+	Targets   []ParameterNode
 	Labels    []LabelNode
 }
 
@@ -68,14 +68,14 @@ func (n InstructionNode) String(ctx *StringContext) string {
 
 type InstructionParser struct {
 	LabelParser    Parser[LabelNode]
-	RegisterParser Parser[RegisterNode]
+	RegisterParser Parser[ParameterNode]
 	ArgumentParser ArgumentParser
 }
 
 func NewInstructionParser() InstructionParser {
 	return InstructionParser{
 		LabelParser:    NewLabelParser(),
-		RegisterParser: NewRegisterParser(),
+		RegisterParser: NewParameterParser(),
 		ArgumentParser: NewArgumentParser(),
 	}
 }
