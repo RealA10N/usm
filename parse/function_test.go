@@ -41,27 +41,30 @@ func TestFunctionOneLineZeroInstructions(t *testing.T) {
 }
 
 func TestFunctionOneLine(t *testing.T) {
-	src := "func @foo { %0 = bar }"
+	src := "func @foo { $32 %0 = bar }"
 	expected := parse.FunctionNode{
-		UnmanagedSourceView: source.UnmanagedSourceView{Start: 0, End: 22},
+		UnmanagedSourceView: source.UnmanagedSourceView{Start: 0, End: 26},
 		Signature: parse.FunctionSignatureNode{
 			UnmanagedSourceView: source.UnmanagedSourceView{Start: 5, End: 9},
 			Identifier:          source.UnmanagedSourceView{Start: 5, End: 9},
 		},
 		Instructions: &parse.BlockNode[parse.InstructionNode]{
-			UnmanagedSourceView: source.UnmanagedSourceView{Start: 10, End: 22},
+			UnmanagedSourceView: source.UnmanagedSourceView{Start: 10, End: 26},
 			Nodes: []parse.InstructionNode{
 				{
-					Operator: source.UnmanagedSourceView{Start: 17, End: 20},
-					Targets: []parse.RegisterNode{
-						{source.UnmanagedSourceView{Start: 12, End: 14}},
+					Operator: source.UnmanagedSourceView{Start: 21, End: 24},
+					Targets: []parse.ParameterNode{
+						{
+							Type:     parse.TypeNode{Identifier: source.UnmanagedSourceView{Start: 12, End: 15}},
+							Register: parse.RegisterNode{source.UnmanagedSourceView{Start: 16, End: 18}},
+						},
 					},
 				},
 			},
 		},
 	}
 
-	expectedString := "func @foo {\n\t%0 = bar\n}"
+	expectedString := "func @foo {\n\t$32 %0 = bar\n}"
 
 	testExpectedFunctionParsing(t, src, expected, expectedString)
 }
