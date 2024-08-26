@@ -42,21 +42,21 @@ func TestInstructionWithImmediateValuesAndLabel(t *testing.T) {
 	unmanaged := srcView.Unmanaged()
 
 	expected := parse.InstructionNode{
-		Operator: unmanaged.Subview(14, 17),
+		Operator: unmanaged.Subview(18, 21),
 		Arguments: []parse.ArgumentNode{
-			parse.RegisterNode{unmanaged.Subview(18, 20)},
+			parse.RegisterNode{unmanaged.Subview(22, 24)},
 			parse.ImmediateNode{
-				Type: unmanaged.Subview(21, 24),
+				Type: unmanaged.Subview(25, 28),
 				Value: parse.ImmediateFinalValueNode{
-					unmanaged.Subview(25, 27),
+					unmanaged.Subview(29, 31),
 				},
 			},
-			parse.LabelNode{unmanaged.Subview(28, 32)},
+			parse.LabelNode{unmanaged.Subview(32, 36)},
 		},
 		Targets: []parse.ParameterNode{
 			{
-				Type:     parse.TypeNode{Identifier: unmanaged.Subview(14, 17)},
-				Register: parse.RegisterNode{unmanaged.Subview(18, 20)},
+				Type:     parse.TypeNode{Identifier: unmanaged.Subview(7, 10)},
+				Register: parse.RegisterNode{unmanaged.Subview(11, 15)},
 			},
 		},
 		Labels: []parse.LabelNode{
@@ -64,7 +64,7 @@ func TestInstructionWithImmediateValuesAndLabel(t *testing.T) {
 		},
 	}
 
-	expectedString := ".entry\n\t%res = add %x $32 #1 .arg\n"
+	expectedString := ".entry\n\t$32 %res = add %x $32 #1 .arg\n"
 
 	testExpectedInstruction(t, srcView, expected, expectedString)
 }

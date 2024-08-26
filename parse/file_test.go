@@ -100,11 +100,11 @@ func TestFileWithLabels(t *testing.T) {
 func $32 @fib $i32 %n {
 
 	jle %n $32 #1 .return
-    %n = dec %n
-    %a = call @fib %n
-    %n = dec %n
-		%b = call @fib %n
-    %n = add %a %b
+$32    %n = dec %n
+   $32 %a = call @fib %n
+    $32 %n = dec %n
+$32		%b = call @fib %n
+   $32 %n = add %a %b
 
 .return ret %n
 
@@ -113,11 +113,11 @@ func $32 @fib $i32 %n {
 
 	expected := `func $32 @fib $i32 %n {
 	jle %n $32 #1 .return
-	%n = dec %n
-	%a = call @fib %n
-	%n = dec %n
-	%b = call @fib %n
-	%n = add %a %b
+	$32 %n = dec %n
+	$32 %a = call @fib %n
+	$32 %n = dec %n
+	$32 %b = call @fib %n
+	$32 %n = add %a %b
 .return
 	ret %n
 }
