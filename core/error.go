@@ -17,21 +17,24 @@ type UsmError interface {
 	Location() UnmanagedSourceView
 }
 
-// MARK: InternalError
+// MARK: GenericError
 
-type InternalError struct {
+// GenericError is a primitive UsmError implementation that uses strings that
+// are known in compile time for the error message and the hint.
+type GenericError struct {
 	ErrorMessage  string
+	HintMessage   string
 	ErrorLocation UnmanagedSourceView
 }
 
-func (e InternalError) Error(SourceContext) string {
+func (e GenericError) Error(SourceContext) string {
 	return e.ErrorMessage
 }
 
-func (InternalError) Hint(SourceContext) string {
-	return ""
+func (e GenericError) Hint(SourceContext) string {
+	return e.HintMessage
 }
 
-func (e InternalError) Location() UnmanagedSourceView {
+func (e GenericError) Location() UnmanagedSourceView {
 	return e.ErrorLocation
 }
