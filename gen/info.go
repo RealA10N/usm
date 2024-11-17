@@ -27,6 +27,8 @@ type ArchInfo struct {
 // over the AST nodes.
 type GenerationContext struct {
 	ArchInfo
+	core.SourceContext
+
 	Types     []TypeInfo
 	Registers []RegisterInfo
 
