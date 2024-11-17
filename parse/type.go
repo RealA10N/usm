@@ -59,6 +59,7 @@ func (p TypeParser) parseDecorator(v *TokenView, node *TypeNode) (err ParsingErr
 	case lex.RepeatToken:
 		decorator.Type = RepeatTypeDecorator
 	default:
+		// TODO: replace with error message (perhaps internal error?)
 		panic("unreachable")
 	}
 
