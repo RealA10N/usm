@@ -148,12 +148,12 @@ type $qux {
 
 func TestFileInstructionWithImmediateSingleLine(t *testing.T) {
 	src := `func @foo {
-	%a = operator $struct { #1 #2 .a #3 { .b #4 } } %other
+	$64 %a = operator $struct { #1 #2 .a #3 { .b #4 } } %other
 	ret
 }
 `
 	expected := `func @foo {
-	%a = operator $struct {
+	$64 %a = operator $struct {
 		#1
 		#2
 		.a #3
@@ -170,7 +170,7 @@ func TestFileInstructionWithImmediateSingleLine(t *testing.T) {
 
 func TestFileInstructionWithImmediateMultiLine(t *testing.T) {
 	src := `func @foo {
-	%a = operator $struct {
+	$64 %a = operator $struct {
 		#1
 		#2
 		.a #3
