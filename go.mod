@@ -1,6 +1,6 @@
 module alon.kr/x/usm
 
-go 1.22.5
+go 1.23
 
 require (
 	alon.kr/x/view v0.0.0-20240812125912-b9db70734a97

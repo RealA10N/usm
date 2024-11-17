@@ -1,5 +1,3 @@
-export GOEXPERIMENT := "rangefunc"
-
 # Determine which Go executable to use.
 # 'richgo' is a wrapper around the 'go' executable that prints more colorful
 # information and test summary. We use richgo if it is avaliable.
