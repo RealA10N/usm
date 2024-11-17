@@ -9,8 +9,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type AddInstructionDef struct{}
+
+func (AddInstructionDef) HasSideEffects() bool { return false }
+
 func TestInstructionSetNoErr(t *testing.T) {
-	type AddInstructionDef struct{}
 	addInst := &AddInstructionDef{}
 
 	instDef := gen.InstructionDef{
