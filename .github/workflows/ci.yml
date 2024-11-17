@@ -23,7 +23,7 @@ jobs:
         run: just ci
 
       - name: Test
-        run: just coverage
+        run: just cover
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
