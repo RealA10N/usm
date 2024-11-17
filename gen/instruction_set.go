@@ -42,7 +42,7 @@ func NewInstructionSet(instructionDefs []InstructionDef) InstructionSet {
 		}
 	}
 
-	return InstructionSet{faststringmap.NewMap[InstructionBuilder](entries)}
+	return InstructionSet{faststringmap.NewMap(entries)}
 }
 
 // Convert an instruction parsed node into an instruction that is in the
