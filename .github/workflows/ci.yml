@@ -19,9 +19,6 @@ jobs:
       - name: Set up Just
         uses: extractions/setup-just@v2
 
-      - name: Install Dependencies
-        run: just install
-
       - name: Test
         run: just cover
 
