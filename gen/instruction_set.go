@@ -9,7 +9,9 @@ import (
 )
 
 // TODO: add basic interface methods for instruction.
-type Instruction interface{}
+type Instruction interface {
+	HasSideEffects() bool
+}
 
 type InstructionBuilder func(
 	targets []parse.ParameterNode,
