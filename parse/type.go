@@ -7,21 +7,9 @@ import (
 
 // MARK: Node
 
-type TypeDecoratorType uint8
-
-const (
-	PointerTypeDecorator TypeDecoratorType = iota
-	RepeatTypeDecorator
-)
-
-type TypeDecorator struct {
-	core.UnmanagedSourceView
-	Type TypeDecoratorType
-}
-
 type TypeNode struct {
 	Identifier core.UnmanagedSourceView
-	Decorators []TypeDecorator
+	Decorators []TypeDecoratorNode
 }
 
 func (n TypeNode) View() core.UnmanagedSourceView {
@@ -36,35 +24,16 @@ func (n TypeNode) View() core.UnmanagedSourceView {
 
 func (n TypeNode) String(ctx *StringContext) string {
 	s := string(n.Identifier.Raw(ctx.SourceContext))
-	for _, decorator := range n.Decorators {
-		s += " " + string(decorator.Raw(ctx.SourceContext))
+	for _, dec := range n.Decorators {
+		s += " " + dec.String(ctx)
 	}
 	return s
 }
 
 // MARK: Parser
 
-type TypeParser struct{}
-
-func (p TypeParser) parseDecorator(v *TokenView, node *TypeNode) (err ParsingError) {
-	tkn, err := v.ConsumeToken(lex.PointerToken, lex.RepeatToken)
-	if err != nil {
-		return
-	}
-
-	decorator := TypeDecorator{UnmanagedSourceView: tkn.View}
-	switch tkn.Type {
-	case lex.PointerToken:
-		decorator.Type = PointerTypeDecorator
-	case lex.RepeatToken:
-		decorator.Type = RepeatTypeDecorator
-	default:
-		// TODO: replace with error message (perhaps internal error?)
-		panic("unreachable")
-	}
-
-	node.Decorators = append(node.Decorators, decorator)
-	return nil
+type TypeParser struct {
+	TypeDecoratorParser
 }
 
 func (p TypeParser) Parse(v *TokenView) (node TypeNode, err ParsingError) {
@@ -74,8 +43,16 @@ func (p TypeParser) Parse(v *TokenView) (node TypeNode, err ParsingError) {
 	}
 
 	node.Identifier = tkn.View
+
 	for err == nil {
-		err = p.parseDecorator(v, &node)
+		// TODO: there is not distinction here between an error in the decorator parsing
+		// and the end of available decorators. In particular, any decorator parsing error
+		// will get swallowed here and not shown to the user.
+		var decorator TypeDecoratorNode
+		decorator, err = p.TypeDecoratorParser.Parse(v)
+		if err == nil {
+			node.Decorators = append(node.Decorators, decorator)
+		}
 	}
 
 	return node, nil

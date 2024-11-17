@@ -47,7 +47,7 @@ func (TypeDeclarationParser) parseTypeKeyword(v *TokenView, node *TypeDeclaratio
 	return
 }
 
-func (p TypeDeclarationParser) parseIdentifier(v *TokenView, node *TypeDeclarationNode) (err ParsingError) {
+func (TypeDeclarationParser) parseIdentifier(v *TokenView, node *TypeDeclarationNode) (err ParsingError) {
 	id, err := v.ConsumeToken(lex.TypeToken)
 	if err != nil {
 		return
