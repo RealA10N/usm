@@ -3,7 +3,7 @@ package lex
 import (
 	"errors"
 
-	"alon.kr/x/usm/source"
+	"alon.kr/x/usm/core"
 )
 
 type KeywordTokenizer struct {
@@ -11,8 +11,8 @@ type KeywordTokenizer struct {
 	Token   TokenType
 }
 
-func (t KeywordTokenizer) Tokenize(txt *source.SourceView) (tkn Token, err error) {
-	keywordView := source.NewSourceView(t.Keyword)
+func (t KeywordTokenizer) Tokenize(txt *core.SourceView) (tkn Token, err error) {
+	keywordView := core.NewSourceView(t.Keyword)
 	ok := txt.HasPrefix(keywordView)
 	if !ok {
 		err = errors.New("token not matched")

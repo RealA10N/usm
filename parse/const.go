@@ -1,8 +1,8 @@
 package parse
 
 import (
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/source"
 )
 
 // MARK: Const
@@ -21,7 +21,7 @@ type ConstDeclarationNode struct {
 	Declaration GlobalDeclarationNode
 }
 
-func (n ConstDeclarationNode) View() source.UnmanagedSourceView {
+func (n ConstDeclarationNode) View() core.UnmanagedSourceView {
 	// TODO: not accurate, this does not include the 'const' keyword.
 	return n.Declaration.View()
 }

@@ -3,7 +3,7 @@ package parse
 import (
 	"strings"
 
-	"alon.kr/x/usm/source"
+	"alon.kr/x/usm/core"
 )
 
 type TypeFieldNode struct {
@@ -11,7 +11,7 @@ type TypeFieldNode struct {
 	Labels []LabelNode
 }
 
-func (n TypeFieldNode) View() source.UnmanagedSourceView {
+func (n TypeFieldNode) View() core.UnmanagedSourceView {
 	v := n.Type.View()
 
 	if len(n.Labels) > 0 {

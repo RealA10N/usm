@@ -3,18 +3,18 @@ package parse
 import (
 	"strings"
 
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/source"
 )
 
 type InstructionNode struct {
-	Operator  source.UnmanagedSourceView
+	Operator  core.UnmanagedSourceView
 	Arguments []ArgumentNode
 	Targets   []ParameterNode
 	Labels    []LabelNode
 }
 
-func (n InstructionNode) View() (v source.UnmanagedSourceView) {
+func (n InstructionNode) View() (v core.UnmanagedSourceView) {
 	v = n.Operator
 
 	if len(n.Targets) > 0 {

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/parse"
-	"alon.kr/x/usm/source"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +22,7 @@ func setInputSource(cmd *cobra.Command, args []string) error {
 }
 
 func lexCommand(cmd *cobra.Command, args []string) {
-	view, err := source.ReadSource(cmd.InOrStdin())
+	view, err := core.ReadSource(cmd.InOrStdin())
 	if err != nil {
 		fmt.Printf("Error reading source: %v\n", err)
 		os.Exit(1)
@@ -43,7 +43,7 @@ func lexCommand(cmd *cobra.Command, args []string) {
 }
 
 func fmtCommand(cmd *cobra.Command, args []string) {
-	view, err := source.ReadSource(cmd.InOrStdin())
+	view, err := core.ReadSource(cmd.InOrStdin())
 	if err != nil {
 		fmt.Printf("Error reading source: %v\n", err)
 		os.Exit(1)

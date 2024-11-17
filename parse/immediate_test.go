@@ -3,9 +3,9 @@ package parse_test
 import (
 	"testing"
 
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/parse"
-	"alon.kr/x/usm/source"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -58,7 +58,7 @@ func TestImmediateMultipleNested(t *testing.T) {
 func testExpectedImmediate(t *testing.T, src, expected string) {
 	t.Helper()
 
-	srcView := source.NewSourceView(src)
+	srcView := core.NewSourceView(src)
 	tkns, err := lex.NewTokenizer().Tokenize(srcView)
 	assert.NoError(t, err)
 

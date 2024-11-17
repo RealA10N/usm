@@ -3,9 +3,8 @@ package lex_test
 import (
 	"testing"
 
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/source"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,7 +13,7 @@ type tknDesc struct {
 	typ lex.TokenType
 }
 
-func assertExpectedTokens(t *testing.T, expected []tknDesc, actual []lex.Token, ctx source.SourceContext) {
+func assertExpectedTokens(t *testing.T, expected []tknDesc, actual []lex.Token, ctx core.SourceContext) {
 	assert.Len(t, actual, len(expected))
 	for i, act := range actual {
 		exp := expected[i]
@@ -54,7 +53,7 @@ func TestAddOne(t *testing.T) {
 		{"", lex.SeparatorToken},
 	}
 
-	view := source.NewSourceView(code)
+	view := core.NewSourceView(code)
 	_, ctx := view.Detach()
 	tkns, err := lex.NewTokenizer().Tokenize(view)
 
@@ -181,7 +180,7 @@ func TestPow(t *testing.T) {
 		{"}", lex.RightCurlyBraceToken},
 	}
 
-	view := source.NewSourceView(code)
+	view := core.NewSourceView(code)
 	_, ctx := view.Detach()
 	tkns, err := lex.NewTokenizer().Tokenize(view)
 

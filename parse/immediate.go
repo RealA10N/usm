@@ -20,18 +20,18 @@ package parse
 import (
 	"strings"
 
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/source"
 )
 
 // MARK: Final Value
 // ImmediateFinalValue Node & Parser are responsible for the #immediate token only.
 
 type ImmediateFinalValueNode struct {
-	source.UnmanagedSourceView
+	core.UnmanagedSourceView
 }
 
-func (n ImmediateFinalValueNode) View() source.UnmanagedSourceView {
+func (n ImmediateFinalValueNode) View() core.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 
@@ -99,7 +99,7 @@ type ImmediateFieldNode struct {
 	Value ImmediateValueNode
 }
 
-func (n ImmediateFieldNode) View() source.UnmanagedSourceView {
+func (n ImmediateFieldNode) View() core.UnmanagedSourceView {
 	if n.Label != nil {
 		return n.Label.View().MergeEnd(n.Value.View())
 	} else {
@@ -155,11 +155,11 @@ type ImmediateBlockParser = BlockParser[ImmediateFieldNode]
 // MARK: Immediate
 
 type ImmediateNode struct {
-	Type  source.UnmanagedSourceView
+	Type  core.UnmanagedSourceView
 	Value ImmediateValueNode
 }
 
-func (n ImmediateNode) View() source.UnmanagedSourceView {
+func (n ImmediateNode) View() core.UnmanagedSourceView {
 	return n.Type.MergeEnd(n.Value.View())
 }
 

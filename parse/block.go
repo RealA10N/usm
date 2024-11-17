@@ -3,16 +3,16 @@ package parse
 import (
 	"strings"
 
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/source"
 )
 
 type BlockNode[NodeT Node] struct {
-	source.UnmanagedSourceView
+	core.UnmanagedSourceView
 	Nodes []NodeT
 }
 
-func (n BlockNode[NodeT]) View() source.UnmanagedSourceView {
+func (n BlockNode[NodeT]) View() core.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 

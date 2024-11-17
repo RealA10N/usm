@@ -1,19 +1,19 @@
 package parse
 
 import (
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/source"
 )
 
 // MARK: Node
 
 type TypeDeclarationNode struct {
-	source.UnmanagedSourceView
-	Identifier source.UnmanagedSourceView
+	core.UnmanagedSourceView
+	Identifier core.UnmanagedSourceView
 	Fields     BlockNode[TypeFieldNode]
 }
 
-func (n TypeDeclarationNode) View() source.UnmanagedSourceView {
+func (n TypeDeclarationNode) View() core.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 

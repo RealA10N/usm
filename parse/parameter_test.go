@@ -3,15 +3,15 @@ package parse_test
 import (
 	"testing"
 
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/parse"
-	"alon.kr/x/usm/source"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestParameterParserSimpleCase(t *testing.T) {
-	v, ctx := source.NewSourceView("$i32 %0 .entry").Detach()
+	v, ctx := core.NewSourceView("$i32 %0 .entry").Detach()
 
 	typView := v.Subview(0, 4)
 	regView := v.Subview(5, 7)
@@ -42,7 +42,7 @@ func TestParameterTypEofError(t *testing.T) {
 }
 
 func TestParameterRegEofError(t *testing.T) {
-	v := source.NewSourceView("$i32").Unmanaged()
+	v := core.NewSourceView("$i32").Unmanaged()
 	tkn := lex.Token{Type: lex.TypeToken, View: v}
 	view := parse.NewTokenView([]lex.Token{tkn})
 

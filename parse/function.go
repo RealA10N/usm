@@ -1,17 +1,17 @@
 package parse
 
 import (
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/source"
 )
 
 type FunctionNode struct {
-	source.UnmanagedSourceView
+	core.UnmanagedSourceView
 	Signature    FunctionSignatureNode
 	Instructions *BlockNode[InstructionNode]
 }
 
-func (n FunctionNode) View() source.UnmanagedSourceView {
+func (n FunctionNode) View() core.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 

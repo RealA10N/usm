@@ -1,6 +1,6 @@
 package parse
 
-import "alon.kr/x/usm/source"
+import "alon.kr/x/usm/core"
 
 // MARK: Node
 
@@ -25,7 +25,7 @@ func (n GlobalDeclarationNode) String(ctx *StringContext) string {
 	return id + " " + typ + imm
 }
 
-func (n GlobalDeclarationNode) View() source.UnmanagedSourceView {
+func (n GlobalDeclarationNode) View() core.UnmanagedSourceView {
 	if n.Immediate == nil {
 		return n.Identifier.View().MergeEnd(n.Type.View())
 	} else {

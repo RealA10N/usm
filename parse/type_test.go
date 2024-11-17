@@ -3,15 +3,15 @@ package parse_test
 import (
 	"testing"
 
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/parse"
-	"alon.kr/x/usm/source"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTypeNodeStringer(t *testing.T) {
-	typView, ctx := source.NewSourceView("$i32").Detach()
+	typView, ctx := core.NewSourceView("$i32").Detach()
 	typTok := lex.Token{Type: lex.TypeToken, View: typView}
 	tkns := parse.NewTokenView([]lex.Token{typTok})
 	node, err := parse.TypeParser{}.Parse(&tkns)
@@ -20,7 +20,7 @@ func TestTypeNodeStringer(t *testing.T) {
 }
 
 func TestTypeParserSimpleCase(t *testing.T) {
-	typView, ctx := source.NewSourceView("$i32").Detach()
+	typView, ctx := core.NewSourceView("$i32").Detach()
 	typTkn := lex.Token{Type: lex.TypeToken, View: typView}
 	tkns := parse.NewTokenView([]lex.Token{typTkn})
 	expectedSubview := parse.TokenView{tkns.Subview(1, 1)}
@@ -44,7 +44,7 @@ func TestTypeParserEofError(t *testing.T) {
 }
 
 func TestTypeParserUnexpectedTokenError(t *testing.T) {
-	regView := source.NewSourceView("%0").Unmanaged()
+	regView := core.NewSourceView("%0").Unmanaged()
 	regTkn := lex.Token{Type: lex.RegisterToken, View: regView}
 	tkns := parse.NewTokenView([]lex.Token{regTkn})
 

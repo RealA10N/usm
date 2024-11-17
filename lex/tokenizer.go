@@ -4,15 +4,15 @@ import (
 	"errors"
 	"unicode"
 
-	"alon.kr/x/usm/source"
+	"alon.kr/x/usm/core"
 )
 
 type SpecificTokenizer interface {
-	Tokenize(txt *source.SourceView) (Token, error)
+	Tokenize(txt *core.SourceView) (Token, error)
 }
 
 type Tokenizer interface {
-	Tokenize(source.SourceView) ([]Token, error)
+	Tokenize(core.SourceView) ([]Token, error)
 }
 
 type tokenizer struct {
@@ -41,7 +41,7 @@ func NewTokenizer() Tokenizer {
 	}
 }
 
-func (t tokenizer) Tokenize(view source.SourceView) (tkns []Token, err error) {
+func (t tokenizer) Tokenize(view core.SourceView) (tkns []Token, err error) {
 	for {
 		addSep := t.consumeWhitespace(&view)
 		if addSep {
@@ -63,7 +63,7 @@ func (t tokenizer) Tokenize(view source.SourceView) (tkns []Token, err error) {
 	return tkns, nil
 }
 
-func (t tokenizer) yieldToken(view *source.SourceView) (tkn Token, err error) {
+func (t tokenizer) yieldToken(view *core.SourceView) (tkn Token, err error) {
 	for _, tokenParser := range t.specificTokenizers {
 		tkn, err = tokenParser.Tokenize(view)
 		if err == nil {
@@ -76,7 +76,7 @@ func (t tokenizer) yieldToken(view *source.SourceView) (tkn Token, err error) {
 }
 
 // Consume white spaces and return true if encounterd a newline.
-func (tokenizer) consumeWhitespace(view *source.SourceView) bool {
+func (tokenizer) consumeWhitespace(view *core.SourceView) bool {
 	idx := view.IndexFunc(not(unicode.IsSpace))
 	before, after := view.Partition(idx)
 	*view = after

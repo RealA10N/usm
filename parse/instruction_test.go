@@ -3,15 +3,15 @@ package parse_test
 import (
 	"testing"
 
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/parse"
-	"alon.kr/x/usm/source"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInstructionParserMultipleTargets(t *testing.T) {
-	srcView := source.NewSourceView("$32 %div $32 %mod = divmod %x %y")
+	srcView := core.NewSourceView("$32 %div $32 %mod = divmod %x %y")
 	unmanaged := srcView.Unmanaged()
 
 	expected := parse.InstructionNode{
@@ -38,7 +38,7 @@ func TestInstructionParserMultipleTargets(t *testing.T) {
 }
 
 func TestInstructionWithImmediateValuesAndLabel(t *testing.T) {
-	srcView := source.NewSourceView(".entry $32 %res = add %x $32 #1 .arg")
+	srcView := core.NewSourceView(".entry $32 %res = add %x $32 #1 .arg")
 	unmanaged := srcView.Unmanaged()
 
 	expected := parse.InstructionNode{
@@ -73,7 +73,7 @@ func TestInstructionWithImmediateValuesAndLabel(t *testing.T) {
 
 func testExpectedInstruction(
 	t *testing.T,
-	srcView source.SourceView,
+	srcView core.SourceView,
 	expected parse.InstructionNode,
 	expectedString string,
 ) {

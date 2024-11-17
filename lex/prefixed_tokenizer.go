@@ -4,7 +4,7 @@ import (
 	"errors"
 	"unicode"
 
-	"alon.kr/x/usm/source"
+	"alon.kr/x/usm/core"
 )
 
 // Tokenizer that scans words prefixed with the provided prefix string,
@@ -14,8 +14,8 @@ type PrefixedTokenizer struct {
 	Token  TokenType
 }
 
-func (t PrefixedTokenizer) Tokenize(txt *source.SourceView) (tkn Token, err error) {
-	ok := txt.HasPrefix(source.NewSourceView(t.Prefix))
+func (t PrefixedTokenizer) Tokenize(txt *core.SourceView) (tkn Token, err error) {
+	ok := txt.HasPrefix(core.NewSourceView(t.Prefix))
 	if !ok {
 		err = errors.New("token not matched")
 		return

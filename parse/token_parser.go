@@ -1,15 +1,15 @@
 package parse
 
 import (
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/source"
 )
 
 type TokenNode struct {
-	source.UnmanagedSourceView
+	core.UnmanagedSourceView
 }
 
-func (n TokenNode) View() source.UnmanagedSourceView {
+func (n TokenNode) View() core.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 

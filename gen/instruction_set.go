@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"alon.kr/x/faststringmap"
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/parse"
-	"alon.kr/x/usm/source"
 )
 
 // TODO: add basic interface methods for instruction.
@@ -48,7 +48,7 @@ func NewInstructionSet(instructionDefs []InstructionDef) InstructionSet {
 // Convert an instruction parsed node into an instruction that is in the
 // instruction set.
 func (set *InstructionSet) Build(
-	ctx source.SourceContext,
+	ctx core.SourceContext,
 	node parse.InstructionNode,
 ) (Instruction, error) {
 	var ok bool

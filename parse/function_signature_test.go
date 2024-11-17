@@ -3,15 +3,15 @@ package parse_test
 import (
 	"testing"
 
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/parse"
-	"alon.kr/x/usm/source"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSignatureParserOnlyIdentifier(t *testing.T) {
-	v, ctx := source.NewSourceView("@fibonacci").Detach()
+	v, ctx := core.NewSourceView("@fibonacci").Detach()
 	glb := lex.Token{Type: lex.GlobalToken, View: v}
 	tknView := parse.NewTokenView([]lex.Token{glb})
 
@@ -30,7 +30,7 @@ func TestSignatureParserOnlyIdentifier(t *testing.T) {
 }
 
 func TestSignatureParserVoidFunction(t *testing.T) {
-	v, ctx := source.NewSourceView("... @printNumber  $i32 %x ...").Detach()
+	v, ctx := core.NewSourceView("... @printNumber  $i32 %x ...").Detach()
 	glb := lex.Token{Type: lex.GlobalToken, View: v.Subview(4, 16)}
 	typ := lex.Token{Type: lex.TypeToken, View: v.Subview(18, 22)}
 	reg := lex.Token{Type: lex.RegisterToken, View: v.Subview(23, 25)}
@@ -56,7 +56,7 @@ func TestSignatureParserVoidFunction(t *testing.T) {
 }
 
 func TestSignatureParserSingleReturn(t *testing.T) {
-	v, ctx := source.NewSourceView("$i32 @add $i32 %x $i32 %y").Detach()
+	v, ctx := core.NewSourceView("$i32 @add $i32 %x $i32 %y").Detach()
 	ret := lex.Token{Type: lex.TypeToken, View: v.Subview(0, 4)}
 	id := lex.Token{Type: lex.GlobalToken, View: v.Subview(5, 9)}
 	param1Typ := lex.Token{Type: lex.TypeToken, View: v.Subview(10, 14)}
@@ -94,7 +94,7 @@ func TestSignatureParserSingleReturn(t *testing.T) {
 }
 
 func TestSignatureParserMutltiReturn(t *testing.T) {
-	v, ctx := source.NewSourceView("$i32  $i32  @divmod  $i32 %n  $i32 %m").Detach()
+	v, ctx := core.NewSourceView("$i32  $i32  @divmod  $i32 %n  $i32 %m").Detach()
 	ret1 := lex.Token{Type: lex.TypeToken, View: v.Subview(0, 4)}
 	ret2 := lex.Token{Type: lex.TypeToken, View: v.Subview(6, 10)}
 	id := lex.Token{Type: lex.GlobalToken, View: v.Subview(12, 19)}
@@ -134,7 +134,7 @@ func TestSignatureParserMutltiReturn(t *testing.T) {
 }
 
 func TestSignatureParserIdentifierNotGlobal(t *testing.T) {
-	v, _ := source.NewSourceView("funcid").Detach()
+	v, _ := core.NewSourceView("funcid").Detach()
 	opr := lex.Token{Type: lex.OperatorToken, View: v}
 	tknView := parse.NewTokenView([]lex.Token{opr})
 

@@ -1,8 +1,8 @@
 package parse
 
 import (
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/source"
 )
 
 // MARK: Var
@@ -19,7 +19,7 @@ type VarDeclarationNode struct {
 	Declaration GlobalDeclarationNode
 }
 
-func (n VarDeclarationNode) View() source.UnmanagedSourceView {
+func (n VarDeclarationNode) View() core.UnmanagedSourceView {
 	// TODO: not accurate, this does not include the 'var' keyword.
 	return n.Declaration.View()
 }

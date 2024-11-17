@@ -3,14 +3,14 @@ package parse_test
 import (
 	"testing"
 
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/parse"
-	"alon.kr/x/usm/source"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestEofErrorOneExpected(t *testing.T) {
-	v := source.NewSourceView("")
+	v := core.NewSourceView("")
 	err := parse.EofError{
 		Expected: []lex.TokenType{lex.EqualToken},
 	}
@@ -20,7 +20,7 @@ func TestEofErrorOneExpected(t *testing.T) {
 }
 
 func TestEofErrorMultipleExpected(t *testing.T) {
-	v := source.NewSourceView("")
+	v := core.NewSourceView("")
 	err := parse.EofError{
 		Expected: []lex.TokenType{
 			lex.EqualToken,
@@ -34,7 +34,7 @@ func TestEofErrorMultipleExpected(t *testing.T) {
 }
 
 func TestUnexpectedTokenOneExpected(t *testing.T) {
-	v := source.NewSourceView("%reg")
+	v := core.NewSourceView("%reg")
 	tkn := lex.Token{
 		Type: lex.RegisterToken,
 		View: v.Unmanaged(),
@@ -50,7 +50,7 @@ func TestUnexpectedTokenOneExpected(t *testing.T) {
 }
 
 func TestUnexpectedTokenMultipleExpected(t *testing.T) {
-	v := source.NewSourceView("%reg")
+	v := core.NewSourceView("%reg")
 	tkn := lex.Token{
 		Type: lex.RegisterToken,
 		View: v.Unmanaged(),
@@ -66,7 +66,7 @@ func TestUnexpectedTokenMultipleExpected(t *testing.T) {
 }
 
 func TestGenericUnexpectedError(t *testing.T) {
-	v := source.NewSourceView("")
+	v := core.NewSourceView("")
 	err := parse.GenericUnexpectedError{"argument"}
 	expected := "expected argument"
 	assert.Equal(t, expected, err.Error(v.Ctx()))

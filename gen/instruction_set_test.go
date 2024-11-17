@@ -3,9 +3,9 @@ package gen_test
 import (
 	"testing"
 
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 	"alon.kr/x/usm/parse"
-	"alon.kr/x/usm/source"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,7 +21,7 @@ func TestInstructionSetNoErr(t *testing.T) {
 	}
 
 	set := gen.NewInstructionSet([]gen.InstructionDef{instDef})
-	src := source.NewSourceView("add")
+	src := core.NewSourceView("add")
 
 	inst, err := set.Build(src.Ctx(), parse.InstructionNode{
 		Operator: src.Unmanaged(),

@@ -1,12 +1,12 @@
 package parse
 
 import (
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/source"
 )
 
 type ParsingError interface {
-	Error(source.SourceContext) string
+	Error(core.SourceContext) string
 }
 
 type UnexpectedTokenError struct {
@@ -14,7 +14,7 @@ type UnexpectedTokenError struct {
 	Actual   lex.Token
 }
 
-func (e UnexpectedTokenError) Error(ctx source.SourceContext) string {
+func (e UnexpectedTokenError) Error(ctx core.SourceContext) string {
 	s := "unexpected token " + e.Actual.String(ctx)
 	if len(e.Expected) > 0 {
 		s += " (expected " + stringManyTokenTypes(e.Expected) + ")"
@@ -26,7 +26,7 @@ type EofError struct {
 	Expected []lex.TokenType
 }
 
-func (e EofError) Error(source.SourceContext) string {
+func (e EofError) Error(core.SourceContext) string {
 	s := "reached end of file"
 	if len(e.Expected) > 0 {
 		s += " (expected " + stringManyTokenTypes(e.Expected) + ")"
@@ -46,6 +46,6 @@ type GenericUnexpectedError struct {
 	Expected string
 }
 
-func (e GenericUnexpectedError) Error(source.SourceContext) string {
+func (e GenericUnexpectedError) Error(core.SourceContext) string {
 	return "expected " + e.Expected
 }

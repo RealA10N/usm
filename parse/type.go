@@ -1,8 +1,8 @@
 package parse
 
 import (
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/source"
 )
 
 // MARK: Node
@@ -15,16 +15,16 @@ const (
 )
 
 type TypeDecorator struct {
-	source.UnmanagedSourceView
+	core.UnmanagedSourceView
 	Type TypeDecoratorType
 }
 
 type TypeNode struct {
-	Identifier source.UnmanagedSourceView
+	Identifier core.UnmanagedSourceView
 	Decorators []TypeDecorator
 }
 
-func (n TypeNode) View() source.UnmanagedSourceView {
+func (n TypeNode) View() core.UnmanagedSourceView {
 	if len(n.Decorators) == 0 {
 		return n.Identifier
 	} else {

@@ -3,17 +3,17 @@ package parse
 import (
 	"slices"
 
-	"alon.kr/x/usm/source"
+	"alon.kr/x/usm/core"
 )
 
 type StringContext struct {
-	source.SourceContext
+	core.SourceContext
 	Indent int
 }
 
 type Node interface {
 	// Return a reference to the node substring in the source code
-	View() source.UnmanagedSourceView
+	View() core.UnmanagedSourceView
 
 	// Regenerate ("format") the code to a unique, single representation.
 	String(ctx *StringContext) string

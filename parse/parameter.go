@@ -3,7 +3,7 @@ package parse
 import (
 	"fmt"
 
-	"alon.kr/x/usm/source"
+	"alon.kr/x/usm/core"
 )
 
 type ParameterNode struct {
@@ -11,7 +11,7 @@ type ParameterNode struct {
 	Register RegisterNode
 }
 
-func (n ParameterNode) View() source.UnmanagedSourceView {
+func (n ParameterNode) View() core.UnmanagedSourceView {
 	return n.Type.View().Merge(n.Register.View())
 }
 

@@ -3,9 +3,9 @@ package parse_test
 import (
 	"testing"
 
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/parse"
-	"alon.kr/x/usm/source"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -16,7 +16,7 @@ func TestSingleFunction(t *testing.T) {
 	$32 %res = add %x %y
 	ret %res
 }`
-	v := source.NewSourceView(src)
+	v := core.NewSourceView(src)
 	srcView, _ := v.Detach()
 
 	expected := parse.FileNode{
@@ -205,7 +205,7 @@ const @bar $struct {
 func testExpectedFileFormat(t *testing.T, src string, expected string) {
 	t.Helper()
 
-	v := source.NewSourceView(src)
+	v := core.NewSourceView(src)
 	tkns, err := lex.NewTokenizer().Tokenize(v)
 	assert.NoError(t, err)
 

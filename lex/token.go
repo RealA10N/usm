@@ -3,7 +3,7 @@ package lex
 import (
 	"fmt"
 
-	"alon.kr/x/usm/source"
+	"alon.kr/x/usm/core"
 )
 
 type TokenType uint8
@@ -64,10 +64,10 @@ func (tkn TokenType) String() string {
 
 type Token struct {
 	Type TokenType
-	View source.UnmanagedSourceView
+	View core.UnmanagedSourceView
 }
 
-func (tkn Token) String(ctx source.SourceContext) string {
+func (tkn Token) String(ctx core.SourceContext) string {
 	typeName, ok := tokenNames[tkn.Type]
 	if !ok {
 		typeName = "?"
