@@ -6,7 +6,7 @@ import (
 	"alon.kr/x/view"
 )
 
-type SourceViewOffset = uint32
+type SourceViewOffset = UsmUint
 
 // Represents a view into a single source file ("substring" of the file source).
 //
