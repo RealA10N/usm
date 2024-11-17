@@ -13,6 +13,9 @@ type UsmUint = uint32
 const UsmUintBitSize = 8 * unsafe.Sizeof(UsmUint(0))
 
 func ParseUint(s string) (UsmUint, error) {
+	// TODO: assert that strconv.ParseUint does not have edge cases and is dead
+	// simple, so it won't break our grammar and allow weird behavior which is
+	// not defined in the USM spec.
 	n, err := strconv.ParseUint(s, 10, int(UsmUintBitSize))
 	return UsmUint(n), err
 }
