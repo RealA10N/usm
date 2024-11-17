@@ -1,0 +1,10 @@
+func $64 @fib $64 %n {
+	%n1 = DEC %n
+	BLE %n1 .return
+	%x1 = CALL @fib %n1
+	%n2 = DEC %x1
+	%x2 = CALL @fib %n2
+	%x = ADD %x1 %x2
+.return
+	RET
+}

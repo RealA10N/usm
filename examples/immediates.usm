@@ -1,0 +1,35 @@
+type $listNode {
+	.value $32
+	.next $listNode *
+	.prev $listNode *
+}
+
+type $list {
+	.start $listNode *
+	.end $listNode *
+}
+
+var @globalList $listNode {
+	.value #1234
+}
+
+type $outer {
+	.value $32
+	.inner $inner
+}
+
+type $inner {
+	.value $32
+}
+
+const @global $outer {
+	.value #1234
+	.inner {
+		.value #0
+	}
+}
+
+func @main {
+	call @foo $outer {
+	} %second_arg
+}
