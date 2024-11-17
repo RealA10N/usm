@@ -1,5 +1,7 @@
 package parse
 
+import "alon.kr/x/usm/core"
+
 type ArgumentNode Node
 
 type ArgumentParser struct {
@@ -38,5 +40,14 @@ func (p ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError
 		return node, nil
 	}
 
-	return nil, GenericUnexpectedError{Expected: "argument"}
+	var location core.UnmanagedSourceView
+	if nextToken, err := v.Front(); err == nil {
+		location = nextToken.View
+	} else {
+		// If there is no tokens left, the location of the error is the end of
+		// the source file.
+		location = core.NewEofUnmanagedSourceView()
+	}
+
+	return nil, GenericUnexpectedError{Expected: "argument", SourceLocation: location}
 }

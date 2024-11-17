@@ -5,9 +5,7 @@ import (
 	"alon.kr/x/usm/lex"
 )
 
-type ParsingError interface {
-	Error(core.SourceContext) string
-}
+type ParsingError = core.UsmError
 
 type UnexpectedTokenError struct {
 	Expected []lex.TokenType
@@ -22,6 +20,10 @@ func (e UnexpectedTokenError) Error(ctx core.SourceContext) string {
 	return s
 }
 
+func (e UnexpectedTokenError) Location() core.UnmanagedSourceView {
+	return e.Actual.View
+}
+
 type EofError struct {
 	Expected []lex.TokenType
 }
@@ -34,6 +36,11 @@ func (e EofError) Error(core.SourceContext) string {
 	return s
 }
 
+func (e EofError) Location() core.UnmanagedSourceView {
+	// TODO: This is a hack, but it's fine for now.
+	return core.NewEofUnmanagedSourceView()
+}
+
 func stringManyTokenTypes(typs []lex.TokenType) (s string) {
 	for i := 0; i < len(typs)-1; i++ {
 		s += typs[i].String() + ", "
@@ -43,9 +50,14 @@ func stringManyTokenTypes(typs []lex.TokenType) (s string) {
 }
 
 type GenericUnexpectedError struct {
-	Expected string
+	Expected       string
+	SourceLocation core.UnmanagedSourceView
 }
 
 func (e GenericUnexpectedError) Error(core.SourceContext) string {
 	return "expected " + e.Expected
+}
+
+func (e GenericUnexpectedError) Location() core.UnmanagedSourceView {
+	return e.SourceLocation
 }

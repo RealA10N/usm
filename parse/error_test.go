@@ -67,7 +67,7 @@ func TestUnexpectedTokenMultipleExpected(t *testing.T) {
 
 func TestGenericUnexpectedError(t *testing.T) {
 	v := core.NewSourceView("")
-	err := parse.GenericUnexpectedError{"argument"}
+	err := parse.GenericUnexpectedError{"argument", v.Unmanaged()}
 	expected := "expected argument"
 	assert.Equal(t, expected, err.Error(v.Ctx()))
 }
