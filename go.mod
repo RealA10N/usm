@@ -3,6 +3,7 @@ module alon.kr/x/usm
 go 1.23
 
 require (
+	alon.kr/x/faststringmap v0.0.0-20240807163058-5499b1de74ed
 	alon.kr/x/view v0.0.0-20241117010244-a05cb4bfcce6
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
