@@ -15,8 +15,11 @@ func TestEofErrorOneExpected(t *testing.T) {
 		Expected: []lex.TokenType{lex.EqualToken},
 	}
 
-	expected := `reached end of file (expected <Equal>)`
-	assert.Equal(t, expected, err.Error(v.Ctx()))
+	expectedErr := `reached end of file`
+	assert.Equal(t, expectedErr, err.Error(v.Ctx()))
+
+	expectedHint := `expected <Equal>`
+	assert.Equal(t, expectedHint, err.Hint(v.Ctx()))
 }
 
 func TestEofErrorMultipleExpected(t *testing.T) {
@@ -29,8 +32,11 @@ func TestEofErrorMultipleExpected(t *testing.T) {
 		},
 	}
 
-	expected := `reached end of file (expected <Equal>, <Register>, <Pointer>)`
-	assert.Equal(t, expected, err.Error(v.Ctx()))
+	expectedErr := "reached end of file"
+	assert.Equal(t, expectedErr, err.Error(v.Ctx()))
+
+	expectedHint := "expected <Equal>, <Register>, <Pointer>"
+	assert.Equal(t, expectedHint, err.Hint(v.Ctx()))
 }
 
 func TestUnexpectedTokenOneExpected(t *testing.T) {
@@ -45,8 +51,11 @@ func TestUnexpectedTokenOneExpected(t *testing.T) {
 		Actual:   tkn,
 	}
 
-	expected := `unexpected token <Register "%reg"> (expected <Equal>)`
-	assert.Equal(t, expected, err.Error(v.Ctx()))
+	expectedErr := `unexpected token <Register "%reg">`
+	assert.Equal(t, expectedErr, err.Error(v.Ctx()))
+
+	expectedHint := "expected <Equal>"
+	assert.Equal(t, expectedHint, err.Hint(v.Ctx()))
 }
 
 func TestUnexpectedTokenMultipleExpected(t *testing.T) {
@@ -61,13 +70,19 @@ func TestUnexpectedTokenMultipleExpected(t *testing.T) {
 		Actual:   tkn,
 	}
 
-	expected := `unexpected token <Register "%reg"> (expected <Equal>, <Type>)`
-	assert.Equal(t, expected, err.Error(v.Ctx()))
+	expectedErr := `unexpected token <Register "%reg">`
+	assert.Equal(t, expectedErr, err.Error(v.Ctx()))
+
+	expectedHint := "expected <Equal>, <Type>"
+	assert.Equal(t, expectedHint, err.Hint(v.Ctx()))
 }
 
 func TestGenericUnexpectedError(t *testing.T) {
 	v := core.NewSourceView("")
 	err := parse.GenericUnexpectedError{"argument", v.Unmanaged()}
-	expected := "expected argument"
-	assert.Equal(t, expected, err.Error(v.Ctx()))
+
+	expectedErr := "expected argument"
+	assert.Equal(t, expectedErr, err.Error(v.Ctx()))
+
+	assert.Empty(t, err.Hint(v.Ctx()))
 }

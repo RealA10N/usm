@@ -13,11 +13,15 @@ type UnexpectedTokenError struct {
 }
 
 func (e UnexpectedTokenError) Error(ctx core.SourceContext) string {
-	s := "unexpected token " + e.Actual.String(ctx)
-	if len(e.Expected) > 0 {
-		s += " (expected " + stringManyTokenTypes(e.Expected) + ")"
+	return "unexpected token " + e.Actual.String(ctx)
+}
+
+func (e UnexpectedTokenError) Hint(core.SourceContext) string {
+	if len(e.Expected) == 0 {
+		return ""
 	}
-	return s
+
+	return "expected " + stringManyTokenTypes(e.Expected)
 }
 
 func (e UnexpectedTokenError) Location() core.UnmanagedSourceView {
@@ -29,11 +33,15 @@ type EofError struct {
 }
 
 func (e EofError) Error(core.SourceContext) string {
-	s := "reached end of file"
-	if len(e.Expected) > 0 {
-		s += " (expected " + stringManyTokenTypes(e.Expected) + ")"
+	return "reached end of file"
+}
+
+func (e EofError) Hint(core.SourceContext) string {
+	if len(e.Expected) == 0 {
+		return ""
 	}
-	return s
+
+	return "expected " + stringManyTokenTypes(e.Expected)
 }
 
 func (e EofError) Location() core.UnmanagedSourceView {
@@ -56,6 +64,10 @@ type GenericUnexpectedError struct {
 
 func (e GenericUnexpectedError) Error(core.SourceContext) string {
 	return "expected " + e.Expected
+}
+
+func (e GenericUnexpectedError) Hint(core.SourceContext) string {
+	return ""
 }
 
 func (e GenericUnexpectedError) Location() core.UnmanagedSourceView {
