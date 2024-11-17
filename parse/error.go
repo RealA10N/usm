@@ -28,6 +28,10 @@ func (e UnexpectedTokenError) Location() core.UnmanagedSourceView {
 	return e.Actual.View
 }
 
+func (UnexpectedTokenError) IsInternalError() bool {
+	return false
+}
+
 type EofError struct {
 	Expected []lex.TokenType
 }
@@ -47,6 +51,10 @@ func (e EofError) Hint(core.SourceContext) string {
 func (e EofError) Location() core.UnmanagedSourceView {
 	// TODO: This is a hack, but it's fine for now.
 	return core.NewEofUnmanagedSourceView()
+}
+
+func (EofError) IsInternalError() bool {
+	return false
 }
 
 func stringManyTokenTypes(typs []lex.TokenType) (s string) {
@@ -72,4 +80,8 @@ func (e GenericUnexpectedError) Hint(core.SourceContext) string {
 
 func (e GenericUnexpectedError) Location() core.UnmanagedSourceView {
 	return e.ErrorLocation
+}
+
+func (GenericUnexpectedError) IsInternalError() bool {
+	return false
 }

@@ -15,6 +15,10 @@ type UsmError interface {
 	// The view can be of length zero to indicate a single point, or a non-zero
 	// view to indicate a range of text.
 	Location() UnmanagedSourceView
+
+	// Returns True if the error is internal ("panic"). Internal errors are
+	// errors that are caused by a bug in the compiler, and not by the user.
+	IsInternalError() bool
 }
 
 // MARK: GenericError
@@ -25,6 +29,7 @@ type GenericError struct {
 	ErrorMessage  string
 	HintMessage   string
 	ErrorLocation UnmanagedSourceView
+	IsInternal    bool
 }
 
 func (e GenericError) Error(SourceContext) string {
@@ -37,4 +42,8 @@ func (e GenericError) Hint(SourceContext) string {
 
 func (e GenericError) Location() UnmanagedSourceView {
 	return e.ErrorLocation
+}
+
+func (e GenericError) IsInternalError() bool {
+	return e.IsInternal
 }
