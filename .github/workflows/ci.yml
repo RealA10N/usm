@@ -16,11 +16,14 @@ jobs:
         with:
           go-version: "1.22.5"
 
+      - name: Set up Just
+        uses: extractions/setup-just@v2
+
       - name: Install Dependencies
-        run: make ci
+        run: just ci
 
       - name: Test
-        run: make coverage
+        run: just coverage
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
