@@ -58,8 +58,8 @@ func stringManyTokenTypes(typs []lex.TokenType) (s string) {
 }
 
 type GenericUnexpectedError struct {
-	Expected       string
-	SourceLocation core.UnmanagedSourceView
+	Expected      string
+	ErrorLocation core.UnmanagedSourceView
 }
 
 func (e GenericUnexpectedError) Error(core.SourceContext) string {
@@ -71,5 +71,5 @@ func (e GenericUnexpectedError) Hint(core.SourceContext) string {
 }
 
 func (e GenericUnexpectedError) Location() core.UnmanagedSourceView {
-	return e.SourceLocation
+	return e.ErrorLocation
 }

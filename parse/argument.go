@@ -49,5 +49,5 @@ func (p ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError
 		location = core.NewEofUnmanagedSourceView()
 	}
 
-	return nil, GenericUnexpectedError{Expected: "argument", SourceLocation: location}
+	return nil, GenericUnexpectedError{Expected: "argument", ErrorLocation: location}
 }
