@@ -29,9 +29,6 @@
 build
 usm
 
-# editors
-.vscode
-
 # coverage
 coverage.txt
 
