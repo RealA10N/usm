@@ -28,7 +28,7 @@ func ParseDecoratorNum(
 		return 1, nil
 	}
 
-	numView := dec.Subview(1, dec.Len()-1)
+	numView := dec.Subview(1, dec.Len())
 	num, err := core.ParseUint(string(numView.Raw(genCtx.SourceContext)))
 
 	if err != nil {

@@ -105,3 +105,43 @@ func TestBasicTypeAliasPointerDeclaration(t *testing.T) {
 	assert.Equal(t, "$myType", string(typeInfo.Name.Raw(genCtx.SourceContext)))
 	assert.EqualValues(t, 1337, typeInfo.Size)
 }
+
+func TestBasicTypeAliasRepeatDeclaration(t *testing.T) {
+	typeManager := make(TypeManager)
+	typeManager.registerBuiltinType("$8", 1)
+
+	view := core.NewSourceView("type $myType $8 ^9")
+	unmanaged := view.Unmanaged()
+
+	typeDeclarationNode := parse.TypeDeclarationNode{
+		UnmanagedSourceView: unmanaged,
+		Identifier:          unmanaged.Subview(5, 12),
+		Fields: parse.BlockNode[parse.TypeFieldNode]{
+			UnmanagedSourceView: core.UnmanagedSourceView{},
+			Nodes: []parse.TypeFieldNode{
+				{
+					Type: parse.TypeNode{
+						Identifier: unmanaged.Subview(13, 15),
+						Decorators: []parse.TypeDecoratorNode{
+							{
+								UnmanagedSourceView: unmanaged.Subview(16, 18),
+								Type:                parse.RepeatTypeDecorator,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	genCtx := gen.GenerationContext{
+		SourceContext: view.Ctx(),
+		Types:         typeManager,
+	}
+
+	typeInfo, err := gen.TypeInfoFromTypeDeclaration(&genCtx, typeDeclarationNode)
+	assert.Nil(t, err)
+	assert.NotNil(t, typeInfo)
+	assert.Equal(t, "$myType", string(typeInfo.Name.Raw(genCtx.SourceContext)))
+	assert.EqualValues(t, 9, typeInfo.Size)
+}
