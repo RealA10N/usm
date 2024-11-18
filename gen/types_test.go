@@ -31,7 +31,7 @@ func (m TypeManager) RegisterType(name string, typ *gen.TypeInfo) core.UsmError 
 	return nil
 }
 
-func TestBasicTypeAliasDeclaration(t *testing.T) {
+func TestTypeAliasDeclaration(t *testing.T) {
 	typeManager := make(TypeManager)
 	typeManager.registerBuiltinType("$32", 4)
 
@@ -65,7 +65,7 @@ func TestBasicTypeAliasDeclaration(t *testing.T) {
 	assert.EqualValues(t, 4, typeInfo.Size)
 }
 
-func TestBasicTypeAliasPointerDeclaration(t *testing.T) {
+func TestPointerTypeDeclaration(t *testing.T) {
 	typeManager := make(TypeManager)
 	typeManager.registerBuiltinType("$64", 8)
 
@@ -106,7 +106,7 @@ func TestBasicTypeAliasPointerDeclaration(t *testing.T) {
 	assert.EqualValues(t, 1337, typeInfo.Size)
 }
 
-func TestBasicTypeAliasRepeatDeclaration(t *testing.T) {
+func TestRepeatTypeDeclaration(t *testing.T) {
 	typeManager := make(TypeManager)
 	typeManager.registerBuiltinType("$8", 1)
 
@@ -144,4 +144,31 @@ func TestBasicTypeAliasRepeatDeclaration(t *testing.T) {
 	assert.NotNil(t, typeInfo)
 	assert.Equal(t, "$myType", string(typeInfo.Name.Raw(genCtx.SourceContext)))
 	assert.EqualValues(t, 9, typeInfo.Size)
+}
+
+func TestVoidTypeDeclaration(t *testing.T) {
+	typeManager := make(TypeManager)
+
+	view := core.NewSourceView("type $void { }")
+	unmanaged := view.Unmanaged()
+
+	typeDeclarationNode := parse.TypeDeclarationNode{
+		UnmanagedSourceView: unmanaged,
+		Identifier:          unmanaged.Subview(5, 10),
+		Fields: parse.BlockNode[parse.TypeFieldNode]{
+			UnmanagedSourceView: core.UnmanagedSourceView{},
+			Nodes:               []parse.TypeFieldNode{},
+		},
+	}
+
+	genCtx := gen.GenerationContext{
+		SourceContext: view.Ctx(),
+		Types:         typeManager,
+	}
+
+	typeInfo, err := gen.TypeInfoFromTypeDeclaration(&genCtx, typeDeclarationNode)
+	assert.Nil(t, err)
+	assert.NotNil(t, typeInfo)
+	assert.Equal(t, "$void", string(typeInfo.Name.Raw(genCtx.SourceContext)))
+	assert.EqualValues(t, 0, typeInfo.Size)
 }
