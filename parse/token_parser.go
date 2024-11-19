@@ -5,6 +5,8 @@ import (
 	"alon.kr/x/usm/lex"
 )
 
+// MARK: Node
+
 type TokenNode struct {
 	core.UnmanagedSourceView
 }
@@ -16,6 +18,8 @@ func (n TokenNode) View() core.UnmanagedSourceView {
 func (n TokenNode) String(ctx *StringContext) string {
 	return string(n.UnmanagedSourceView.Raw(ctx.SourceContext))
 }
+
+// MARK: Parser
 
 type TokenParser[NodeT TokenNode] struct {
 	Token lex.TokenType
