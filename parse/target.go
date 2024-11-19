@@ -2,6 +2,8 @@ package parse
 
 import "alon.kr/x/usm/core"
 
+// MARK: Node
+
 type TargetNode struct {
 	// Optional type declaration. Depending on the instruction, the type may be
 	// inferred and does not need to be provided explicitly.
@@ -23,4 +25,27 @@ func (n TargetNode) String(ctx *StringContext) (s string) {
 		s = n.Type.String(ctx) + " "
 	}
 	return s + n.Register.String(ctx)
+}
+
+// MARK: Parser
+
+type TargetParser struct {
+	TypeParser
+	RegisterParser Parser[RegisterNode]
+}
+
+func NewTargetParser() ParameterParser {
+	return ParameterParser{
+		RegisterParser: NewRegisterParser(),
+	}
+}
+
+func (p TargetParser) Parse(v *TokenView) (node TargetNode, err ParsingError) {
+	*node.Type, err = p.TypeParser.Parse(v)
+	if err != nil {
+		node.Type = nil
+	}
+
+	node.Register, err = p.RegisterParser.Parse(v)
+	return
 }
