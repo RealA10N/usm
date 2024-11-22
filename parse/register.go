@@ -3,7 +3,8 @@ package parse
 import "alon.kr/x/usm/lex"
 
 type RegisterNode = TokenNode
+type RegisterParser = TokenParser[RegisterNode]
 
 func NewRegisterParser() Parser[RegisterNode] {
-	return TokenParser[RegisterNode]{lex.RegisterToken}
+	return RegisterParser{lex.RegisterToken}
 }

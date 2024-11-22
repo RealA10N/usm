@@ -8,9 +8,10 @@ import (
 // MARK: Const
 
 type ConstNode = TokenNode
+type ConstParser = TokenParser[ConstNode]
 
-func NewConstParser() Parser[ConstNode] {
-	return TokenParser[ConstNode]{lex.ConstKeywordToken}
+func NewConstParser() ConstParser {
+	return ConstParser{lex.ConstKeywordToken}
 }
 
 // MARK: Declaration

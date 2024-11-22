@@ -5,7 +5,8 @@ import (
 )
 
 type LabelNode = TokenNode
+type LabelParser = TokenParser[LabelNode]
 
-func NewLabelParser() Parser[LabelNode] {
-	return TokenParser[LabelNode]{lex.LabelToken}
+func NewLabelParser() LabelParser {
+	return LabelParser{lex.LabelToken}
 }

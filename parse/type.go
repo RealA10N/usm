@@ -36,6 +36,12 @@ type TypeParser struct {
 	TypeDecoratorParser
 }
 
+func NewTypeParser() TypeParser {
+	return TypeParser{
+		TypeDecoratorParser: NewTypeDecoratorParser(),
+	}
+}
+
 func (p TypeParser) Parse(v *TokenView) (node TypeNode, err ParsingError) {
 	tkn, err := v.ConsumeToken(lex.TypeToken)
 	if err != nil {

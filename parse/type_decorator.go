@@ -27,6 +27,10 @@ func (n TypeDecoratorNode) String(ctx *StringContext) string {
 
 type TypeDecoratorParser struct{}
 
+func NewTypeDecoratorParser() TypeDecoratorParser {
+	return TypeDecoratorParser{}
+}
+
 func (p TypeDecoratorParser) Parse(v *TokenView) (node TypeDecoratorNode, err ParsingError) {
 	tkn, err := v.ConsumeToken(lex.PointerToken, lex.RepeatToken)
 	if err != nil {

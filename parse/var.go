@@ -8,9 +8,10 @@ import (
 // MARK: Var
 
 type VarNode = TokenNode
+type VarParser = TokenParser[VarNode]
 
-func NewVarParser() Parser[VarNode] {
-	return TokenParser[VarNode]{lex.VarKeywordToken}
+func NewVarParser() VarParser {
+	return VarParser{lex.VarKeywordToken}
 }
 
 // MARK: Declaration

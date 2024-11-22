@@ -5,7 +5,8 @@ import (
 )
 
 type GlobalNode = TokenNode
+type GlobalParser = TokenParser[GlobalNode]
 
-func NewGlobalParser() Parser[GlobalNode] {
-	return TokenParser[GlobalNode]{lex.GlobalToken}
+func NewGlobalParser() GlobalParser {
+	return GlobalParser{lex.GlobalToken}
 }
