@@ -19,11 +19,12 @@ func (m TypeManager) registerBuiltinType(name string, size core.UsmUint) {
 	m.RegisterType(name, &gen.TypeInfo{Size: size})
 }
 
-func (m TypeManager) RegisterType(name string, typ *gen.TypeInfo) core.UsmError {
+func (m TypeManager) RegisterType(name string, typ *gen.TypeInfo) core.Result {
 	if m[name] != nil {
-		return core.GenericError{
-			ErrorMessage:  "Type already defined",
-			ErrorLocation: typ.Name,
+		return &core.GenericResult{
+			Type:     core.ErrorResult,
+			Message:  "Type already defined",
+			Location: &typ.Declaration,
 		}
 	}
 
@@ -61,7 +62,7 @@ func TestTypeAliasDeclaration(t *testing.T) {
 	typeInfo, err := gen.TypeInfoFromTypeDeclaration(&genCtx, typeDeclarationNode)
 	assert.Nil(t, err)
 	assert.NotNil(t, typeInfo)
-	assert.Equal(t, "$myType", string(typeInfo.Name.Raw(genCtx.SourceContext)))
+	assert.Equal(t, "$myType", string(typeInfo.Name))
 	assert.EqualValues(t, 4, typeInfo.Size)
 }
 
@@ -102,7 +103,7 @@ func TestPointerTypeDeclaration(t *testing.T) {
 	typeInfo, err := gen.TypeInfoFromTypeDeclaration(&genCtx, typeDeclarationNode)
 	assert.Nil(t, err)
 	assert.NotNil(t, typeInfo)
-	assert.Equal(t, "$myType", string(typeInfo.Name.Raw(genCtx.SourceContext)))
+	assert.Equal(t, "$myType", string(typeInfo.Name))
 	assert.EqualValues(t, 1337, typeInfo.Size)
 }
 
@@ -142,7 +143,7 @@ func TestRepeatTypeDeclaration(t *testing.T) {
 	typeInfo, err := gen.TypeInfoFromTypeDeclaration(&genCtx, typeDeclarationNode)
 	assert.Nil(t, err)
 	assert.NotNil(t, typeInfo)
-	assert.Equal(t, "$myType", string(typeInfo.Name.Raw(genCtx.SourceContext)))
+	assert.Equal(t, "$myType", typeInfo.Name)
 	assert.EqualValues(t, 9, typeInfo.Size)
 }
 
