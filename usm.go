@@ -61,7 +61,9 @@ func fmtCommand(cmd *cobra.Command, args []string) {
 		strCtx := parse.StringContext{SourceContext: view.Ctx()}
 		fmt.Print(file.String(&strCtx))
 	} else {
-		fmt.Println(perr.Error(view.Ctx()))
+		// TODO: Print the error in a more user-friendly way, including location
+		// and nested results.
+		fmt.Println(perr.GetMessage(view.Ctx()))
 	}
 }
 
