@@ -9,34 +9,48 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO: add GetLocation tests.
+
 func TestEofErrorOneExpected(t *testing.T) {
 	v := core.NewSourceView("")
-	err := parse.EofError{
-		Expected: []lex.TokenType{lex.EqualToken},
-	}
+	err := core.Result(
+		parse.EofError{
+			Expected: []lex.TokenType{lex.EqualToken},
+		},
+	)
 
-	expectedErr := `reached end of file`
-	assert.Equal(t, expectedErr, err.Error(v.Ctx()))
+	assert.Equal(t, "Reached end of file", err.GetMessage(v.Ctx()))
+	assert.EqualValues(t, core.ErrorResult, err.GetType())
 
-	expectedHint := `expected <Equal>`
-	assert.Equal(t, expectedHint, err.Hint(v.Ctx()))
+	hint := err.GetNext()
+	assert.NotNil(t, hint)
+
+	assert.EqualValues(t, core.HintResult, hint.GetType())
+	assert.Equal(t, "Expected <Equal>", hint.GetMessage(v.Ctx()))
+	assert.Nil(t, hint.GetNext())
 }
 
 func TestEofErrorMultipleExpected(t *testing.T) {
 	v := core.NewSourceView("")
-	err := parse.EofError{
-		Expected: []lex.TokenType{
-			lex.EqualToken,
-			lex.RegisterToken,
-			lex.PointerToken,
+	err := core.Result(
+		parse.EofError{
+			Expected: []lex.TokenType{
+				lex.EqualToken,
+				lex.RegisterToken,
+				lex.PointerToken,
+			},
 		},
-	}
+	)
 
-	expectedErr := "reached end of file"
-	assert.Equal(t, expectedErr, err.Error(v.Ctx()))
+	assert.Equal(t, "Reached end of file", err.GetMessage(v.Ctx()))
+	assert.EqualValues(t, core.ErrorResult, err.GetType())
 
-	expectedHint := "expected <Equal>, <Register>, <Pointer>"
-	assert.Equal(t, expectedHint, err.Hint(v.Ctx()))
+	hint := err.GetNext()
+	assert.NotNil(t, hint)
+
+	assert.EqualValues(t, core.HintResult, hint.GetType())
+	assert.Equal(t, "Expected <Equal>, <Register>, <Pointer>", hint.GetMessage(v.Ctx()))
+	assert.Nil(t, hint.GetNext())
 }
 
 func TestUnexpectedTokenOneExpected(t *testing.T) {
@@ -51,11 +65,15 @@ func TestUnexpectedTokenOneExpected(t *testing.T) {
 		Actual:   tkn,
 	}
 
-	expectedErr := `unexpected token <Register "%reg">`
-	assert.Equal(t, expectedErr, err.Error(v.Ctx()))
+	assert.Equal(t, `Unexpected token <Register "%reg">`, err.GetMessage(v.Ctx()))
+	assert.EqualValues(t, core.ErrorResult, err.GetType())
 
-	expectedHint := "expected <Equal>"
-	assert.Equal(t, expectedHint, err.Hint(v.Ctx()))
+	hint := err.GetNext()
+	assert.NotNil(t, hint)
+
+	assert.EqualValues(t, core.HintResult, hint.GetType())
+	assert.Equal(t, "Expected <Equal>", hint.GetMessage(v.Ctx()))
+	assert.Nil(t, hint.GetNext())
 }
 
 func TestUnexpectedTokenMultipleExpected(t *testing.T) {
@@ -69,20 +87,13 @@ func TestUnexpectedTokenMultipleExpected(t *testing.T) {
 		Expected: []lex.TokenType{lex.EqualToken, lex.TypeToken},
 		Actual:   tkn,
 	}
+	assert.Equal(t, `Unexpected token <Register "%reg">`, err.GetMessage(v.Ctx()))
+	assert.EqualValues(t, core.ErrorResult, err.GetType())
 
-	expectedErr := `unexpected token <Register "%reg">`
-	assert.Equal(t, expectedErr, err.Error(v.Ctx()))
+	hint := err.GetNext()
+	assert.NotNil(t, hint)
 
-	expectedHint := "expected <Equal>, <Type>"
-	assert.Equal(t, expectedHint, err.Hint(v.Ctx()))
-}
-
-func TestGenericUnexpectedError(t *testing.T) {
-	v := core.NewSourceView("")
-	err := parse.GenericUnexpectedError{"argument", v.Unmanaged()}
-
-	expectedErr := "expected argument"
-	assert.Equal(t, expectedErr, err.Error(v.Ctx()))
-
-	assert.Empty(t, err.Hint(v.Ctx()))
+	assert.EqualValues(t, core.HintResult, hint.GetType())
+	assert.Equal(t, "Expected <Equal>, <Type>", hint.GetMessage(v.Ctx()))
+	assert.Nil(t, hint.GetNext())
 }
