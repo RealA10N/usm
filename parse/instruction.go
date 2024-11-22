@@ -10,7 +10,7 @@ import (
 type InstructionNode struct {
 	Operator  core.UnmanagedSourceView
 	Arguments []ArgumentNode
-	Targets   []ParameterNode
+	Targets   []TargetNode
 	Labels    []LabelNode
 }
 
@@ -67,15 +67,15 @@ func (n InstructionNode) String(ctx *StringContext) string {
 }
 
 type InstructionParser struct {
-	LabelParser    Parser[LabelNode]
-	RegisterParser Parser[ParameterNode]
-	ArgumentParser ArgumentParser
+	LabelParser
+	TargetParser
+	ArgumentParser
 }
 
 func NewInstructionParser() InstructionParser {
 	return InstructionParser{
 		LabelParser:    NewLabelParser(),
-		RegisterParser: NewParameterParser(),
+		TargetParser:   NewTargetParser(),
 		ArgumentParser: NewArgumentParser(),
 	}
 }
@@ -98,7 +98,7 @@ func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) Pars
 // > Lbl* (Reg+ Eql)? Opr Arg+ !Arg
 func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err ParsingError) {
 	node.Labels, _ = ParseManyIgnoreSeparators(p.LabelParser, v)
-	node.Targets = ParseMany(p.RegisterParser, v)
+	node.Targets = ParseMany(p.TargetParser, v)
 
 	err = p.parseEquals(v, &node)
 	if err != nil {

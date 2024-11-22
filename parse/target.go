@@ -34,16 +34,17 @@ type TargetParser struct {
 	RegisterParser Parser[RegisterNode]
 }
 
-func NewTargetParser() ParameterParser {
-	return ParameterParser{
+func NewTargetParser() TargetParser {
+	return TargetParser{
 		RegisterParser: NewRegisterParser(),
 	}
 }
 
 func (p TargetParser) Parse(v *TokenView) (node TargetNode, err ParsingError) {
-	*node.Type, err = p.TypeParser.Parse(v)
-	if err != nil {
-		node.Type = nil
+	typ, err := p.TypeParser.Parse(v)
+
+	if err == nil {
+		node.Type = &typ
 	}
 
 	node.Register, err = p.RegisterParser.Parse(v)

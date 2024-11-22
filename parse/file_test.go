@@ -49,9 +49,9 @@ func TestSingleFunction(t *testing.T) {
 								parse.RegisterNode{srcView.Subview(46, 48)},
 								parse.RegisterNode{srcView.Subview(49, 51)},
 							},
-							Targets: []parse.ParameterNode{
+							Targets: []parse.TargetNode{
 								{
-									Type:     parse.TypeNode{Identifier: srcView.Subview(31, 34)},
+									Type:     &parse.TypeNode{Identifier: srcView.Subview(31, 34)},
 									Register: parse.RegisterNode{srcView.Subview(35, 39)},
 								},
 							},

@@ -18,7 +18,7 @@ func TestInstructionSetNoErr(t *testing.T) {
 
 	instDef := gen.InstructionDef{
 		Names: []string{"add", "ADD"},
-		Builder: func(targets []parse.ParameterNode, arguments []parse.ArgumentNode) (gen.Instruction, error) {
+		Builder: func(targets []parse.TargetNode, arguments []parse.ArgumentNode) (gen.Instruction, error) {
 			return addInst, nil
 		},
 	}

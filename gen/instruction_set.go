@@ -14,7 +14,7 @@ type Instruction interface {
 }
 
 type InstructionBuilder func(
-	targets []parse.ParameterNode,
+	targets []parse.TargetNode,
 	arguments []parse.ArgumentNode,
 ) (Instruction, error)
 
