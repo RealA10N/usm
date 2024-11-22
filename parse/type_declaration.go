@@ -37,7 +37,7 @@ func NewTypeDeclarationParser() TypeDeclarationParser {
 	}
 }
 
-func (TypeDeclarationParser) parseTypeKeyword(v *TokenView, node *TypeDeclarationNode) (err ParsingError) {
+func (TypeDeclarationParser) parseTypeKeyword(v *TokenView, node *TypeDeclarationNode) (err core.Result) {
 	kw, err := v.ConsumeToken(lex.TypeKeywordToken)
 	if err != nil {
 		return
@@ -47,7 +47,7 @@ func (TypeDeclarationParser) parseTypeKeyword(v *TokenView, node *TypeDeclaratio
 	return
 }
 
-func (TypeDeclarationParser) parseIdentifier(v *TokenView, node *TypeDeclarationNode) (err ParsingError) {
+func (TypeDeclarationParser) parseIdentifier(v *TokenView, node *TypeDeclarationNode) (err core.Result) {
 	id, err := v.ConsumeToken(lex.TypeToken)
 	if err != nil {
 		return
@@ -57,7 +57,7 @@ func (TypeDeclarationParser) parseIdentifier(v *TokenView, node *TypeDeclaration
 	return
 }
 
-func (p TypeDeclarationParser) parseBlock(v *TokenView, node *TypeDeclarationNode) (err ParsingError) {
+func (p TypeDeclarationParser) parseBlock(v *TokenView, node *TypeDeclarationNode) (err core.Result) {
 	node.Fields, err = p.FieldsParser.Parse(v)
 	if err != nil {
 		return
@@ -67,7 +67,7 @@ func (p TypeDeclarationParser) parseBlock(v *TokenView, node *TypeDeclarationNod
 	return
 }
 
-func (p TypeDeclarationParser) Parse(v *TokenView) (node TypeDeclarationNode, err ParsingError) {
+func (p TypeDeclarationParser) Parse(v *TokenView) (node TypeDeclarationNode, err core.Result) {
 	err = p.parseTypeKeyword(v, &node)
 	if err != nil {
 		return

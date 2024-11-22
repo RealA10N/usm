@@ -23,7 +23,7 @@ import (
 func ParseDecoratorNum(
 	genCtx *GenerationContext,
 	dec parse.TypeDecoratorNode,
-) (core.UsmUint, core.UsmError) {
+) (core.UsmUint, core.Result) {
 	if dec.Len() <= 1 {
 		return 1, nil
 	}
@@ -32,10 +32,14 @@ func ParseDecoratorNum(
 	num, err := core.ParseUint(string(numView.Raw(genCtx.SourceContext)))
 
 	if err != nil {
-		return 0, core.GenericError{
-			ErrorMessage:  "Failed to parse number in type decorator",
-			HintMessage:   "Should be a positive, decimal number",
-			ErrorLocation: numView,
+		return 0, &core.GenericResult{
+			Type:     core.ErrorResult,
+			Location: &numView,
+			Message:  "Failed to parse number in type decorator",
+			Next: &core.GenericResult{
+				Type:    core.HintResult,
+				Message: "Should be a positive, decimal number",
+			},
 		}
 	}
 
@@ -46,7 +50,7 @@ func CalculateTypeSizeFromTypeDecorators(
 	genCtx *GenerationContext,
 	baseTypeSize core.UsmUint,
 	decorators []parse.TypeDecoratorNode,
-) (core.UsmUint, core.UsmError) {
+) (core.UsmUint, core.Result) {
 	if len(decorators) == 0 {
 		return baseTypeSize, nil
 	}
@@ -71,10 +75,10 @@ func CalculateTypeSizeFromTypeDecorators(
 		)
 
 	default:
-		return 0, core.GenericError{
-			ErrorMessage:  "Unknown type decorator",
-			ErrorLocation: topDecorator.UnmanagedSourceView,
-			IsInternal:    true,
+		return 0, &core.GenericResult{
+			Type:     core.InternalErrorResult,
+			Message:  "Unknown type decorator",
+			Location: &topDecorator.UnmanagedSourceView,
 		}
 	}
 }
@@ -82,14 +86,15 @@ func CalculateTypeSizeFromTypeDecorators(
 func CalculateTypeSizeFromTypeNode(
 	genCtx *GenerationContext,
 	node parse.TypeNode,
-) (core.UsmUint, core.UsmError) {
+) (core.UsmUint, core.Result) {
 	typeName := string(node.Identifier.Raw(genCtx.SourceContext))
 	typeInfo := genCtx.Types.GetType(typeName)
 
 	if typeInfo == nil {
-		return 0, core.GenericError{
-			ErrorMessage:  "Undeclared type",
-			ErrorLocation: node.Identifier,
+		return 0, &core.GenericResult{
+			Type:     core.ErrorResult,
+			Message:  "Undeclared type",
+			Location: &node.Identifier,
 		}
 	}
 
@@ -103,7 +108,7 @@ func CalculateTypeSizeFromTypeNode(
 func CalculateTypeSizeFromTypeDeclaration(
 	genCtx *GenerationContext,
 	node parse.TypeDeclarationNode,
-) (size core.UsmUint, err core.UsmError) {
+) (size core.UsmUint, err core.Result) {
 	for _, node := range node.Fields.Nodes {
 		var cur core.UsmUint
 		cur, err = CalculateTypeSizeFromTypeNode(genCtx, node.Type)
@@ -120,10 +125,11 @@ func CalculateTypeSizeFromTypeDeclaration(
 func TypeInfoFromTypeDeclaration(
 	genCtx *GenerationContext,
 	node parse.TypeDeclarationNode,
-) (TypeInfo, core.UsmError) {
+) (TypeInfo, core.Result) {
 	size, err := CalculateTypeSizeFromTypeDeclaration(genCtx, node)
+	name := string(node.Identifier.Raw(genCtx.SourceContext))
 	return TypeInfo{
-		Name: node.Identifier,
+		Name: name,
 		Size: size,
 	}, err
 }

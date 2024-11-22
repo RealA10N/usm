@@ -47,7 +47,7 @@ func NewTypeFieldParser() Parser[TypeFieldNode] {
 	}
 }
 
-func (p TypeFieldParser) Parse(v *TokenView) (node TypeFieldNode, err ParsingError) {
+func (p TypeFieldParser) Parse(v *TokenView) (node TypeFieldNode, err core.Result) {
 	node.Labels, _ = ParseManyIgnoreSeparators(p.LabelParser, v)
 	node.Type, err = p.TypeParser.Parse(v)
 	return

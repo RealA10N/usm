@@ -30,7 +30,7 @@ func NewParameterParser() ParameterParser {
 	}
 }
 
-func (p ParameterParser) Parse(v *TokenView) (node ParameterNode, err ParsingError) {
+func (p ParameterParser) Parse(v *TokenView) (node ParameterNode, err core.Result) {
 	typ, err := p.TypeParser.Parse(v)
 	if err != nil {
 		return

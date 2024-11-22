@@ -80,14 +80,14 @@ func NewInstructionParser() InstructionParser {
 	}
 }
 
-func (InstructionParser) parseEquals(v *TokenView, node *InstructionNode) (err ParsingError) {
+func (InstructionParser) parseEquals(v *TokenView, node *InstructionNode) (err core.Result) {
 	if len(node.Targets) > 0 {
 		_, err = v.ConsumeToken(lex.EqualToken)
 	}
 	return
 }
 
-func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) ParsingError {
+func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) core.Result {
 	opr, err := v.ConsumeToken(lex.OperatorToken)
 	node.Operator = opr.View
 	return err
@@ -96,7 +96,7 @@ func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) Pars
 // Parsing of the following regular expression:
 //
 // > Lbl* (Reg+ Eql)? Opr Arg+ !Arg
-func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err ParsingError) {
+func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err core.Result) {
 	node.Labels, _ = ParseManyIgnoreSeparators(p.LabelParser, v)
 	node.Targets = ParseMany(p.TargetParser, v)
 

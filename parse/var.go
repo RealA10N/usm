@@ -43,7 +43,7 @@ func NewVarDeclarationParser() Parser[VarDeclarationNode] {
 
 func (p VarDeclarationParser) Parse(v *TokenView) (
 	node VarDeclarationNode,
-	err ParsingError,
+	err core.Result,
 ) {
 	_, err = p.VarParser.Parse(v)
 	if err != nil {

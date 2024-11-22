@@ -20,7 +20,7 @@ func NewArgumentParser() ArgumentParser {
 	}
 }
 
-func (p ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError) {
+func (p ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err core.Result) {
 	// TODO: make this code neater.
 
 	if node, err := p.RegisterParser.Parse(v); err == nil {
@@ -49,5 +49,9 @@ func (p ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err ParsingError
 		location = core.NewEofUnmanagedSourceView()
 	}
 
-	return nil, GenericUnexpectedError{Expected: "argument", ErrorLocation: location}
+	return nil, &core.GenericResult{
+		Type:     core.ErrorResult,
+		Message:  "Expected argument",
+		Location: &location,
+	}
 }

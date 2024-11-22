@@ -37,7 +37,7 @@ type BlockParser[NodeT Node] struct {
 	Parser Parser[NodeT]
 }
 
-func (p BlockParser[NodeT]) Parse(v *TokenView) (block BlockNode[NodeT], err ParsingError) {
+func (p BlockParser[NodeT]) Parse(v *TokenView) (block BlockNode[NodeT], err core.Result) {
 	leftCurly, err := v.ConsumeToken(lex.LeftCurlyBraceToken)
 
 	if err != nil {

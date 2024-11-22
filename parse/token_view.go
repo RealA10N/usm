@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
 
 	"alon.kr/x/view"
@@ -12,7 +13,7 @@ func NewTokenView(tkns []lex.Token) TokenView {
 	return TokenView{view.NewView[lex.Token, uint32](tkns)}
 }
 
-func (v *TokenView) PeekToken(expectedTypes ...lex.TokenType) (tkn lex.Token, perr ParsingError) {
+func (v *TokenView) PeekToken(expectedTypes ...lex.TokenType) (tkn lex.Token, perr core.Result) {
 	tkn, err := v.At(0)
 
 	if err != nil {
@@ -36,7 +37,7 @@ func (v *TokenView) PeekToken(expectedTypes ...lex.TokenType) (tkn lex.Token, pe
 	return tkn, nil
 }
 
-func (v *TokenView) ConsumeToken(expectedTypes ...lex.TokenType) (tkn lex.Token, perr ParsingError) {
+func (v *TokenView) ConsumeToken(expectedTypes ...lex.TokenType) (tkn lex.Token, perr core.Result) {
 	tknView, restView := v.Partition(1)
 	tkn, err := tknView.At(0)
 
@@ -62,11 +63,11 @@ func (v *TokenView) ConsumeToken(expectedTypes ...lex.TokenType) (tkn lex.Token,
 	return tkn, nil
 }
 
-// Consume as many tokens as possible greedly, until we receive an error.
+// Consume as many tokens as possible greedily, until we receive an error.
 // The error and token count are returned.
 func (v *TokenView) ConsumeManyTokens(
 	expectedTypes ...lex.TokenType,
-) (count int, err ParsingError) {
+) (count int, err core.Result) {
 	for ; ; count++ {
 		_, err = v.ConsumeToken(expectedTypes...)
 		if err != nil {
@@ -78,18 +79,18 @@ func (v *TokenView) ConsumeManyTokens(
 // Consume a token, but ignore any separator tokens that come before it.
 func (v *TokenView) ConsumeTokenIgnoreSeparator(
 	expectedTypes ...lex.TokenType,
-) (lex.Token, ParsingError) {
+) (lex.Token, core.Result) {
 	v.ConsumeManyTokens(lex.SeparatorToken)
 	return v.ConsumeToken(expectedTypes...)
 }
 
-// Consume as many tokens as possible greedly, until we recieve an error.
+// Consume as many tokens as possible greedily, until we receive an error.
 //
 // If the number of tokens consumed is strictly less than the provided number,
 // returns the underlying error. Otherwise, returns nil.
 func (v *TokenView) ConsumeAtLeastTokens(
 	atLeast int, expectedTypes ...lex.TokenType,
-) (err ParsingError) {
+) (err core.Result) {
 	count, err := v.ConsumeManyTokens(expectedTypes...)
 	if count < atLeast {
 		return err

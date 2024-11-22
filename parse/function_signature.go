@@ -41,7 +41,7 @@ func NewFunctionSignatureParser() FunctionSignatureParser {
 	}
 }
 
-func (FunctionSignatureParser) parseIdentifier(v *TokenView, node *FunctionSignatureNode) ParsingError {
+func (FunctionSignatureParser) parseIdentifier(v *TokenView, node *FunctionSignatureNode) core.Result {
 	id, err := v.ConsumeToken(lex.GlobalToken)
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func (FunctionSignatureParser) updateNodeViewEnd(node *FunctionSignatureNode) {
 	}
 }
 
-func (p FunctionSignatureParser) Parse(v *TokenView) (node FunctionSignatureNode, err ParsingError) {
+func (p FunctionSignatureParser) Parse(v *TokenView) (node FunctionSignatureNode, err core.Result) {
 	node.Returns = ParseMany(p.TypeParser, v)
 
 	err = p.parseIdentifier(v, &node)

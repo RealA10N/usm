@@ -43,7 +43,7 @@ type ImmediateFinalValueParser struct{}
 
 func (ImmediateFinalValueParser) Parse(v *TokenView) (
 	node ImmediateFinalValueNode,
-	err ParsingError,
+	err core.Result,
 ) {
 	tkn, err := v.ConsumeToken(lex.ImmediateToken)
 	if err != nil {
@@ -70,7 +70,7 @@ type ImmediateValueParser struct {
 
 func (p ImmediateValueParser) Parse(v *TokenView) (
 	node ImmediateValueNode,
-	err ParsingError,
+	err core.Result,
 ) {
 	tkn, err := v.PeekToken(lex.ImmediateToken, lex.LeftCurlyBraceToken)
 	if err != nil {
@@ -135,7 +135,7 @@ func (p ImmediateFieldParser) parseLabel(v *TokenView, node *ImmediateFieldNode)
 	node.Label = &label
 }
 
-func (p ImmediateFieldParser) Parse(v *TokenView) (node ImmediateFieldNode, err ParsingError) {
+func (p ImmediateFieldParser) Parse(v *TokenView) (node ImmediateFieldNode, err core.Result) {
 	p.parseLabel(v, &node)
 
 	val, err := p.ImmediateValueParser.Parse(v)
@@ -173,7 +173,7 @@ type ImmediateParser struct {
 	ImmediateValueParser *ImmediateValueParser
 }
 
-func (p ImmediateParser) Parse(v *TokenView) (node ImmediateNode, err ParsingError) {
+func (p ImmediateParser) Parse(v *TokenView) (node ImmediateNode, err core.Result) {
 	tkn, err := v.ConsumeToken(lex.TypeToken)
 	if err != nil {
 		return

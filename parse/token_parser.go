@@ -25,7 +25,7 @@ type TokenParser[NodeT TokenNode] struct {
 	Token lex.TokenType
 }
 
-func (p TokenParser[NodeT]) Parse(v *TokenView) (node NodeT, err ParsingError) {
+func (p TokenParser[NodeT]) Parse(v *TokenView) (node NodeT, err core.Result) {
 	tkn, err := v.ConsumeToken(p.Token)
 	if err != nil {
 		return

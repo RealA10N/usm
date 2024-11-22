@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
 )
 
@@ -65,7 +66,7 @@ func NewFileParser() FileParser {
 	}
 }
 
-func (p FileParser) parseNextNode(v *TokenView, node *FileNode) ParsingError {
+func (p FileParser) parseNextNode(v *TokenView, node *FileNode) core.Result {
 	v.ConsumeManyTokens(lex.SeparatorToken)
 	if v.Len() == 0 {
 		return nil
@@ -108,7 +109,7 @@ func (p FileParser) parseNextNode(v *TokenView, node *FileNode) ParsingError {
 	return nil
 }
 
-func (p FileParser) Parse(v *TokenView) (node FileNode, err ParsingError) {
+func (p FileParser) Parse(v *TokenView) (node FileNode, err core.Result) {
 	for v.Len() > 0 {
 		err = p.parseNextNode(v, &node)
 		if err != nil {

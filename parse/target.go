@@ -40,7 +40,7 @@ func NewTargetParser() TargetParser {
 	}
 }
 
-func (p TargetParser) Parse(v *TokenView) (node TargetNode, err ParsingError) {
+func (p TargetParser) Parse(v *TokenView) (node TargetNode, err core.Result) {
 	typ, err := p.TypeParser.Parse(v)
 
 	if err == nil {

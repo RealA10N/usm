@@ -42,7 +42,7 @@ func NewTypeParser() TypeParser {
 	}
 }
 
-func (p TypeParser) Parse(v *TokenView) (node TypeNode, err ParsingError) {
+func (p TypeParser) Parse(v *TokenView) (node TypeNode, err core.Result) {
 	tkn, err := v.ConsumeToken(lex.TypeToken)
 	if err != nil {
 		return

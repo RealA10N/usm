@@ -45,7 +45,7 @@ func NewConstDeclarationParser() Parser[ConstDeclarationNode] {
 
 func (p ConstDeclarationParser) Parse(v *TokenView) (
 	node ConstDeclarationNode,
-	err ParsingError,
+	err core.Result,
 ) {
 	_, err = p.ConstParser.Parse(v)
 	if err != nil {

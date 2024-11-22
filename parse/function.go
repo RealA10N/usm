@@ -38,7 +38,7 @@ func NewFunctionParser() FunctionParser {
 	}
 }
 
-func (FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) ParsingError {
+func (FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) core.Result {
 	kw, err := v.ConsumeToken(lex.FuncKeywordToken)
 	if err != nil {
 		return err
@@ -58,7 +58,7 @@ func (p FunctionParser) parseBlock(v *TokenView, node *FunctionNode) {
 	}
 }
 
-func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err ParsingError) {
+func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err core.Result) {
 	err = p.parseFunctionKeyword(v, &node)
 	if err != nil {
 		return

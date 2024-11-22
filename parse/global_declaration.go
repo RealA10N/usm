@@ -50,7 +50,7 @@ func NewGlobalDeclarationParser() GlobalDeclarationParser {
 
 func (p *GlobalDeclarationParser) Parse(v *TokenView) (
 	node GlobalDeclarationNode,
-	err ParsingError,
+	err core.Result,
 ) {
 	node.Identifier, err = p.GlobalParser.Parse(v)
 	if err != nil {
