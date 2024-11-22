@@ -7,17 +7,22 @@ import (
 // MARK: Info Types
 
 type TypeInfo struct {
-	Name core.UnmanagedSourceView
-	Size core.UsmUint
+	Name        string
+	Size        core.UsmUint
+	Declaration core.UnmanagedSourceView
 }
 
 type RegisterInfo struct {
 	// The name of the register, as it appears in the source code.
-	Name core.UnmanagedSourceView
+	Name string
 
 	// A pointer to the TypeInfo instance that corresponds to the type of the
 	// register.
 	Type *TypeInfo
+
+	// The first location in the source code in which the register is declared
+	// or assigned a value.
+	Declaration core.UnmanagedSourceView
 }
 
 type ArchInfo struct {
