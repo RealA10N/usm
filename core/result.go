@@ -1,5 +1,7 @@
 package core
 
+import "alon.kr/x/list"
+
 // MARK: Result
 
 type ResultType uint8
@@ -22,6 +24,8 @@ type Result interface {
 	// in more detail or suggest a quick fix.
 	GetNext() Result
 }
+
+type ResultList = list.List[Result]
 
 // MARK: GenericResult
 
