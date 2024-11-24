@@ -4,7 +4,7 @@ import (
 	"alon.kr/x/usm/core"
 )
 
-// MARK: Info Types
+// MARK: Info
 
 type TypeInfo struct {
 	Name        string
@@ -23,6 +23,23 @@ type RegisterInfo struct {
 	// The first location in the source code in which the register is declared
 	// or assigned a value.
 	Declaration core.UnmanagedSourceView
+}
+
+type ArgumentInfo interface{}
+
+type ImmediateInfo struct {
+	Type  *TypeInfo
+	Value core.UsmUint // TODO: more complex and complete representation of immediate structs.
+}
+
+type LabelInfo struct {
+	// TODO: add location relevant information. How exactly?
+	Name string
+}
+
+type GlobalInfo struct {
+	Name string
+	Type *TypeInfo
 }
 
 type ArchInfo struct {
