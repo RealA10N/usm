@@ -1,8 +1,6 @@
 package gen
 
 import (
-	"fmt"
-
 	"alon.kr/x/faststringmap"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/parse"
@@ -13,32 +11,27 @@ type Instruction interface {
 	HasSideEffects() bool
 }
 
-type InstructionBuilder func(
-	targets []parse.TargetNode,
-	arguments []parse.ArgumentNode,
-) (Instruction, error)
-
 // A basic instruction definition. This defines the logic that converts the
 // generic, architecture / instruction set independent instruction AST nodes
 // into a format instruction which is part of a specific instruction set.
-type InstructionDef struct {
-	Names   []string
-	Builder InstructionBuilder
+type InstructionDefinition interface {
+	Names() []string
+	Builder(targets []RegisterInfo, arguments []ArgumentInfo) (Instruction, core.Result)
 }
 
 type InstructionSet struct {
-	nameToBuilder faststringmap.Map[InstructionBuilder]
+	NameToDefinition faststringmap.Map[InstructionDefinition]
 }
 
-func NewInstructionSet(instructionDefs []InstructionDef) InstructionSet {
+func NewInstructionSet(instDefs []InstructionDefinition) InstructionSet {
 	// optimization: # of entries is at least # of instructions.
-	entries := make([]faststringmap.MapEntry[InstructionBuilder], 0, len(instructionDefs))
+	entries := make([]faststringmap.MapEntry[InstructionDefinition], 0, len(instDefs))
 
-	for _, inst := range instructionDefs {
-		for _, name := range inst.Names {
-			entry := faststringmap.MapEntry[InstructionBuilder]{
+	for _, instDef := range instDefs {
+		for _, name := range instDef.Names() {
+			entry := faststringmap.MapEntry[InstructionDefinition]{
 				Key:   name,
-				Value: inst.Builder,
+				Value: instDef,
 			}
 			entries = append(entries, entry)
 		}
@@ -47,18 +40,53 @@ func NewInstructionSet(instructionDefs []InstructionDef) InstructionSet {
 	return InstructionSet{faststringmap.NewMap(entries)}
 }
 
-// Convert an instruction parsed node into an instruction that is in the
-// instruction set.
-func (set *InstructionSet) Build(
+// Get the instruction definition that corresponds to the instruction in the
+// provided parsed node, or return an error if the instruction is not known.
+func (s *InstructionSet) getInstructionDefinitionFromNode(
 	ctx core.SourceContext,
 	node parse.InstructionNode,
-) (Instruction, error) {
-	var ok bool
+) (InstructionDefinition, core.Result) {
 	name := string(node.Operator.Raw(ctx))
-	instBuilder, ok := set.nameToBuilder.LookupString(name)
+	instDef, ok := s.NameToDefinition.LookupString(name)
+
 	if !ok {
-		return nil, fmt.Errorf("unknown instruction '%s'", name)
+		return nil, core.GenericResult{
+			Type:     core.ErrorResult,
+			Message:  "Unknown instruction name",
+			Location: &node.Operator,
+		}
+		// TODO: add typo suggestions?
 	}
 
-	return instBuilder(node.Targets, node.Arguments)
+	return instDef, nil
+}
+
+func (s *InstructionSet) getInstructionTargetsFromNode(
+	ctx core.SourceContext,
+	node parse.InstructionNode,
+) []RegisterInfo {
+	return nil // TODO: implement
+}
+
+func (s *InstructionSet) getInstructionArgumentsFromNode(
+	ctx core.SourceContext,
+	node parse.InstructionNode,
+) []ArgumentInfo {
+	return nil // TODO: implement
+}
+
+// Convert an instruction parsed node into an instruction that is in the
+// instruction set.
+func (s *InstructionSet) Build(
+	ctx core.SourceContext,
+	node parse.InstructionNode,
+) (Instruction, core.Result) {
+	instDef, err := s.getInstructionDefinitionFromNode(ctx, node)
+	if err != nil {
+		return nil, err
+	}
+
+	targets := s.getInstructionTargetsFromNode(ctx, node)
+	arguments := s.getInstructionArgumentsFromNode(ctx, node)
+	return instDef.Builder(targets, arguments)
 }
