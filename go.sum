@@ -1,7 +1,7 @@
 alon.kr/x/faststringmap v0.0.0-20241117165103-5662ddd92b26 h1:sbHgDrA+fbPX3SPAUOR8KoxBpHx13gbs1+ho9oid17E=
 alon.kr/x/faststringmap v0.0.0-20241117165103-5662ddd92b26/go.mod h1:dPORoTvAFIehHRaI/lfJV3eT6PL5tY7fpAtxzz7rQVw=
-alon.kr/x/list v0.0.0-20241124221547-3578129c2824 h1:TBuCqdYNSrmAGwU0HCEgWLJ+sGjbF95uBt6HzpHb31c=
-alon.kr/x/list v0.0.0-20241124221547-3578129c2824/go.mod h1:9m6L1yW0WZ4MQqpsRtlrjEUfhmoA702TjlLThW4JdE8=
+alon.kr/x/list v0.0.0-20241125182756-e6b3fb0bffb8 h1:4kThVvJSuHhJMggOjrEe87T+LgTnrmzWec0s9iKKMKE=
+alon.kr/x/list v0.0.0-20241125182756-e6b3fb0bffb8/go.mod h1:9m6L1yW0WZ4MQqpsRtlrjEUfhmoA702TjlLThW4JdE8=
 alon.kr/x/view v0.0.0-20241117132723-5c30dbef3c86 h1:Wp3skgdAxmqVEJBO5rqlwVvVsSgsG1LiH8ltbJjD4f0=
 alon.kr/x/view v0.0.0-20241117132723-5c30dbef3c86/go.mod h1:d52sTAJJ2e9k+DyAk6kgX4WuLk41HjfGZJuQEpF1KQU=
 github.com/cpuguy83/go-md2man/v2 v2.0.4/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
