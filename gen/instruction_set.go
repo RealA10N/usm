@@ -84,31 +84,60 @@ func (s *InstructionSet) getInstructionDefinitionFromNode(
 	return instDef, nil
 }
 
-func (s *InstructionSet) getInstructionTargetFromTargetNode(
+func NewRegisterTypeMismatchError(
+	NewDeclaration core.UnmanagedSourceView,
+	FirstDeclaration core.UnmanagedSourceView,
+) core.Result {
+	return core.GenericResult{
+		Type:     core.ErrorResult,
+		Message:  "Explicit register type does not match previous declaration",
+		Location: &NewDeclaration,
+		Next: core.GenericResult{
+			Type:     core.HintResult,
+			Message:  "Previous declaration here",
+			Location: &FirstDeclaration,
+		},
+	}
+}
+
+func (s *InstructionSet) getTargetTypeFromTargetNode(
 	ctx *GenerationContext,
 	node parse.TargetNode,
-) (regInfo RegisterInfo, res core.Result) {
-	// hintedType := getTargetTypeFromTargetNode(ctx, node)
+) (typeInfo *TypeInfo, res core.Result) {
+
+	// if an explicit type is provided to the target, get the type info.
+	var explicitType *TypeInfo
 	if node.Type != nil {
-		typeName := string(node.Type.Identifier.Raw(ctx.SourceContext))
-		regInfo.Type = ctx.Types.GetType(typeName)
-		if regInfo.Type == nil {
-			res = core.GenericResult{
-				Type:     core.ErrorResult,
-				Message:  "Undefined type",
-				Location: &node.Type.Identifier,
-			}
-			return
-		}
+		explicitTypeName := string(node.Type.Identifier.Raw(ctx.SourceContext))
+		explicitType = ctx.Types.GetType(explicitTypeName)
 	}
 
 	registerName := string(node.Register.Raw(ctx.SourceContext))
-	if existingReg := ctx.Registers.GetRegister(registerName); existingReg != nil {
-		if regInfo.Type != nil {
+	registerInfo := ctx.Registers.GetRegister(registerName)
 
+	if registerInfo != nil {
+		// register is already previously defined
+		if explicitType != nil {
+			// ensure explicit type matches the previously declared one.
+			if !explicitType.Equals(registerInfo.Type) {
+				return nil, NewRegisterTypeMismatchError(
+					node.View(),
+					registerInfo.Declaration,
+				)
+			}
 		}
+
+		// all checks passed; return previously defined register type.
+		return registerInfo.Type, nil
+
+	} else {
+		// this is the first appearance of the register; if the type is provided
+		// explicitly, use it. otherwise, there is no way to know the type of
+		// the target register at this.
+		// the type and register will be finalized when the instruction is built,
+		// and only then it is added to the register manager.
+		return explicitType, nil
 	}
-	return
 }
 
 func (s *InstructionSet) getInstructionArgumentFromArgumentNode(
@@ -118,19 +147,22 @@ func (s *InstructionSet) getInstructionArgumentFromArgumentNode(
 	return nil, nil // TODO: implement
 }
 
-func (s *InstructionSet) getInstructionTargetsFromInstructionNode(
+func (s *InstructionSet) getTargetTypesFromInstructionNode(
 	ctx *GenerationContext,
 	node parse.InstructionNode,
-) (regs []RegisterInfo, results core.ResultList) {
-	for _, target := range node.Targets {
-		info, res := s.getInstructionTargetFromTargetNode(ctx, target)
-		if res == nil {
-			regs = append(regs, info)
-		} else {
-			results.Append(res)
+) ([]*TypeInfo, core.ResultList) {
+	targets := make([]*TypeInfo, len(node.Targets))
+	results := core.ResultList{}
+
+	for i, target := range node.Targets {
+		typeInfo, result := s.getTargetTypeFromTargetNode(ctx, target)
+		targets[i] = typeInfo
+		if result != nil {
+			results.Append(result)
 		}
 	}
-	return
+
+	return targets, results
 }
 
 func (s *InstructionSet) getInstructionArgumentsFromInstructionNode(
