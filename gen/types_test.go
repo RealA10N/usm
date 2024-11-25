@@ -16,10 +16,10 @@ func (m TypeManager) GetType(name string) *gen.TypeInfo {
 }
 
 func (m TypeManager) registerBuiltinType(name string, size core.UsmUint) {
-	m.RegisterType(name, &gen.TypeInfo{Size: size})
+	m.NewType(name, &gen.TypeInfo{Size: size})
 }
 
-func (m TypeManager) RegisterType(name string, typ *gen.TypeInfo) core.Result {
+func (m TypeManager) NewType(name string, typ *gen.TypeInfo) core.Result {
 	if m[name] != nil {
 		return &core.GenericResult{
 			Type:     core.ErrorResult,

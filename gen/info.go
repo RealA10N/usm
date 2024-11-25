@@ -64,7 +64,12 @@ type TypeManager interface {
 	// The implementation should raise an error if the new registered type is
 	// invalid, for example if there already exists a type with the same name,
 	// or if its a builtin type.
-	RegisterType(name string, typ *TypeInfo) core.Result
+	NewType(name string, typ *TypeInfo) core.Result
+}
+
+type RegisterManager interface {
+	GetRegister(name string) *RegisterInfo
+	NewRegister(name string, reg *RegisterInfo) core.Result
 }
 
 // MARK: Generation Context
@@ -76,7 +81,8 @@ type GenerationContext struct {
 	ArchInfo
 	core.SourceContext
 
-	Types TypeManager
+	Types     TypeManager
+	Registers RegisterManager
 	// TODO: add registers info.
 
 	// TODO: add globals, functions, etc.

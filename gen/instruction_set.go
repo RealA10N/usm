@@ -66,10 +66,10 @@ func NewInstructionSet(instDefs []InstructionDefinition) InstructionSet {
 // Get the instruction definition that corresponds to the instruction in the
 // provided parsed node, or return an error if the instruction is not known.
 func (s *InstructionSet) getInstructionDefinitionFromNode(
-	ctx core.SourceContext,
+	ctx *GenerationContext,
 	node parse.InstructionNode,
 ) (InstructionDefinition, core.Result) {
-	name := string(node.Operator.Raw(ctx))
+	name := string(node.Operator.Raw(ctx.SourceContext))
 	instDef, ok := s.NameToDefinition.LookupString(name)
 
 	if !ok {
@@ -85,21 +85,41 @@ func (s *InstructionSet) getInstructionDefinitionFromNode(
 }
 
 func (s *InstructionSet) getInstructionTargetFromTargetNode(
-	ctx core.SourceContext,
+	ctx *GenerationContext,
 	node parse.TargetNode,
-) (RegisterInfo, core.Result) {
-	return RegisterInfo{}, nil // TODO: implement
+) (regInfo RegisterInfo, res core.Result) {
+	// hintedType := getTargetTypeFromTargetNode(ctx, node)
+	if node.Type != nil {
+		typeName := string(node.Type.Identifier.Raw(ctx.SourceContext))
+		regInfo.Type = ctx.Types.GetType(typeName)
+		if regInfo.Type == nil {
+			res = core.GenericResult{
+				Type:     core.ErrorResult,
+				Message:  "Undefined type",
+				Location: &node.Type.Identifier,
+			}
+			return
+		}
+	}
+
+	registerName := string(node.Register.Raw(ctx.SourceContext))
+	if existingReg := ctx.Registers.GetRegister(registerName); existingReg != nil {
+		if regInfo.Type != nil {
+
+		}
+	}
+	return
 }
 
 func (s *InstructionSet) getInstructionArgumentFromArgumentNode(
-	ctx core.SourceContext,
+	ctx *GenerationContext,
 	node parse.ArgumentNode,
 ) (ArgumentInfo, core.Result) {
 	return nil, nil // TODO: implement
 }
 
 func (s *InstructionSet) getInstructionTargetsFromInstructionNode(
-	ctx core.SourceContext,
+	ctx *GenerationContext,
 	node parse.InstructionNode,
 ) (regs []RegisterInfo, results core.ResultList) {
 	for _, target := range node.Targets {
@@ -114,7 +134,7 @@ func (s *InstructionSet) getInstructionTargetsFromInstructionNode(
 }
 
 func (s *InstructionSet) getInstructionArgumentsFromInstructionNode(
-	ctx core.SourceContext,
+	ctx *GenerationContext,
 	node parse.InstructionNode,
 ) (args []ArgumentInfo, results core.ResultList) {
 	for _, arg := range node.Arguments {
@@ -131,7 +151,7 @@ func (s *InstructionSet) getInstructionArgumentsFromInstructionNode(
 // Convert an instruction parsed node into an instruction that is in the
 // instruction set.
 func (s *InstructionSet) Build(
-	ctx core.SourceContext,
+	ctx *GenerationContext,
 	node parse.InstructionNode,
 ) (inst Instruction, results core.ResultList) {
 	instDef, res := s.getInstructionDefinitionFromNode(ctx, node)
