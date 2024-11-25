@@ -16,7 +16,7 @@ type Instruction interface {
 // into a format instruction which is part of a specific instruction set.
 type InstructionDefinition interface {
 	Names() []string
-	Builder(targets []RegisterInfo, arguments []ArgumentInfo) (Instruction, core.Result)
+	Builder(targets []RegisterInfo, arguments []ArgumentInfo) (Instruction, core.ResultList)
 }
 
 type InstructionSet struct {
@@ -61,18 +61,48 @@ func (s *InstructionSet) getInstructionDefinitionFromNode(
 	return instDef, nil
 }
 
-func (s *InstructionSet) getInstructionTargetsFromNode(
+func (s *InstructionSet) getInstructionTargetFromTargetNode(
 	ctx core.SourceContext,
-	node parse.InstructionNode,
-) []RegisterInfo {
-	return nil // TODO: implement
+	node parse.TargetNode,
+) (RegisterInfo, core.Result) {
+	return RegisterInfo{}, nil // TODO: implement
 }
 
-func (s *InstructionSet) getInstructionArgumentsFromNode(
+func (s *InstructionSet) getInstructionArgumentFromArgumentNode(
+	ctx core.SourceContext,
+	node parse.ArgumentNode,
+) (ArgumentInfo, core.Result) {
+	return nil, nil // TODO: implement
+}
+
+func (s *InstructionSet) getInstructionTargetsFromInstructionNode(
 	ctx core.SourceContext,
 	node parse.InstructionNode,
-) []ArgumentInfo {
-	return nil // TODO: implement
+) (regs []RegisterInfo, results core.ResultList) {
+	for _, target := range node.Targets {
+		info, res := s.getInstructionTargetFromTargetNode(ctx, target)
+		if res == nil {
+			regs = append(regs, info)
+		} else {
+			results.Append(res)
+		}
+	}
+	return
+}
+
+func (s *InstructionSet) getInstructionArgumentsFromInstructionNode(
+	ctx core.SourceContext,
+	node parse.InstructionNode,
+) (args []ArgumentInfo, results core.ResultList) {
+	for _, arg := range node.Arguments {
+		info, res := s.getInstructionArgumentFromArgumentNode(ctx, arg)
+		if res == nil {
+			args = append(args, info)
+		} else {
+			results.Append(res)
+		}
+	}
+	return
 }
 
 // Convert an instruction parsed node into an instruction that is in the
@@ -80,13 +110,21 @@ func (s *InstructionSet) getInstructionArgumentsFromNode(
 func (s *InstructionSet) Build(
 	ctx core.SourceContext,
 	node parse.InstructionNode,
-) (Instruction, core.Result) {
-	instDef, err := s.getInstructionDefinitionFromNode(ctx, node)
-	if err != nil {
-		return nil, err
+) (inst Instruction, results core.ResultList) {
+	instDef, res := s.getInstructionDefinitionFromNode(ctx, node)
+	if res != nil {
+		results.Append(res)
 	}
 
-	targets := s.getInstructionTargetsFromNode(ctx, node)
-	arguments := s.getInstructionArgumentsFromNode(ctx, node)
-	return instDef.Builder(targets, arguments)
+	targets, targetsResults := s.getInstructionTargetsFromInstructionNode(ctx, node)
+	results.Extend(&targetsResults)
+
+	arguments, argumentsResults := s.getInstructionArgumentsFromInstructionNode(ctx, node)
+	results.Extend(&argumentsResults)
+
+	if results.IsEmpty() {
+		return instDef.Builder(targets, arguments)
+	} else {
+		return nil, results
+	}
 }

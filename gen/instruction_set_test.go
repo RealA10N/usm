@@ -13,6 +13,7 @@ type AddInstructionDef struct{}
 
 func (AddInstructionDef) HasSideEffects() bool { return false }
 
+// TODO: fix tests
 func TestInstructionSetNoErr(t *testing.T) {
 	addInst := &AddInstructionDef{}
 
