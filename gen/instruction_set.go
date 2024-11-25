@@ -119,7 +119,7 @@ func (s *InstructionSet) getTargetTypeFromTargetNode(
 		// register is already previously defined
 		if explicitType != nil {
 			// ensure explicit type matches the previously declared one.
-			if !explicitType.Equals(registerInfo.Type) {
+			if explicitType != registerInfo.Type {
 				return nil, NewRegisterTypeMismatchError(
 					node.View(),
 					registerInfo.Declaration,

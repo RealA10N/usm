@@ -12,14 +12,6 @@ type TypeInfo struct {
 	Declaration core.UnmanagedSourceView
 }
 
-// Returns true iff the two type info instances are equal.
-//
-// Since types are uniquely identified by their name, this method only compares
-// the type names.
-func (t *TypeInfo) Equals(other *TypeInfo) bool {
-	return t.Name == other.Name
-}
-
 type RegisterInfo struct {
 	// The name of the register, as it appears in the source code.
 	Name string
