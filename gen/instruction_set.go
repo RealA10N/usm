@@ -163,7 +163,32 @@ func (s *InstructionSet) getArgumentFromArgumentNode(
 	ctx *GenerationContext,
 	node parse.ArgumentNode,
 ) (*ArgumentInfo, core.Result) {
-	return nil, nil // TODO: implement
+	if registerNode, ok := node.(parse.RegisterNode); ok {
+		// TODO: duplicated code: make function that extracts register name from node.
+		registerName := string(registerNode.Raw(ctx.SourceContext))
+		registerInfo := ctx.Registers.GetRegister(registerName)
+
+		if registerInfo == nil {
+			v := node.View()
+			return nil, core.GenericResult{
+				Type:     core.ErrorResult,
+				Message:  "Undefined register used as argument",
+				Location: &v,
+			}
+		}
+
+		argumentInfo := ArgumentInfo{
+			Type: registerInfo.Type,
+		}
+		return &argumentInfo, nil
+	}
+
+	v := node.View()
+	return nil, core.GenericResult{
+		Type:     core.InternalErrorResult,
+		Message:  "Unsupported argument type",
+		Location: &v,
+	}
 }
 
 func (s *InstructionSet) getArgumentsFromInstructionNode(
