@@ -37,7 +37,11 @@ type InstructionDefinition interface {
 	// On success, the length of the returned type slice should be equal to the
 	// provided (partial) targets length. The non nil provided target types
 	// should not be modified.
+	//
+	// TODO: perhaps we should not pass the bare generation context to the "public"
+	// instruction set definition API, and should wrap it with a limited interface.
 	InferTargetTypes(
+		ctx *GenerationContext,
 		targets []*TypeInfo,
 		arguments []*TypeInfo,
 	) ([]*TypeInfo, core.ResultList)
@@ -194,10 +198,11 @@ func (s *InstructionSet) getArgumentFromArgumentNode(
 func (s *InstructionSet) getArgumentsFromInstructionNode(
 	ctx *GenerationContext,
 	node parse.InstructionNode,
-) (args []*ArgumentInfo, results core.ResultList) {
+) (arguments []*ArgumentInfo, results core.ResultList) {
+	arguments = make([]*ArgumentInfo, len(node.Arguments))
 	for i, arg := range node.Arguments {
 		argInfo, result := s.getArgumentFromArgumentNode(ctx, arg)
-		args[i] = argInfo
+		arguments[i] = argInfo
 		if result != nil {
 			results.Append(result)
 		}
@@ -306,7 +311,9 @@ func (s *InstructionSet) Build(
 	}
 
 	argumentTypes := s.argumentsToArgumentTypes(arguments)
-	actualTargetTypes, results := instDef.InferTargetTypes(targetTypes, argumentTypes)
+	actualTargetTypes, results := instDef.InferTargetTypes(ctx, targetTypes, argumentTypes)
+	// TODO: validate that the returned target types matches expected constraints.
+
 	if !results.IsEmpty() {
 		return nil, results
 	}
