@@ -25,7 +25,11 @@ type RegisterInfo struct {
 	Declaration core.UnmanagedSourceView
 }
 
-type ArgumentInfo interface{}
+type ArgumentInfo struct {
+	// A pointer to the TypeInfo instance that corresponds to the type of the
+	// register.
+	Type *TypeInfo
+}
 
 type ImmediateInfo struct {
 	Type  *TypeInfo
@@ -69,7 +73,7 @@ type TypeManager interface {
 
 type RegisterManager interface {
 	GetRegister(name string) *RegisterInfo
-	NewRegister(name string, reg *RegisterInfo) core.Result
+	NewRegister(reg *RegisterInfo) core.Result
 }
 
 // MARK: Generation Context

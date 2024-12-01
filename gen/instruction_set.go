@@ -2,6 +2,7 @@ package gen
 
 import (
 	"alon.kr/x/faststringmap"
+	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/parse"
 )
@@ -23,8 +24,8 @@ type InstructionDefinition interface {
 
 	// Build an instruction from the provided targets and arguments.
 	BuildInstruction(
-		targets []RegisterInfo,
-		arguments []ArgumentInfo,
+		targets []*RegisterInfo,
+		arguments []*ArgumentInfo,
 	) (Instruction, core.ResultList)
 
 	// Provided a list a list of types that correspond to argument types,
@@ -36,9 +37,9 @@ type InstructionDefinition interface {
 	// On success, the length of the returned type slice should be equal to the
 	// provided (partial) targets length. The non nil provided target types
 	// should not be modified.
-	InterTargetTypes(
+	InferTargetTypes(
 		targets []*TypeInfo,
-		arguments []TypeInfo,
+		arguments []*TypeInfo,
 	) ([]*TypeInfo, core.ResultList)
 }
 
@@ -140,13 +141,6 @@ func (s *InstructionSet) getTargetTypeFromTargetNode(
 	}
 }
 
-func (s *InstructionSet) getInstructionArgumentFromArgumentNode(
-	ctx *GenerationContext,
-	node parse.ArgumentNode,
-) (ArgumentInfo, core.Result) {
-	return nil, nil // TODO: implement
-}
-
 func (s *InstructionSet) getTargetTypesFromInstructionNode(
 	ctx *GenerationContext,
 	node parse.InstructionNode,
@@ -165,19 +159,104 @@ func (s *InstructionSet) getTargetTypesFromInstructionNode(
 	return targets, results
 }
 
-func (s *InstructionSet) getInstructionArgumentsFromInstructionNode(
+func (s *InstructionSet) getArgumentFromArgumentNode(
+	ctx *GenerationContext,
+	node parse.ArgumentNode,
+) (*ArgumentInfo, core.Result) {
+	return nil, nil // TODO: implement
+}
+
+func (s *InstructionSet) getArgumentsFromInstructionNode(
 	ctx *GenerationContext,
 	node parse.InstructionNode,
-) (args []ArgumentInfo, results core.ResultList) {
-	for _, arg := range node.Arguments {
-		info, res := s.getInstructionArgumentFromArgumentNode(ctx, arg)
-		if res == nil {
-			args = append(args, info)
-		} else {
-			results.Append(res)
+) (args []*ArgumentInfo, results core.ResultList) {
+	for i, arg := range node.Arguments {
+		argInfo, result := s.getArgumentFromArgumentNode(ctx, arg)
+		args[i] = argInfo
+		if result != nil {
+			results.Append(result)
 		}
 	}
 	return
+}
+
+func (s *InstructionSet) argumentsToArgumentTypes(arguments []*ArgumentInfo) []*TypeInfo {
+	argumentTypes := make([]*TypeInfo, len(arguments))
+	for i, arg := range arguments {
+		argumentTypes[i] = arg.Type
+	}
+	return argumentTypes
+}
+
+func (s *InstructionSet) defineNewRegister(
+	ctx *GenerationContext,
+	node parse.TargetNode,
+	targetType *TypeInfo,
+) (registerInfo *RegisterInfo, result core.Result) {
+	registerName := string(node.Register.Raw(ctx.SourceContext))
+	registerInfo = ctx.Registers.GetRegister(registerName)
+	nodeView := node.View()
+
+	if registerInfo == nil {
+		// register is defined here! we should create the register and define
+		// it's type.
+		registerInfo := &RegisterInfo{
+			Name:        registerName,
+			Type:        targetType,
+			Declaration: nodeView,
+		}
+
+		ctx.Registers.NewRegister(registerInfo)
+
+	} else {
+		// register is already defined;
+		// sanity check: ensure the type matches the previously defined one.
+		if registerInfo.Type != targetType {
+			return nil, core.GenericResult{
+				Type:     core.InternalErrorResult,
+				Message:  "internal register type mismatch",
+				Location: &nodeView,
+			}
+		}
+	}
+
+	return registerInfo, nil
+}
+
+func (s *InstructionSet) defineNewRegisters(
+	ctx *GenerationContext,
+	node parse.InstructionNode,
+	targetTypes []*TypeInfo,
+) ([]*RegisterInfo, core.Result) {
+	if len(node.Targets) != len(targetTypes) {
+		v := node.View()
+		return nil, core.GenericResult{
+			Type:     core.InternalErrorResult,
+			Message:  "targets length mismatch",
+			Location: &v,
+		}
+	}
+
+	registers := make([]*RegisterInfo, len(node.Targets))
+	for i, target := range node.Targets {
+		registerInfo, result := s.defineNewRegister(ctx, target, targetTypes[i])
+		if result != nil {
+			return nil, result
+		}
+
+		if registerInfo == nil {
+			v := target.View()
+			return nil, core.GenericResult{
+				Type:     core.InternalErrorResult,
+				Message:  "unexpected nil register",
+				Location: &v,
+			}
+		}
+
+		registers[i] = registerInfo
+	}
+
+	return registers, nil
 }
 
 // Convert an instruction parsed node into an instruction that is in the
@@ -191,15 +270,26 @@ func (s *InstructionSet) Build(
 		results.Append(res)
 	}
 
-	targets, targetsResults := s.getInstructionTargetsFromInstructionNode(ctx, node)
+	targetTypes, targetsResults := s.getTargetTypesFromInstructionNode(ctx, node)
 	results.Extend(&targetsResults)
 
-	arguments, argumentsResults := s.getInstructionArgumentsFromInstructionNode(ctx, node)
+	arguments, argumentsResults := s.getArgumentsFromInstructionNode(ctx, node)
 	results.Extend(&argumentsResults)
 
-	if results.IsEmpty() {
-		return instDef.BuildInstruction(targets, arguments)
-	} else {
+	if !results.IsEmpty() {
 		return nil, results
 	}
+
+	argumentTypes := s.argumentsToArgumentTypes(arguments)
+	actualTargetTypes, results := instDef.InferTargetTypes(targetTypes, argumentTypes)
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	targets, result := s.defineNewRegisters(ctx, node, actualTargetTypes)
+	if result != nil {
+		return nil, list.FromSlice([]core.Result{result})
+	}
+
+	return instDef.BuildInstruction(targets, arguments)
 }
