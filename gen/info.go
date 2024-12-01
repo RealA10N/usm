@@ -68,7 +68,7 @@ type TypeManager interface {
 	// The implementation should raise an error if the new registered type is
 	// invalid, for example if there already exists a type with the same name,
 	// or if its a builtin type.
-	NewType(name string, typ *TypeInfo) core.Result
+	NewType(typ *TypeInfo) core.Result
 }
 
 type RegisterManager interface {

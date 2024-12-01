@@ -16,11 +16,11 @@ func (m TypeManager) GetType(name string) *gen.TypeInfo {
 }
 
 func (m TypeManager) registerBuiltinType(name string, size core.UsmUint) {
-	m.NewType(name, &gen.TypeInfo{Size: size})
+	m.NewType(&gen.TypeInfo{Size: size})
 }
 
-func (m TypeManager) NewType(name string, typ *gen.TypeInfo) core.Result {
-	if m[name] != nil {
+func (m TypeManager) NewType(typ *gen.TypeInfo) core.Result {
+	if m[typ.Name] != nil {
 		return &core.GenericResult{
 			Type:     core.ErrorResult,
 			Message:  "Type already defined",
@@ -28,7 +28,7 @@ func (m TypeManager) NewType(name string, typ *gen.TypeInfo) core.Result {
 		}
 	}
 
-	m[name] = typ
+	m[typ.Name] = typ
 	return nil
 }
 
