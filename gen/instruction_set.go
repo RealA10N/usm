@@ -1,7 +1,6 @@
 package gen
 
 import (
-	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/parse"
 )
@@ -134,71 +133,6 @@ func (g *InstructionGenerator[InstT]) Generate(
 
 // MARK: old code
 
-func (s *InstructionSet[InstT]) getTargetTypesFromInstructionNode(
-	ctx *GenerationContext,
-	node parse.InstructionNode,
-) ([]*TypeInfo, core.ResultList) {
-	targets := make([]*TypeInfo, len(node.Targets))
-	results := core.ResultList{}
-
-	for i, target := range node.Targets {
-		typeInfo, result := s.getTargetTypeFromTargetNode(ctx, target)
-		targets[i] = typeInfo
-		if result != nil {
-			results.Append(result)
-		}
-	}
-
-	return targets, results
-}
-
-func (s *InstructionSet[InstT]) getArgumentFromArgumentNode(
-	ctx *GenerationContext,
-	node parse.ArgumentNode,
-) (*ArgumentInfo, core.Result) {
-	if registerNode, ok := node.(parse.RegisterNode); ok {
-		// TODO: duplicated code: make function that extracts register name from node.
-		registerName := string(registerNode.Raw(ctx.SourceContext))
-		registerInfo := ctx.Registers.GetRegister(registerName)
-
-		if registerInfo == nil {
-			v := node.View()
-			return nil, core.Result{{
-				Type:     core.ErrorResult,
-				Message:  "Undefined register used as argument",
-				Location: &v,
-			}}
-		}
-
-		argumentInfo := ArgumentInfo{
-			Type: registerInfo.Type,
-		}
-		return &argumentInfo, nil
-	}
-
-	v := node.View()
-	return nil, core.Result{{
-		Type:     core.InternalErrorResult,
-		Message:  "Unsupported argument type",
-		Location: &v,
-	}}
-}
-
-func (s *InstructionSet[InstT]) getArgumentsFromInstructionNode(
-	ctx *GenerationContext,
-	node parse.InstructionNode,
-) (arguments []*ArgumentInfo, results core.ResultList) {
-	arguments = make([]*ArgumentInfo, len(node.Arguments))
-	for i, arg := range node.Arguments {
-		argInfo, result := s.getArgumentFromArgumentNode(ctx, arg)
-		arguments[i] = argInfo
-		if result != nil {
-			results.Append(result)
-		}
-	}
-	return
-}
-
 func (s *InstructionSet[InstT]) defineNewRegister(
 	ctx *GenerationContext,
 	node parse.TargetNode,
@@ -269,45 +203,4 @@ func (s *InstructionSet[InstT]) defineNewRegisters(
 	}
 
 	return registers, nil
-}
-
-// Convert an instruction parsed node into an instruction that is in the
-// instruction set.
-// If new registers are defined in the instruction (by assigning values to
-// instruction targets), the register is created and added to the generation
-// context.
-func (s *InstructionSet[InstT]) Build(
-	ctx *GenerationContext,
-	node parse.InstructionNode,
-) (inst InstT, results core.ResultList) {
-	instDef, res := s.getInstructionDefinitionFromNode(ctx, node)
-	if res != nil {
-		results.Append(res)
-	}
-
-	targetTypes, targetsResults := s.getTargetTypesFromInstructionNode(ctx, node)
-	results.Extend(&targetsResults)
-
-	arguments, argumentsResults := s.getArgumentsFromInstructionNode(ctx, node)
-	results.Extend(&argumentsResults)
-
-	if !results.IsEmpty() {
-		return
-	}
-
-	argumentTypes := s.argumentsToArgumentTypes(arguments)
-	actualTargetTypes, results := instDef.InferTargetTypes(ctx, targetTypes, argumentTypes)
-	// TODO: validate that the returned target types matches expected constraints.
-
-	if !results.IsEmpty() {
-		return
-	}
-
-	targets, result := s.defineNewRegisters(ctx, node, actualTargetTypes)
-	if result != nil {
-		results = list.FromSlice([]core.Result{result})
-		return
-	}
-
-	return instDef.BuildInstruction(targets, arguments)
 }
