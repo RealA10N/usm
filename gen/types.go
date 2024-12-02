@@ -20,8 +20,8 @@ import (
 // Why don't we do this at the `parse` module? because the `parse` module parses
 // the structure of tokens only, and does not look inside the content of the
 // tokens. More specifically, it does not have access to the source context.
-func ParseDecoratorNum(
-	genCtx *GenerationContext,
+func ParseDecoratorNum[InstT BaseInstruction](
+	genCtx *GenerationContext[InstT],
 	dec parse.TypeDecoratorNode,
 ) (core.UsmUint, core.Result) {
 	if dec.Len() <= 1 {
@@ -48,8 +48,8 @@ func ParseDecoratorNum(
 	return num, nil
 }
 
-func CalculateTypeSizeFromTypeDecorators(
-	genCtx *GenerationContext,
+func CalculateTypeSizeFromTypeDecorators[InstT BaseInstruction](
+	genCtx *GenerationContext[InstT],
 	baseTypeSize core.UsmUint,
 	decorators []parse.TypeDecoratorNode,
 ) (core.UsmUint, core.Result) {
@@ -85,8 +85,8 @@ func CalculateTypeSizeFromTypeDecorators(
 	}
 }
 
-func CalculateTypeSizeFromTypeNode(
-	genCtx *GenerationContext,
+func CalculateTypeSizeFromTypeNode[InstT BaseInstruction](
+	genCtx *GenerationContext[InstT],
 	node parse.TypeNode,
 ) (core.UsmUint, core.Result) {
 	typeName := string(node.Identifier.Raw(genCtx.SourceContext))
@@ -107,8 +107,8 @@ func CalculateTypeSizeFromTypeNode(
 	)
 }
 
-func CalculateTypeSizeFromTypeDeclaration(
-	genCtx *GenerationContext,
+func CalculateTypeSizeFromTypeDeclaration[InstT BaseInstruction](
+	genCtx *GenerationContext[InstT],
 	node parse.TypeDeclarationNode,
 ) (size core.UsmUint, err core.Result) {
 	for _, node := range node.Fields.Nodes {
@@ -124,8 +124,8 @@ func CalculateTypeSizeFromTypeDeclaration(
 }
 
 // Converts an AST node representing a type declaration into a TypeInfo instance.
-func TypeInfoFromTypeDeclaration(
-	genCtx *GenerationContext,
+func TypeInfoFromTypeDeclaration[InstT BaseInstruction](
+	genCtx *GenerationContext[InstT],
 	node parse.TypeDeclarationNode,
 ) (TypeInfo, core.Result) {
 	size, err := CalculateTypeSizeFromTypeDeclaration(genCtx, node)
