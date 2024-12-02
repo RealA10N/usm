@@ -30,6 +30,15 @@ func (t *TypeMap) NewType(typ *gen.TypeInfo) core.Result {
 	return nil
 }
 
+func (t *TypeMap) newBuiltinType(name string, size core.UsmUint) core.Result {
+	info := &gen.TypeInfo{
+		Name:        name,
+		Size:        size,
+		Declaration: core.UnmanagedSourceView{},
+	}
+	return t.NewType(info)
+}
+
 // MARK: RegisterMap
 
 type RegisterMap map[string]*gen.RegisterInfo

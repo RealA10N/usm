@@ -9,32 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type TypeManager map[string]*gen.TypeInfo
-
-func (m TypeManager) GetType(name string) *gen.TypeInfo {
-	return m[name]
-}
-
-func (m TypeManager) registerBuiltinType(name string, size core.UsmUint) {
-	m.NewType(&gen.TypeInfo{Size: size})
-}
-
-func (m TypeManager) NewType(typ *gen.TypeInfo) core.Result {
-	if m[typ.Name] != nil {
-		return &core.GenericResult{
-			Type:     core.ErrorResult,
-			Message:  "Type already defined",
-			Location: &typ.Declaration,
-		}
-	}
-
-	m[typ.Name] = typ
-	return nil
-}
-
 func TestTypeAliasDeclaration(t *testing.T) {
-	typeManager := make(TypeManager)
-	typeManager.registerBuiltinType("$32", 4)
+	typeManager := make(TypeMap)
+	typeManager.newBuiltinType("$32", 4)
 
 	view := core.NewSourceView("type $myType $32")
 	unmanaged := view.Unmanaged()
@@ -56,7 +33,7 @@ func TestTypeAliasDeclaration(t *testing.T) {
 
 	genCtx := gen.GenerationContext{
 		SourceContext: view.Ctx(),
-		Types:         typeManager,
+		Types:         &typeManager,
 	}
 
 	typeInfo, err := gen.TypeInfoFromTypeDeclaration(&genCtx, typeDeclarationNode)
@@ -67,8 +44,8 @@ func TestTypeAliasDeclaration(t *testing.T) {
 }
 
 func TestPointerTypeDeclaration(t *testing.T) {
-	typeManager := make(TypeManager)
-	typeManager.registerBuiltinType("$64", 8)
+	typeManager := make(TypeMap)
+	typeManager.newBuiltinType("$64", 8)
 
 	view := core.NewSourceView("type $myType $64 *")
 	unmanaged := view.Unmanaged()
@@ -97,7 +74,7 @@ func TestPointerTypeDeclaration(t *testing.T) {
 	genCtx := gen.GenerationContext{
 		SourceContext: view.Ctx(),
 		ArchInfo:      gen.ArchInfo{PointerSize: 1337},
-		Types:         typeManager,
+		Types:         &typeManager,
 	}
 
 	typeInfo, err := gen.TypeInfoFromTypeDeclaration(&genCtx, typeDeclarationNode)
@@ -108,8 +85,8 @@ func TestPointerTypeDeclaration(t *testing.T) {
 }
 
 func TestRepeatTypeDeclaration(t *testing.T) {
-	typeManager := make(TypeManager)
-	typeManager.registerBuiltinType("$8", 1)
+	typeManager := make(TypeMap)
+	typeManager.newBuiltinType("$8", 1)
 
 	view := core.NewSourceView("type $myType $8 ^9")
 	unmanaged := view.Unmanaged()
@@ -137,7 +114,7 @@ func TestRepeatTypeDeclaration(t *testing.T) {
 
 	genCtx := gen.GenerationContext{
 		SourceContext: view.Ctx(),
-		Types:         typeManager,
+		Types:         &typeManager,
 	}
 
 	typeInfo, err := gen.TypeInfoFromTypeDeclaration(&genCtx, typeDeclarationNode)
@@ -148,7 +125,7 @@ func TestRepeatTypeDeclaration(t *testing.T) {
 }
 
 func TestVoidTypeDeclaration(t *testing.T) {
-	typeManager := make(TypeManager)
+	typeManager := make(TypeMap)
 	typeDeclarationNode := parse.TypeDeclarationNode{
 		Fields: parse.BlockNode[parse.TypeFieldNode]{
 			UnmanagedSourceView: core.UnmanagedSourceView{},
@@ -157,7 +134,7 @@ func TestVoidTypeDeclaration(t *testing.T) {
 	}
 
 	genCtx := gen.GenerationContext{
-		Types: typeManager,
+		Types: &typeManager,
 	}
 
 	typeInfo, err := gen.TypeInfoFromTypeDeclaration(&genCtx, typeDeclarationNode)
