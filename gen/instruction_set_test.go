@@ -17,21 +17,13 @@ func (AddInstructionDefinition) Names() []string {
 	return []string{"ADD"}
 }
 
-type AddInstruction struct {
-	Left   string
-	Right  string
-	Target string
-}
+type AddInstruction struct{}
 
 func (AddInstructionDefinition) BuildInstruction(
 	targets []*gen.RegisterInfo,
 	arguments []*gen.ArgumentInfo,
 ) (gen.Instruction, core.ResultList) {
-	return AddInstruction{
-		Left:   arguments[0].Type.Name,
-		Right:  arguments[1].Type.Name,
-		Target: targets[0].Name,
-	}, core.ResultList{}
+	return AddInstruction{}, core.ResultList{}
 }
 
 func (AddInstructionDefinition) InferTargetTypes(
@@ -69,7 +61,7 @@ func (AddInstructionDefinition) InferTargetTypes(
 	return []*gen.TypeInfo{arguments[0]}, core.ResultList{}
 }
 
-func TestInstructionSetNoErr(t *testing.T) {
+func TestInstructionCreateTarget(t *testing.T) {
 	isa := gen.NewInstructionSet([]gen.InstructionDefinition{
 		&AddInstructionDefinition{},
 	})
@@ -97,11 +89,12 @@ func TestInstructionSetNoErr(t *testing.T) {
 		Registers:     &registers,
 	}
 
-	inst, results := isa.Build(ctx, node)
+	_, results := isa.Build(ctx, node)
 	assert.True(t, results.IsEmpty())
 
-	addInst := inst.(AddInstruction)
-	assert.Equal(t, "$32", addInst.Left)
-	assert.Equal(t, "$32", addInst.Right)
-	assert.Equal(t, "%c", addInst.Target)
+	target := registers.GetRegister("%c")
+	assert.NotNil(t, target)
+	assert.Equal(t, "%c", target.Name)
+	assert.Equal(t, intType, target.Type)
+	assert.Equal(t, src.Unmanaged().Subview(0, 2), target.Declaration)
 }
