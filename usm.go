@@ -56,14 +56,17 @@ func fmtCommand(cmd *cobra.Command, args []string) {
 	}
 
 	tknView := parse.NewTokenView(tokens)
-	file, perr := parse.NewFileParser().Parse(&tknView)
-	if perr == nil {
+	file, result := parse.NewFileParser().Parse(&tknView)
+	if result == nil {
 		strCtx := parse.StringContext{SourceContext: view.Ctx()}
 		fmt.Print(file.String(&strCtx))
 	} else {
 		// TODO: Print the error in a more user-friendly way, including location
 		// and nested results.
-		fmt.Println(perr.GetMessage(view.Ctx()))
+		for _, detail := range result {
+			fmt.Println(detail.Type, detail.Location, detail.Message)
+		}
+
 	}
 }
 
