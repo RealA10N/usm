@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/parse"
 )
@@ -97,6 +98,87 @@ func argumentsToArgumentTypes(arguments []*ArgumentInfo) []*TypeInfo {
 	return types
 }
 
+func (g *InstructionGenerator[InstT]) getTargetRegister(
+	ctx *GenerationContext[InstT],
+	node parse.TargetNode,
+	targetType *TypeInfo,
+) (*RegisterInfo, core.Result) {
+	registerName := string(node.Register.Raw(ctx.SourceContext))
+	registerInfo := ctx.Registers.GetRegister(registerName)
+	nodeView := node.View()
+
+	if registerInfo == nil {
+		// register is defined here; we should create the register and define
+		// it's type.
+		newRegisterInfo := &RegisterInfo{
+			Name:        registerName,
+			Type:        targetType,
+			Declaration: nodeView,
+		}
+
+		return newRegisterInfo, ctx.Registers.NewRegister(newRegisterInfo)
+	}
+
+	// register is already defined;
+	// sanity check: ensure the type matches the previously defined one.
+	if registerInfo.Type != targetType {
+		return nil, core.Result{{
+			Type:     core.InternalErrorResult,
+			Message:  "internal register type mismatch",
+			Location: &nodeView,
+		}}
+	}
+
+	return registerInfo, nil
+}
+
+// Registers can be defined by being a target of an instruction.
+// After we have determined 100% of the instruction targets types (either
+// if they were explicitly declared or not), we call this function with the
+// target types, and here we iterate over all target types and define missing
+// registers.
+//
+// This also returns the full list of register targets for the provided
+// instruction.
+func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
+	ctx *GenerationContext[InstT],
+	node parse.InstructionNode,
+	targetTypes []*TypeInfo,
+) ([]*RegisterInfo, core.ResultList) {
+	// Sanity check: ensure lengths match.
+	if len(node.Targets) != len(targetTypes) {
+		v := node.View()
+		return nil, list.FromSingle(core.Result{{
+			Type:     core.InternalErrorResult,
+			Message:  "targets length mismatch",
+			Location: &v,
+		}})
+	}
+
+	registers := make([]*RegisterInfo, len(node.Targets))
+	results := core.ResultList{}
+	for i, target := range node.Targets {
+		// register errors should not effect one another, so we collect them.
+		registerInfo, result := g.getTargetRegister(ctx, target, targetTypes[i])
+		if result != nil {
+			results.Append(result)
+		}
+
+		if registerInfo == nil {
+			v := target.View()
+			results.Append(core.Result{{
+				Type:     core.InternalErrorResult,
+				Message:  "unexpected nil register",
+				Location: &v,
+			}})
+		}
+
+		registers[i] = registerInfo
+	}
+
+	return registers, results
+}
+
 // Convert an instruction parsed node into an instruction that is in the
 // instruction set.
 // If new registers are defined in the instruction (by assigning values to
@@ -125,87 +207,17 @@ func (g *InstructionGenerator[InstT]) Generate(
 	}
 
 	argumentTypes := argumentsToArgumentTypes(arguments)
-	_, results = instDef.InferTargetTypes(ctx, explicitTargets, argumentTypes)
+	targetTypes, results := instDef.InferTargetTypes(ctx, explicitTargets, argumentTypes)
 	// TODO: validate that the returned target types matches expected constraints.
 
 	if !results.IsEmpty() {
 		return
 	}
 
-	// return instDef.BuildInstruction(targets, arguments)
-	return // TODO: finish implementing this
-}
-
-// MARK: old code
-
-func (s *InstructionSet[InstT]) defineNewRegister(
-	ctx *GenerationContext,
-	node parse.TargetNode,
-	targetType *TypeInfo,
-) (registerInfo *RegisterInfo, result core.Result) {
-	registerName := string(node.Register.Raw(ctx.SourceContext))
-	registerInfo = ctx.Registers.GetRegister(registerName)
-	nodeView := node.View()
-
-	if registerInfo == nil {
-		// register is defined here! we should create the register and define
-		// it's type.
-		newRegisterInfo := &RegisterInfo{
-			Name:        registerName,
-			Type:        targetType,
-			Declaration: nodeView,
-		}
-
-		result = ctx.Registers.NewRegister(newRegisterInfo)
-		return newRegisterInfo, result
-
+	targets, results := g.defineAndGetTargetRegisters(ctx, node, targetTypes)
+	if !results.IsEmpty() {
+		return
 	}
 
-	// register is already defined;
-	// sanity check: ensure the type matches the previously defined one.
-	if registerInfo.Type != targetType {
-		return nil, core.Result{{
-			Type:     core.InternalErrorResult,
-			Message:  "internal register type mismatch",
-			Location: &nodeView,
-		}}
-	}
-
-	return registerInfo, result
-}
-
-func (s *InstructionSet[InstT]) defineNewRegisters(
-	ctx *GenerationContext,
-	node parse.InstructionNode,
-	targetTypes []*TypeInfo,
-) ([]*RegisterInfo, core.Result) {
-	if len(node.Targets) != len(targetTypes) {
-		v := node.View()
-		return nil, core.Result{{
-			Type:     core.InternalErrorResult,
-			Message:  "targets length mismatch",
-			Location: &v,
-		}}
-	}
-
-	registers := make([]*RegisterInfo, len(node.Targets))
-	for i, target := range node.Targets {
-		registerInfo, result := s.defineNewRegister(ctx, target, targetTypes[i])
-		if result != nil {
-			return nil, result
-		}
-
-		if registerInfo == nil {
-			v := target.View()
-			return nil, core.Result{{
-				Type:     core.InternalErrorResult,
-				Message:  "unexpected nil register",
-				Location: &v,
-			}}
-		}
-
-		registers[i] = registerInfo
-	}
-
-	return registers, nil
+	return instDef.BuildInstruction(targets, arguments)
 }
