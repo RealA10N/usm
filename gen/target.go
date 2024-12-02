@@ -6,7 +6,7 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-func NewRegisterTypeMismatchError(
+func NewRegisterTypeMismatchResult(
 	NewDeclaration core.UnmanagedSourceView,
 	FirstDeclaration core.UnmanagedSourceView,
 ) core.Result {
@@ -29,7 +29,7 @@ func NewRegisterTypeMismatchError(
 type TargetGenerator[InstT BaseInstruction] struct{}
 
 func (g *TargetGenerator[InstT]) Generate(
-	ctx *GenerationContext,
+	ctx *GenerationContext[InstT],
 	node parse.TargetNode,
 ) (*TypeInfo, core.ResultList) {
 

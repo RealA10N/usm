@@ -7,7 +7,7 @@ import (
 
 type Generator[InstT BaseInstruction, NodeT parse.Node, InfoT any] interface {
 	Generate(
-		ctx *GenerationContext,
+		ctx *GenerationContext[InstT],
 		node NodeT,
 	) (info InfoT, results core.ResultList)
 }

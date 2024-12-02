@@ -1,7 +1,6 @@
 package gen
 
 import (
-	"alon.kr/x/faststringmap"
 	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/parse"
@@ -14,12 +13,6 @@ type BaseInstruction interface{}
 // generic, architecture / instruction set independent instruction AST nodes
 // into a format instruction which is part of a specific instruction set.
 type InstructionDefinition[InstT BaseInstruction] interface {
-
-	// Returns the a constant slice with all valid names of the instruction.
-	// This is called ones to initialize internal data structures that will
-	// then be used to quickly point to the instruction definition.
-	Names() []string
-
 	// Build an instruction from the provided targets and arguments.
 	BuildInstruction(
 		targets []*RegisterInfo,
@@ -39,117 +32,107 @@ type InstructionDefinition[InstT BaseInstruction] interface {
 	// TODO: perhaps we should not pass the bare generation context to the "public"
 	// instruction set definition API, and should wrap it with a limited interface.
 	InferTargetTypes(
-		ctx *GenerationContext,
+		ctx *GenerationContext[InstT],
 		targets []*TypeInfo,
 		arguments []*TypeInfo,
 	) ([]*TypeInfo, core.ResultList)
 }
 
-type InstructionSet[Instruction BaseInstruction] struct {
-	NameToDefinition faststringmap.Map[InstructionDefinition[Instruction]]
+// MARK: Manager
+
+type InstructionManager[InstT BaseInstruction] interface {
+	// Get the instruction definition that corresponds to the provided name.
+	GetInstructionDefinition(name string) (InstructionDefinition[InstT], core.ResultList)
 }
 
-func NewInstructionSet[InstT BaseInstruction](
-	instDefs []InstructionDefinition[InstT],
-) InstructionSet[InstT] {
-	// optimization: # of entries is at least # of instructions.
-	entries := make(
-		[]faststringmap.MapEntry[InstructionDefinition[InstT]],
-		0,
-		len(instDefs),
-	)
+// MARK: Generator
 
-	for _, instDef := range instDefs {
-		for _, name := range instDef.Names() {
-			entry := faststringmap.MapEntry[InstructionDefinition[InstT]]{
-				Key:   name,
-				Value: instDef,
-			}
-			entries = append(entries, entry)
-		}
-	}
-
-	return InstructionSet[InstT]{faststringmap.NewMap(entries)}
+type InstructionGenerator[InstT BaseInstruction] struct {
+	ArgumentGenerator ArgumentGenerator[InstT]
+	TargetGenerator   TargetGenerator[InstT]
 }
 
-// Get the instruction definition that corresponds to the instruction in the
-// provided parsed node, or return an error if the instruction is not known.
-func (s *InstructionSet[InstT]) getInstructionDefinitionFromNode(
-	ctx *GenerationContext,
+func (g *InstructionGenerator[InstT]) generateArguments(
+	ctx *GenerationContext[InstT],
 	node parse.InstructionNode,
-) (InstructionDefinition[InstT], core.Result) {
-	name := string(node.Operator.Raw(ctx.SourceContext))
-	instDef, ok := s.NameToDefinition.LookupString(name)
+) ([]*ArgumentInfo, core.ResultList) {
+	arguments := make([]*ArgumentInfo, len(node.Arguments))
+	results := core.ResultList{}
 
-	if !ok {
-		return nil, core.Result{{
-			Type:     core.ErrorResult,
-			Message:  "Unknown instruction name",
-			Location: &node.Operator,
-		}}
-		// TODO: add typo suggestions?
+	// Different arguments should not effect one another.
+	// Thus, we just collect all of the errors along the way, and return
+	// them in one chunk.
+	for i, argument := range node.Arguments {
+		argInfo, curResults := g.ArgumentGenerator.Generate(ctx, argument)
+		results.Extend(&curResults)
+		arguments[i] = argInfo
 	}
 
-	return instDef, nil
+	return arguments, results
 }
 
-func NewRegisterTypeMismatchResult(
-	NewDeclaration core.UnmanagedSourceView,
-	FirstDeclaration core.UnmanagedSourceView,
-) core.Result {
-	return core.Result{
-		{
-			Type:     core.ErrorResult,
-			Message:  "Explicit register type does not match previous declaration",
-			Location: &NewDeclaration,
-		},
-		{
-			Type:     core.HintResult,
-			Message:  "Previous declaration here",
-			Location: &FirstDeclaration,
-		},
+func (g *InstructionGenerator[InstT]) generateExplicitTargetsTypes(
+	ctx *GenerationContext[InstT],
+	node parse.InstructionNode,
+) ([]*TypeInfo, core.ResultList) {
+	targets := make([]*TypeInfo, len(node.Targets))
+	results := core.ResultList{}
+
+	// Different targets should not effect one another.
+	// Thus, we just collect all of the errors along the way, and return
+	// them in one chunk.
+	for i, target := range node.Targets {
+		typeInfo, curResults := g.TargetGenerator.Generate(ctx, target)
+		results.Extend(&curResults)
+		targets[i] = typeInfo
 	}
+
+	return targets, results
 }
 
-func (s *InstructionSet[InstT]) getTargetTypeFromTargetNode(
-	ctx *GenerationContext,
-	node parse.TargetNode,
-) (typeInfo *TypeInfo, res core.Result) {
-
-	// if an explicit type is provided to the target, get the type info.
-	var explicitType *TypeInfo
-	if node.Type != nil {
-		explicitTypeName := string(node.Type.Identifier.Raw(ctx.SourceContext))
-		explicitType = ctx.Types.GetType(explicitTypeName)
+func argumentsToArgumentTypes(arguments []*ArgumentInfo) []*TypeInfo {
+	types := make([]*TypeInfo, len(arguments))
+	for i, arg := range arguments {
+		types[i] = arg.Type
 	}
-
-	registerName := string(node.Register.Raw(ctx.SourceContext))
-	registerInfo := ctx.Registers.GetRegister(registerName)
-
-	if registerInfo != nil {
-		// register is already previously defined
-		if explicitType != nil {
-			// ensure explicit type matches the previously declared one.
-			if explicitType != registerInfo.Type {
-				return nil, NewRegisterTypeMismatchResult(
-					node.View(),
-					registerInfo.Declaration,
-				)
-			}
-		}
-
-		// all checks passed; return previously defined register type.
-		return registerInfo.Type, nil
-
-	} else {
-		// this is the first appearance of the register; if the type is provided
-		// explicitly, use it. otherwise, there is no way to know the type of
-		// the target register at this.
-		// the type and register will be finalized when the instruction is built,
-		// and only then it is added to the register manager.
-		return explicitType, nil
-	}
+	return types
 }
+
+func (g *InstructionGenerator[InstT]) Generate(
+	ctx *GenerationContext[InstT],
+	node parse.InstructionNode,
+) (inst InstT, results core.ResultList) {
+	// We start generating the instruction, by getting the definition interface,
+	// and processing the targets and arguments. We accumulate the results,
+	// since those processes do not effect each other.
+
+	instName := string(node.Operator.Raw(ctx.SourceContext))
+	instDef, results := ctx.Instructions.GetInstructionDefinition(instName)
+
+	arguments, curResults := g.generateArguments(ctx, node)
+	results.Extend(&curResults)
+
+	explicitTargets, curResults := g.generateExplicitTargetsTypes(ctx, node)
+	results.Extend(&curResults)
+
+	// Now it's time to check if we have any errors so far.
+	if !results.IsEmpty() {
+		return
+	}
+
+	argumentTypes := argumentsToArgumentTypes(arguments)
+	_, results = instDef.InferTargetTypes(ctx, explicitTargets, argumentTypes)
+	// TODO: validate that the returned target types matches expected constraints.
+
+	if !results.IsEmpty() {
+		return
+	}
+
+	// return instDef.BuildInstruction(targets, arguments)
+	return // TODO: finish implementing this
+}
+
+// MARK: old code
 
 func (s *InstructionSet[InstT]) getTargetTypesFromInstructionNode(
 	ctx *GenerationContext,
@@ -214,16 +197,6 @@ func (s *InstructionSet[InstT]) getArgumentsFromInstructionNode(
 		}
 	}
 	return
-}
-
-func (s *InstructionSet[InstT]) argumentsToArgumentTypes(
-	arguments []*ArgumentInfo,
-) []*TypeInfo {
-	argumentTypes := make([]*TypeInfo, len(arguments))
-	for i, arg := range arguments {
-		argumentTypes[i] = arg.Type
-	}
-	return argumentTypes
 }
 
 func (s *InstructionSet[InstT]) defineNewRegister(
@@ -300,6 +273,9 @@ func (s *InstructionSet[InstT]) defineNewRegisters(
 
 // Convert an instruction parsed node into an instruction that is in the
 // instruction set.
+// If new registers are defined in the instruction (by assigning values to
+// instruction targets), the register is created and added to the generation
+// context.
 func (s *InstructionSet[InstT]) Build(
 	ctx *GenerationContext,
 	node parse.InstructionNode,

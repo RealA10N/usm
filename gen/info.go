@@ -25,12 +25,6 @@ type RegisterInfo struct {
 	Declaration core.UnmanagedSourceView
 }
 
-type ArgumentInfo struct {
-	// A pointer to the TypeInfo instance that corresponds to the type of the
-	// register.
-	Type *TypeInfo
-}
-
 type ImmediateInfo struct {
 	Type  *TypeInfo
 	Value core.UsmUint // TODO: more complex and complete representation of immediate structs.
@@ -81,12 +75,13 @@ type RegisterManager interface {
 // A context object that is initialized empty, but gets propagated and filled
 // with information as the code generation process continues, while iterating
 // over the AST nodes.
-type GenerationContext struct {
+type GenerationContext[InstT BaseInstruction] struct {
 	ArchInfo
 	core.SourceContext
 
-	Types     TypeManager
-	Registers RegisterManager
+	Instructions InstructionManager[InstT]
+	Types        TypeManager
+	Registers    RegisterManager
 	// TODO: add registers info.
 
 	// TODO: add globals, functions, etc.

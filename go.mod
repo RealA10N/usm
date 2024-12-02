@@ -3,7 +3,6 @@ module alon.kr/x/usm
 go 1.23.0
 
 require (
-	alon.kr/x/faststringmap v0.0.0-20241117165103-5662ddd92b26
 	alon.kr/x/list v0.0.0-20241202195708-fee0192012de
 	alon.kr/x/view v0.0.0-20241117132723-5c30dbef3c86
 	github.com/spf13/cobra v1.8.1

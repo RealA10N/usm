@@ -27,7 +27,7 @@ func (AddInstructionDefinition) BuildInstruction(
 }
 
 func (AddInstructionDefinition) InferTargetTypes(
-	ctx *gen.GenerationContext,
+	ctx *gen.GenerationContext[Instruction],
 	targets []*gen.TypeInfo,
 	arguments []*gen.TypeInfo,
 ) ([]*gen.TypeInfo, core.ResultList) {
@@ -77,7 +77,7 @@ func TestInstructionCreateTarget(t *testing.T) {
 		"%b": &gen.RegisterInfo{Name: "%b", Type: intType},
 	}
 
-	ctx := &gen.GenerationContext{
+	ctx := &gen.GenerationContext[Instruction]{
 		ArchInfo:      gen.ArchInfo{PointerSize: 8},
 		SourceContext: src.Ctx(),
 		Types:         &types,
