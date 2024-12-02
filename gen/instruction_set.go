@@ -97,6 +97,11 @@ func argumentsToArgumentTypes(arguments []*ArgumentInfo) []*TypeInfo {
 	return types
 }
 
+// Convert an instruction parsed node into an instruction that is in the
+// instruction set.
+// If new registers are defined in the instruction (by assigning values to
+// instruction targets), the register is created and added to the generation
+// context.
 func (g *InstructionGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.InstructionNode,
