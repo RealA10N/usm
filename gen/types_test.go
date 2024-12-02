@@ -31,7 +31,7 @@ func TestTypeAliasDeclaration(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.GenerationContext{
+	genCtx := gen.GenerationContext[gen.BaseInstruction]{
 		SourceContext: view.Ctx(),
 		Types:         &typeManager,
 	}
@@ -71,7 +71,7 @@ func TestPointerTypeDeclaration(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.GenerationContext{
+	genCtx := gen.GenerationContext[gen.BaseInstruction]{
 		SourceContext: view.Ctx(),
 		ArchInfo:      gen.ArchInfo{PointerSize: 1337},
 		Types:         &typeManager,
@@ -112,7 +112,7 @@ func TestRepeatTypeDeclaration(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.GenerationContext{
+	genCtx := gen.GenerationContext[gen.BaseInstruction]{
 		SourceContext: view.Ctx(),
 		Types:         &typeManager,
 	}
@@ -133,7 +133,7 @@ func TestVoidTypeDeclaration(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.GenerationContext{
+	genCtx := gen.GenerationContext[gen.BaseInstruction]{
 		Types: &typeManager,
 	}
 
