@@ -138,15 +138,12 @@ func TestSignatureParserIdentifierNotGlobal(t *testing.T) {
 	opr := lex.Token{Type: lex.OperatorToken, View: v}
 	tknView := parse.NewTokenView([]lex.Token{opr})
 
-	expectedErr := parse.UnexpectedTokenError{
-		Expected: []lex.TokenType{lex.GlobalToken},
-		Actual:   opr,
-	}
+	expectedResult := parse.NewUnexpectedTokenResult(
+		[]lex.TokenType{lex.GlobalToken},
+		opr,
+	)
 
-	_, err := parse.NewFunctionSignatureParser().Parse(&tknView)
-	assert.NotNil(t, err)
-
-	details, ok := err.(parse.UnexpectedTokenError)
-	assert.True(t, ok)
-	assert.Equal(t, expectedErr, details)
+	_, result := parse.NewFunctionSignatureParser().Parse(&tknView)
+	assert.NotNil(t, result)
+	assert.Equal(t, expectedResult, result)
 }

@@ -37,7 +37,7 @@ func TestParameterParserSimpleCase(t *testing.T) {
 func TestParameterTypEofError(t *testing.T) {
 	view := parse.NewTokenView([]lex.Token{})
 	_, err := parse.NewParameterParser().Parse(&view)
-	expected := parse.EofError{Expected: []lex.TokenType{lex.TypeToken}}
+	expected := parse.NewEofResult([]lex.TokenType{lex.TypeToken})
 	assert.Equal(t, expected, err)
 }
 
@@ -45,11 +45,7 @@ func TestParameterRegEofError(t *testing.T) {
 	v := core.NewSourceView("$i32").Unmanaged()
 	tkn := lex.Token{Type: lex.TypeToken, View: v}
 	view := parse.NewTokenView([]lex.Token{tkn})
-
-	expected := parse.EofError{
-		Expected: []lex.TokenType{lex.RegisterToken},
-	}
-
+	expected := parse.NewEofResult([]lex.TokenType{lex.RegisterToken})
 	_, err := parse.NewParameterParser().Parse(&view)
 	assert.Equal(t, expected, err)
 }

@@ -82,26 +82,28 @@ func (s *InstructionSet[InstT]) getInstructionDefinitionFromNode(
 	instDef, ok := s.NameToDefinition.LookupString(name)
 
 	if !ok {
-		return nil, core.GenericResult{
+		return nil, core.Result{{
 			Type:     core.ErrorResult,
 			Message:  "Unknown instruction name",
 			Location: &node.Operator,
-		}
+		}}
 		// TODO: add typo suggestions?
 	}
 
 	return instDef, nil
 }
 
-func NewRegisterTypeMismatchError(
+func NewRegisterTypeMismatchResult(
 	NewDeclaration core.UnmanagedSourceView,
 	FirstDeclaration core.UnmanagedSourceView,
 ) core.Result {
-	return core.GenericResult{
-		Type:     core.ErrorResult,
-		Message:  "Explicit register type does not match previous declaration",
-		Location: &NewDeclaration,
-		Next: core.GenericResult{
+	return core.Result{
+		{
+			Type:     core.ErrorResult,
+			Message:  "Explicit register type does not match previous declaration",
+			Location: &NewDeclaration,
+		},
+		{
 			Type:     core.HintResult,
 			Message:  "Previous declaration here",
 			Location: &FirstDeclaration,
@@ -129,7 +131,7 @@ func (s *InstructionSet[InstT]) getTargetTypeFromTargetNode(
 		if explicitType != nil {
 			// ensure explicit type matches the previously declared one.
 			if explicitType != registerInfo.Type {
-				return nil, NewRegisterTypeMismatchError(
+				return nil, NewRegisterTypeMismatchResult(
 					node.View(),
 					registerInfo.Declaration,
 				)
@@ -178,11 +180,11 @@ func (s *InstructionSet[InstT]) getArgumentFromArgumentNode(
 
 		if registerInfo == nil {
 			v := node.View()
-			return nil, core.GenericResult{
+			return nil, core.Result{{
 				Type:     core.ErrorResult,
 				Message:  "Undefined register used as argument",
 				Location: &v,
-			}
+			}}
 		}
 
 		argumentInfo := ArgumentInfo{
@@ -192,11 +194,11 @@ func (s *InstructionSet[InstT]) getArgumentFromArgumentNode(
 	}
 
 	v := node.View()
-	return nil, core.GenericResult{
+	return nil, core.Result{{
 		Type:     core.InternalErrorResult,
 		Message:  "Unsupported argument type",
 		Location: &v,
-	}
+	}}
 }
 
 func (s *InstructionSet[InstT]) getArgumentsFromInstructionNode(
@@ -250,11 +252,11 @@ func (s *InstructionSet[InstT]) defineNewRegister(
 	// register is already defined;
 	// sanity check: ensure the type matches the previously defined one.
 	if registerInfo.Type != targetType {
-		return nil, core.GenericResult{
+		return nil, core.Result{{
 			Type:     core.InternalErrorResult,
 			Message:  "internal register type mismatch",
 			Location: &nodeView,
-		}
+		}}
 	}
 
 	return registerInfo, result
@@ -267,11 +269,11 @@ func (s *InstructionSet[InstT]) defineNewRegisters(
 ) ([]*RegisterInfo, core.Result) {
 	if len(node.Targets) != len(targetTypes) {
 		v := node.View()
-		return nil, core.GenericResult{
+		return nil, core.Result{{
 			Type:     core.InternalErrorResult,
 			Message:  "targets length mismatch",
 			Location: &v,
-		}
+		}}
 	}
 
 	registers := make([]*RegisterInfo, len(node.Targets))
@@ -283,11 +285,11 @@ func (s *InstructionSet[InstT]) defineNewRegisters(
 
 		if registerInfo == nil {
 			v := target.View()
-			return nil, core.GenericResult{
+			return nil, core.Result{{
 				Type:     core.InternalErrorResult,
 				Message:  "unexpected nil register",
 				Location: &v,
-			}
+			}}
 		}
 
 		registers[i] = registerInfo
