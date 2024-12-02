@@ -8,12 +8,12 @@ import (
 )
 
 // TODO: add basic interface methods for instruction.
-type Instruction interface{}
+type BaseInstruction interface{}
 
 // A basic instruction definition. This defines the logic that converts the
 // generic, architecture / instruction set independent instruction AST nodes
 // into a format instruction which is part of a specific instruction set.
-type InstructionDefinition interface {
+type InstructionDefinition[InstT BaseInstruction] interface {
 
 	// Returns the a constant slice with all valid names of the instruction.
 	// This is called ones to initialize internal data structures that will
@@ -24,7 +24,7 @@ type InstructionDefinition interface {
 	BuildInstruction(
 		targets []*RegisterInfo,
 		arguments []*ArgumentInfo,
-	) (Instruction, core.ResultList)
+	) (InstT, core.ResultList)
 
 	// Provided a list a list of types that correspond to argument types,
 	// and a (possibly partial) list of target types, return a complete list
@@ -45,17 +45,23 @@ type InstructionDefinition interface {
 	) ([]*TypeInfo, core.ResultList)
 }
 
-type InstructionSet struct {
-	NameToDefinition faststringmap.Map[InstructionDefinition]
+type InstructionSet[Instruction BaseInstruction] struct {
+	NameToDefinition faststringmap.Map[InstructionDefinition[Instruction]]
 }
 
-func NewInstructionSet(instDefs []InstructionDefinition) InstructionSet {
+func NewInstructionSet[InstT BaseInstruction](
+	instDefs []InstructionDefinition[InstT],
+) InstructionSet[InstT] {
 	// optimization: # of entries is at least # of instructions.
-	entries := make([]faststringmap.MapEntry[InstructionDefinition], 0, len(instDefs))
+	entries := make(
+		[]faststringmap.MapEntry[InstructionDefinition[InstT]],
+		0,
+		len(instDefs),
+	)
 
 	for _, instDef := range instDefs {
 		for _, name := range instDef.Names() {
-			entry := faststringmap.MapEntry[InstructionDefinition]{
+			entry := faststringmap.MapEntry[InstructionDefinition[InstT]]{
 				Key:   name,
 				Value: instDef,
 			}
@@ -63,15 +69,15 @@ func NewInstructionSet(instDefs []InstructionDefinition) InstructionSet {
 		}
 	}
 
-	return InstructionSet{faststringmap.NewMap(entries)}
+	return InstructionSet[InstT]{faststringmap.NewMap(entries)}
 }
 
 // Get the instruction definition that corresponds to the instruction in the
 // provided parsed node, or return an error if the instruction is not known.
-func (s *InstructionSet) getInstructionDefinitionFromNode(
+func (s *InstructionSet[InstT]) getInstructionDefinitionFromNode(
 	ctx *GenerationContext,
 	node parse.InstructionNode,
-) (InstructionDefinition, core.Result) {
+) (InstructionDefinition[InstT], core.Result) {
 	name := string(node.Operator.Raw(ctx.SourceContext))
 	instDef, ok := s.NameToDefinition.LookupString(name)
 
@@ -103,7 +109,7 @@ func NewRegisterTypeMismatchError(
 	}
 }
 
-func (s *InstructionSet) getTargetTypeFromTargetNode(
+func (s *InstructionSet[InstT]) getTargetTypeFromTargetNode(
 	ctx *GenerationContext,
 	node parse.TargetNode,
 ) (typeInfo *TypeInfo, res core.Result) {
@@ -143,7 +149,7 @@ func (s *InstructionSet) getTargetTypeFromTargetNode(
 	}
 }
 
-func (s *InstructionSet) getTargetTypesFromInstructionNode(
+func (s *InstructionSet[InstT]) getTargetTypesFromInstructionNode(
 	ctx *GenerationContext,
 	node parse.InstructionNode,
 ) ([]*TypeInfo, core.ResultList) {
@@ -161,7 +167,7 @@ func (s *InstructionSet) getTargetTypesFromInstructionNode(
 	return targets, results
 }
 
-func (s *InstructionSet) getArgumentFromArgumentNode(
+func (s *InstructionSet[InstT]) getArgumentFromArgumentNode(
 	ctx *GenerationContext,
 	node parse.ArgumentNode,
 ) (*ArgumentInfo, core.Result) {
@@ -193,7 +199,7 @@ func (s *InstructionSet) getArgumentFromArgumentNode(
 	}
 }
 
-func (s *InstructionSet) getArgumentsFromInstructionNode(
+func (s *InstructionSet[InstT]) getArgumentsFromInstructionNode(
 	ctx *GenerationContext,
 	node parse.InstructionNode,
 ) (arguments []*ArgumentInfo, results core.ResultList) {
@@ -208,7 +214,9 @@ func (s *InstructionSet) getArgumentsFromInstructionNode(
 	return
 }
 
-func (s *InstructionSet) argumentsToArgumentTypes(arguments []*ArgumentInfo) []*TypeInfo {
+func (s *InstructionSet[InstT]) argumentsToArgumentTypes(
+	arguments []*ArgumentInfo,
+) []*TypeInfo {
 	argumentTypes := make([]*TypeInfo, len(arguments))
 	for i, arg := range arguments {
 		argumentTypes[i] = arg.Type
@@ -216,7 +224,7 @@ func (s *InstructionSet) argumentsToArgumentTypes(arguments []*ArgumentInfo) []*
 	return argumentTypes
 }
 
-func (s *InstructionSet) defineNewRegister(
+func (s *InstructionSet[InstT]) defineNewRegister(
 	ctx *GenerationContext,
 	node parse.TargetNode,
 	targetType *TypeInfo,
@@ -252,7 +260,7 @@ func (s *InstructionSet) defineNewRegister(
 	return registerInfo, result
 }
 
-func (s *InstructionSet) defineNewRegisters(
+func (s *InstructionSet[InstT]) defineNewRegisters(
 	ctx *GenerationContext,
 	node parse.InstructionNode,
 	targetTypes []*TypeInfo,
@@ -290,10 +298,10 @@ func (s *InstructionSet) defineNewRegisters(
 
 // Convert an instruction parsed node into an instruction that is in the
 // instruction set.
-func (s *InstructionSet) Build(
+func (s *InstructionSet[InstT]) Build(
 	ctx *GenerationContext,
 	node parse.InstructionNode,
-) (inst Instruction, results core.ResultList) {
+) (inst InstT, results core.ResultList) {
 	instDef, res := s.getInstructionDefinitionFromNode(ctx, node)
 	if res != nil {
 		results.Append(res)
@@ -306,7 +314,7 @@ func (s *InstructionSet) Build(
 	results.Extend(&argumentsResults)
 
 	if !results.IsEmpty() {
-		return nil, results
+		return
 	}
 
 	argumentTypes := s.argumentsToArgumentTypes(arguments)
@@ -314,12 +322,13 @@ func (s *InstructionSet) Build(
 	// TODO: validate that the returned target types matches expected constraints.
 
 	if !results.IsEmpty() {
-		return nil, results
+		return
 	}
 
 	targets, result := s.defineNewRegisters(ctx, node, actualTargetTypes)
 	if result != nil {
-		return nil, list.FromSlice([]core.Result{result})
+		results = list.FromSlice([]core.Result{result})
+		return
 	}
 
 	return instDef.BuildInstruction(targets, arguments)

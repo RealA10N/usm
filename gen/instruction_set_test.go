@@ -11,19 +11,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type Instruction struct{}
+
 type AddInstructionDefinition struct{}
 
 func (AddInstructionDefinition) Names() []string {
 	return []string{"ADD"}
 }
 
-type AddInstruction struct{}
-
 func (AddInstructionDefinition) BuildInstruction(
 	targets []*gen.RegisterInfo,
 	arguments []*gen.ArgumentInfo,
-) (gen.Instruction, core.ResultList) {
-	return AddInstruction{}, core.ResultList{}
+) (Instruction, core.ResultList) {
+	return Instruction{}, core.ResultList{}
 }
 
 func (AddInstructionDefinition) InferTargetTypes(
@@ -62,7 +62,7 @@ func (AddInstructionDefinition) InferTargetTypes(
 }
 
 func TestInstructionCreateTarget(t *testing.T) {
-	isa := gen.NewInstructionSet([]gen.InstructionDefinition{
+	isa := gen.NewInstructionSet([]gen.InstructionDefinition[Instruction]{
 		&AddInstructionDefinition{},
 	})
 
