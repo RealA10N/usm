@@ -19,11 +19,11 @@ func (t *TypeMap) GetType(name string) *gen.TypeInfo {
 
 func (t *TypeMap) NewType(typ *gen.TypeInfo) core.Result {
 	if _, exists := (*t)[typ.Name]; exists {
-		return &core.GenericResult{
+		return core.Result{{
 			Type:     core.ErrorResult,
 			Message:  "Type already defined",
 			Location: &typ.Declaration,
-		}
+		}}
 	}
 
 	(*t)[typ.Name] = typ
@@ -53,10 +53,10 @@ func (r *RegisterMap) GetRegister(name string) *gen.RegisterInfo {
 
 func (r *RegisterMap) NewRegister(reg *gen.RegisterInfo) core.Result {
 	if _, exists := (*r)[reg.Name]; exists {
-		return &core.GenericResult{
+		return core.Result{{
 			Type:    core.ErrorResult,
 			Message: "Register already defined",
-		}
+		}}
 	}
 
 	(*r)[reg.Name] = reg

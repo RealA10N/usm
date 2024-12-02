@@ -13,11 +13,11 @@ func NewTokenView(tkns []lex.Token) TokenView {
 	return TokenView{view.NewView[lex.Token, uint32](tkns)}
 }
 
-func (v *TokenView) PeekToken(expectedTypes ...lex.TokenType) (tkn lex.Token, perr core.Result) {
+func (v *TokenView) PeekToken(expectedTypes ...lex.TokenType) (tkn lex.Token, result core.Result) {
 	tkn, err := v.At(0)
 
 	if err != nil {
-		perr = EofError{Expected: expectedTypes}
+		result = NewEofResult(expectedTypes)
 		return
 	}
 
@@ -30,19 +30,19 @@ func (v *TokenView) PeekToken(expectedTypes ...lex.TokenType) (tkn lex.Token, pe
 	}
 
 	if !gotExpected {
-		perr = UnexpectedTokenError{Expected: expectedTypes, Actual: tkn}
+		result = NewUnexpectedTokenResult(expectedTypes, tkn)
 		return
 	}
 
 	return tkn, nil
 }
 
-func (v *TokenView) ConsumeToken(expectedTypes ...lex.TokenType) (tkn lex.Token, perr core.Result) {
+func (v *TokenView) ConsumeToken(expectedTypes ...lex.TokenType) (tkn lex.Token, result core.Result) {
 	tknView, restView := v.Partition(1)
 	tkn, err := tknView.At(0)
 
 	if err != nil {
-		perr = EofError{Expected: expectedTypes}
+		result = NewEofResult(expectedTypes)
 		return
 	}
 
@@ -55,7 +55,7 @@ func (v *TokenView) ConsumeToken(expectedTypes ...lex.TokenType) (tkn lex.Token,
 	}
 
 	if !gotExpected {
-		perr = UnexpectedTokenError{Expected: expectedTypes, Actual: tkn}
+		result = NewUnexpectedTokenResult(expectedTypes, tkn)
 		return
 	}
 

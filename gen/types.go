@@ -32,11 +32,13 @@ func ParseDecoratorNum(
 	num, err := core.ParseUint(string(numView.Raw(genCtx.SourceContext)))
 
 	if err != nil {
-		return 0, &core.GenericResult{
-			Type:     core.ErrorResult,
-			Location: &numView,
-			Message:  "Failed to parse number in type decorator",
-			Next: &core.GenericResult{
+		return 0, core.Result{
+			{
+				Type:     core.ErrorResult,
+				Message:  "Failed to parse number in type decorator",
+				Location: &numView,
+			},
+			{
 				Type:    core.HintResult,
 				Message: "Should be a positive, decimal number",
 			},
@@ -75,11 +77,11 @@ func CalculateTypeSizeFromTypeDecorators(
 		)
 
 	default:
-		return 0, &core.GenericResult{
+		return 0, core.Result{{
 			Type:     core.InternalErrorResult,
 			Message:  "Unknown type decorator",
 			Location: &topDecorator.UnmanagedSourceView,
-		}
+		}}
 	}
 }
 
@@ -91,11 +93,11 @@ func CalculateTypeSizeFromTypeNode(
 	typeInfo := genCtx.Types.GetType(typeName)
 
 	if typeInfo == nil {
-		return 0, &core.GenericResult{
+		return 0, core.Result{{
 			Type:     core.ErrorResult,
 			Message:  "Undeclared type",
 			Location: &node.Identifier,
-		}
+		}}
 	}
 
 	return CalculateTypeSizeFromTypeDecorators(

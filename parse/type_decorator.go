@@ -45,11 +45,11 @@ func (p TypeDecoratorParser) Parse(v *TokenView) (node TypeDecoratorNode, err co
 	case lex.RepeatToken:
 		node.Type = RepeatTypeDecorator
 	default:
-		err = &core.GenericResult{
+		err = core.Result{{
 			Type:     core.InternalErrorResult,
 			Message:  "Unexpected type decorator",
 			Location: &tkn.View,
-		}
+		}}
 		return
 	}
 

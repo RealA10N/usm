@@ -32,30 +32,24 @@ func (AddInstructionDefinition) InferTargetTypes(
 	arguments []*gen.TypeInfo,
 ) ([]*gen.TypeInfo, core.ResultList) {
 	if len(arguments) != 2 {
-		return nil, list.FromSlice([]core.Result{
-			&core.GenericResult{
-				Type:    core.ErrorResult,
-				Message: "expected exactly 2 arguments",
-			},
-		})
+		return nil, list.FromSingle(core.Result{{
+			Type:    core.ErrorResult,
+			Message: "expected exactly 2 arguments",
+		}})
 	}
 
 	if len(targets) != 1 {
-		return nil, list.FromSlice([]core.Result{
-			&core.GenericResult{
-				Type:    core.ErrorResult,
-				Message: "expected exactly 1 target",
-			},
-		})
+		return nil, list.FromSingle(core.Result{{
+			Type:    core.ErrorResult,
+			Message: "expected exactly 1 target",
+		}})
 	}
 
 	if arguments[0] != arguments[1] {
-		return nil, list.FromSlice([]core.Result{
-			&core.GenericResult{
-				Type:    core.ErrorResult,
-				Message: "expected both arguments to be of the same type",
-			},
-		})
+		return nil, list.FromSingle(core.Result{{
+			Type:    core.ErrorResult,
+			Message: "expected both arguments to be of the same type",
+		}})
 	}
 
 	return []*gen.TypeInfo{arguments[0]}, core.ResultList{}

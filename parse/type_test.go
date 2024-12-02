@@ -37,7 +37,7 @@ func TestTypeParserSimpleCase(t *testing.T) {
 func TestTypeParserEofError(t *testing.T) {
 	tkns := []lex.Token{}
 	view := parse.NewTokenView(tkns)
-	expected := parse.EofError{Expected: []lex.TokenType{lex.TypeToken}}
+	expected := parse.NewEofResult([]lex.TokenType{lex.TypeToken})
 
 	_, err := parse.TypeParser{}.Parse(&view)
 	assert.Equal(t, expected, err)
@@ -48,10 +48,10 @@ func TestTypeParserUnexpectedTokenError(t *testing.T) {
 	regTkn := lex.Token{Type: lex.RegisterToken, View: regView}
 	tkns := parse.NewTokenView([]lex.Token{regTkn})
 
-	expected := parse.UnexpectedTokenError{
-		Expected: []lex.TokenType{lex.TypeToken},
-		Actual:   regTkn,
-	}
+	expected := parse.NewUnexpectedTokenResult(
+		[]lex.TokenType{lex.TypeToken},
+		regTkn,
+	)
 
 	_, err := parse.TypeParser{}.Parse(&tkns)
 	assert.Equal(t, expected, err)
