@@ -15,10 +15,6 @@ type Instruction struct{}
 
 type AddInstructionDefinition struct{}
 
-func (AddInstructionDefinition) Names() []string {
-	return []string{"ADD"}
-}
-
 func (AddInstructionDefinition) BuildInstruction(
 	targets []*gen.RegisterInfo,
 	arguments []*gen.ArgumentInfo,
@@ -55,10 +51,25 @@ func (AddInstructionDefinition) InferTargetTypes(
 	return []*gen.TypeInfo{arguments[0]}, core.ResultList{}
 }
 
+type InstructionMap map[string]gen.InstructionDefinition[Instruction]
+
+func (m *InstructionMap) GetInstructionDefinition(
+	name string,
+) (gen.InstructionDefinition[Instruction], core.ResultList) {
+	instDef, ok := (*m)[name]
+	if !ok {
+		return nil, list.FromSingle(core.Result{{
+			Type:    core.ErrorResult,
+			Message: "undefined instruction",
+		}})
+	}
+	return instDef, core.ResultList{}
+}
+
 func TestInstructionCreateTarget(t *testing.T) {
-	isa := gen.NewInstructionSet([]gen.InstructionDefinition[Instruction]{
-		&AddInstructionDefinition{},
-	})
+	instructions := InstructionMap{
+		"ADD": &AddInstructionDefinition{},
+	}
 
 	src := core.NewSourceView("%c = ADD %a %b")
 	tkns, err := lex.NewTokenizer().Tokenize(src)
@@ -82,9 +93,11 @@ func TestInstructionCreateTarget(t *testing.T) {
 		SourceContext: src.Ctx(),
 		Types:         &types,
 		Registers:     &registers,
+		Instructions:  &instructions,
 	}
 
-	_, results := isa.Build(ctx, node)
+	generator := gen.InstructionGenerator[Instruction]{}
+	_, results := generator.Generate(ctx, node)
 	assert.True(t, results.IsEmpty())
 
 	target := registers.GetRegister("%c")
