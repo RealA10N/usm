@@ -13,23 +13,12 @@ func TestUndefinedRegisterArgument(t *testing.T) {
 	src := core.NewSourceView("%a")
 	node := parse.RegisterNode{UnmanagedSourceView: src.Unmanaged()}
 
-	instructions := InstructionMap{
-		"ADD": &AddInstructionDefinition{},
-	}
-
-	intType := &gen.TypeInfo{Name: "$32", Size: 4}
-	types := TypeMap{intType.Name: intType}
-
-	registers := RegisterMap{
-		"%b": &gen.RegisterInfo{Name: "%b", Type: intType},
-	}
-
 	ctx := gen.GenerationContext[Instruction]{
 		ArchInfo:      gen.ArchInfo{PointerSize: 8},
 		SourceContext: src.Ctx(),
-		Types:         &types,
-		Registers:     &registers,
-		Instructions:  &instructions,
+		Types:         &TypeMap{},
+		Registers:     &RegisterMap{},
+		Instructions:  &InstructionMap{},
 	}
 
 	generator := gen.ArgumentGenerator[Instruction]{}
