@@ -70,6 +70,7 @@ func TestInstructionCreateTarget(t *testing.T) {
 	tkns, err := lex.NewTokenizer().Tokenize(src)
 	assert.NoError(t, err)
 
+	// TODO: do no use parser here? test only the instruction set unit.
 	tknView := parse.NewTokenView(tkns)
 	node, result := parse.NewInstructionParser().Parse(&tknView)
 	assert.Nil(t, result)
