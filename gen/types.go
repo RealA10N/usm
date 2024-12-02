@@ -8,6 +8,31 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
+type TypeInfo struct {
+	Name        string
+	Size        core.UsmUint
+	Declaration core.UnmanagedSourceView
+}
+
+type TypeManager interface {
+	// Query a already seen before type, and get the type information if it
+	// exists. Returns nil if the if a type with the provided name has not yet
+	// been defined.
+	//
+	// The implementation should also return information about builtin types,
+	// although the creation of such types can be possibly done lazily.
+	GetType(name string) *TypeInfo
+
+	// Register a new type with the provided name and type information.
+	// The generator will call this method when it encounters a new type
+	// definition.
+	//
+	// The implementation should raise an error if the new registered type is
+	// invalid, for example if there already exists a type with the same name,
+	// or if its a builtin type.
+	NewType(typ *TypeInfo) core.Result
+}
+
 // Valid type decorators should match the regex ".\d*" where the first rune is
 // the decorator identifier (pointer, repeat, etc.), and immediately follows
 // the an optional decimal number that is interpreted differently depending on

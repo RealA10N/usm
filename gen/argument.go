@@ -14,6 +14,21 @@ type ArgumentInfo struct {
 	Type *TypeInfo
 }
 
+type ImmediateInfo struct {
+	Type  *TypeInfo
+	Value core.UsmUint // TODO: more complex and complete representation of immediate structs.
+}
+
+type LabelInfo struct {
+	// TODO: add location relevant information. How exactly?
+	Name string
+}
+
+type GlobalInfo struct {
+	Name string
+	Type *TypeInfo
+}
+
 // MARK: Generator
 
 type ArgumentGenerator[InstT BaseInstruction] struct{}
