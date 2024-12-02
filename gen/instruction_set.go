@@ -8,9 +8,7 @@ import (
 )
 
 // TODO: add basic interface methods for instruction.
-type Instruction interface {
-	HasSideEffects() bool
-}
+type Instruction interface{}
 
 // A basic instruction definition. This defines the logic that converts the
 // generic, architecture / instruction set independent instruction AST nodes
@@ -230,27 +228,28 @@ func (s *InstructionSet) defineNewRegister(
 	if registerInfo == nil {
 		// register is defined here! we should create the register and define
 		// it's type.
-		registerInfo := &RegisterInfo{
+		newRegisterInfo := &RegisterInfo{
 			Name:        registerName,
 			Type:        targetType,
 			Declaration: nodeView,
 		}
 
-		ctx.Registers.NewRegister(registerInfo)
+		result = ctx.Registers.NewRegister(newRegisterInfo)
+		return newRegisterInfo, result
 
-	} else {
-		// register is already defined;
-		// sanity check: ensure the type matches the previously defined one.
-		if registerInfo.Type != targetType {
-			return nil, core.GenericResult{
-				Type:     core.InternalErrorResult,
-				Message:  "internal register type mismatch",
-				Location: &nodeView,
-			}
+	}
+
+	// register is already defined;
+	// sanity check: ensure the type matches the previously defined one.
+	if registerInfo.Type != targetType {
+		return nil, core.GenericResult{
+			Type:     core.InternalErrorResult,
+			Message:  "internal register type mismatch",
+			Location: &nodeView,
 		}
 	}
 
-	return registerInfo, nil
+	return registerInfo, result
 }
 
 func (s *InstructionSet) defineNewRegisters(
