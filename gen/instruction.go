@@ -145,8 +145,8 @@ func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
 	node parse.InstructionNode,
 	targetTypes []*TypeInfo,
 ) ([]*RegisterInfo, core.ResultList) {
-	// Sanity check: ensure lengths match.
 	if len(node.Targets) != len(targetTypes) {
+		// notest: sanity check: ensure lengths match.
 		v := node.View()
 		return nil, list.FromSingle(core.Result{{
 			Type:     core.InternalErrorResult,
@@ -165,6 +165,7 @@ func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
 		}
 
 		if registerInfo == nil {
+			// notest: sanity check, should not happen.
 			v := target.View()
 			results.Append(core.Result{{
 				Type:     core.InternalErrorResult,
