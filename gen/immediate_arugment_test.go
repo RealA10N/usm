@@ -1,6 +1,7 @@
 package gen_test
 
 import (
+	"math/big"
 	"testing"
 
 	"alon.kr/x/usm/core"
@@ -32,6 +33,12 @@ func TestImmediateValueArgument(t *testing.T) {
 	}
 
 	generator := gen.ImmediateArgumentGenerator[Instruction]{}
-	_, results := generator.Generate(&ctx, node)
+	argument, results := generator.Generate(&ctx, node)
+
 	assert.True(t, results.IsEmpty())
+	assert.Equal(t, intType, argument.GetType())
+
+	immediateArgument, ok := argument.(*gen.ImmediateInfo)
+	assert.True(t, ok)
+	assert.Zero(t, immediateArgument.Value.Cmp(big.NewInt(1337)))
 }
