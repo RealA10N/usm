@@ -19,6 +19,9 @@ jobs:
       - name: Set up Just
         uses: extractions/setup-just@v2
 
+      - name: Setup
+        run: just setup
+
       - name: Test
         run: just cover
 
