@@ -16,12 +16,7 @@ func (g *RegisterArgumentGenerator[InstT]) Generate(
 	register := ctx.Registers.GetRegister(name)
 
 	if register == nil {
-		v := node.View()
-		return nil, list.FromSingle(core.Result{{
-			Type:     core.ErrorResult,
-			Message:  "Undefined register used as argument",
-			Location: &v,
-		}})
+		return nil, list.FromSingle(NewUndefinedRegisterResult(node.View()))
 	}
 
 	argument := ArgumentInfo{

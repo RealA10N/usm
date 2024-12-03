@@ -118,11 +118,7 @@ func CalculateTypeSizeFromTypeNode[InstT BaseInstruction](
 	typeInfo := genCtx.Types.GetType(typeName)
 
 	if typeInfo == nil {
-		return 0, core.Result{{
-			Type:     core.ErrorResult,
-			Message:  "Undeclared type",
-			Location: &node.Identifier,
-		}}
+		return 0, NewUndefinedTypeResult(node.Identifier)
 	}
 
 	return CalculateTypeSizeFromTypeDecorators(

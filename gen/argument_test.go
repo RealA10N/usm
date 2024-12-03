@@ -11,7 +11,8 @@ import (
 
 func TestUndefinedRegisterArgument(t *testing.T) {
 	src := core.NewSourceView("%a")
-	node := parse.RegisterNode{UnmanagedSourceView: src.Unmanaged()}
+	unmanaged := src.Unmanaged()
+	node := parse.RegisterNode{UnmanagedSourceView: unmanaged}
 
 	ctx := gen.GenerationContext[Instruction]{
 		ArchInfo:      gen.ArchInfo{PointerSize: 8},
@@ -27,9 +28,5 @@ func TestUndefinedRegisterArgument(t *testing.T) {
 	assert.EqualValues(t, 1, results.Len())
 
 	result := results.Head.Value
-	assert.Equal(t, core.Result{{
-		Type:     core.ErrorResult,
-		Message:  "Undefined register used as argument",
-		Location: &node.UnmanagedSourceView,
-	}}, result)
+	assert.Equal(t, gen.NewUndefinedRegisterResult(unmanaged), result)
 }

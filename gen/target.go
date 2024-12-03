@@ -6,24 +6,6 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-func NewRegisterTypeMismatchResult(
-	NewDeclaration core.UnmanagedSourceView,
-	FirstDeclaration core.UnmanagedSourceView,
-) core.Result {
-	return core.Result{
-		{
-			Type:     core.ErrorResult,
-			Message:  "Explicit register type does not match previous declaration",
-			Location: &NewDeclaration,
-		},
-		{
-			Type:     core.HintResult,
-			Message:  "Previous declaration here",
-			Location: &FirstDeclaration,
-		},
-	}
-}
-
 // MARK: Generator
 
 type TargetGenerator[InstT BaseInstruction] struct{}

@@ -33,15 +33,18 @@ type GlobalInfo struct {
 
 type ArgumentGenerator[InstT BaseInstruction] struct {
 	RegisterArgumentGenerator[InstT]
+	ImmediateArgumentGenerator[InstT]
 }
 
 func (g *ArgumentGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.ArgumentNode,
 ) (*ArgumentInfo, core.ResultList) {
-	switch arg := node.(type) {
+	switch typedNode := node.(type) {
 	case parse.RegisterNode:
-		return g.RegisterArgumentGenerator.Generate(ctx, arg)
+		return g.RegisterArgumentGenerator.Generate(ctx, typedNode)
+	case parse.ImmediateNode:
+		return g.ImmediateArgumentGenerator.Generate(ctx, typedNode)
 	default:
 		v := node.View()
 		return nil, list.FromSingle(core.Result{{
