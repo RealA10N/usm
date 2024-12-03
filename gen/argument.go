@@ -14,16 +14,6 @@ type ArgumentInfo interface {
 	GetType() *TypeInfo
 }
 
-type LabelInfo struct {
-	// TODO: add location relevant information. How exactly?
-	Name string
-}
-
-type GlobalInfo struct {
-	Name string
-	Type *TypeInfo
-}
-
 // MARK: Generator
 
 type ArgumentGenerator[InstT BaseInstruction] struct {
