@@ -8,15 +8,10 @@ import (
 
 // MARK: Info
 
-type ArgumentInfo struct {
+type ArgumentInfo interface {
 	// A pointer to the TypeInfo instance that corresponds to the type of the
 	// register.
-	Type *TypeInfo
-}
-
-type ImmediateInfo struct {
-	Type  *TypeInfo
-	Value core.UsmUint // TODO: more complex and complete representation of immediate structs.
+	GetType() *TypeInfo
 }
 
 type LabelInfo struct {
@@ -39,7 +34,7 @@ type ArgumentGenerator[InstT BaseInstruction] struct {
 func (g *ArgumentGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.ArgumentNode,
-) (*ArgumentInfo, core.ResultList) {
+) (ArgumentInfo, core.ResultList) {
 	switch typedNode := node.(type) {
 	case parse.RegisterNode:
 		return g.RegisterArgumentGenerator.Generate(ctx, typedNode)

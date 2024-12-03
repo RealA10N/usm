@@ -17,7 +17,7 @@ type AddInstructionDefinition struct{}
 
 func (AddInstructionDefinition) BuildInstruction(
 	targets []*gen.RegisterInfo,
-	arguments []*gen.ArgumentInfo,
+	arguments []gen.ArgumentInfo,
 ) (Instruction, core.ResultList) {
 	return Instruction{}, core.ResultList{}
 }

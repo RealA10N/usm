@@ -227,17 +227,9 @@ Immediate values are used to initialize registers and globals.
 
 #### Integer Immediate Value<a name="integer-immediate-value"></a>
 
-Initialize an integer value using the syntax `#<n><b>` where `<b>` is replaced
-with the immediate base (as described below), and `<n>` is replaced with a
-possibly negative integer, in the provided base representation (as described
-below).
-
-| Base             | Allowed Suffix (`<b>`) | Allowed Digits (`<n>`)      |
-| ---------------- | ---------------------- | --------------------------- |
-| Hexadecimal (16) | `h` or `H`             | `0`-`9`, `a`-`f` or `A`-`F` |
-| Decimal (10)     | empty, `d` or `D`      | `0`-`9`                     |
-| Octal (8)        | `o` or `O`             | `0`-`7`                     |
-| Binary (2)       | `b` or `B`             | `0`, `1`                    |
+Initialize an integer value using the syntax `#<n>` where `<n>` is replaced with
+a possibly negative integer, according to
+[Go's big.Int SetString syntax](https://pkg.go.dev/math/big#Int.SetString).
 
 ```usm
 func @main {

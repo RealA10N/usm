@@ -6,12 +6,20 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
+type RegisterArgumentInfo struct {
+	Type *TypeInfo
+}
+
+func (i *RegisterArgumentInfo) GetType() *TypeInfo {
+	return i.Type
+}
+
 type RegisterArgumentGenerator[InstT BaseInstruction] struct{}
 
 func (g *RegisterArgumentGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.RegisterNode,
-) (*ArgumentInfo, core.ResultList) {
+) (ArgumentInfo, core.ResultList) {
 	name := string(node.Raw(ctx.SourceContext))
 	register := ctx.Registers.GetRegister(name)
 
@@ -19,7 +27,7 @@ func (g *RegisterArgumentGenerator[InstT]) Generate(
 		return nil, list.FromSingle(NewUndefinedRegisterResult(node.View()))
 	}
 
-	argument := ArgumentInfo{
+	argument := RegisterArgumentInfo{
 		Type: register.Type,
 	}
 

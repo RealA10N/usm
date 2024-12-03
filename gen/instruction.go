@@ -16,7 +16,7 @@ type InstructionDefinition[InstT BaseInstruction] interface {
 	// Build an instruction from the provided targets and arguments.
 	BuildInstruction(
 		targets []*RegisterInfo,
-		arguments []*ArgumentInfo,
+		arguments []ArgumentInfo,
 	) (InstT, core.ResultList)
 
 	// Provided a list a list of types that correspond to argument types,
@@ -55,8 +55,8 @@ type InstructionGenerator[InstT BaseInstruction] struct {
 func (g *InstructionGenerator[InstT]) generateArguments(
 	ctx *GenerationContext[InstT],
 	node parse.InstructionNode,
-) ([]*ArgumentInfo, core.ResultList) {
-	arguments := make([]*ArgumentInfo, len(node.Arguments))
+) ([]ArgumentInfo, core.ResultList) {
+	arguments := make([]ArgumentInfo, len(node.Arguments))
 	results := core.ResultList{}
 
 	// Different arguments should not effect one another.
@@ -90,10 +90,10 @@ func (g *InstructionGenerator[InstT]) generateExplicitTargetsTypes(
 	return targets, results
 }
 
-func argumentsToArgumentTypes(arguments []*ArgumentInfo) []*TypeInfo {
+func argumentsToArgumentTypes(arguments []ArgumentInfo) []*TypeInfo {
 	types := make([]*TypeInfo, len(arguments))
 	for i, arg := range arguments {
-		types[i] = arg.Type
+		types[i] = arg.GetType()
 	}
 	return types
 }
