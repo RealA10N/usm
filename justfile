@@ -22,4 +22,6 @@ fmt:
 setup:
 	{{GO}} get -u github.com/kyoh86/richgo
 	{{GO}} get -u github.com/dave/courtney 
+	{{GO}} get -t -v ./...
+	{{PY}} -m pip install --upgrade pip
 	{{PY}} -m pip install mdformat
