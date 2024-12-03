@@ -12,7 +12,7 @@ test:
 	{{GO}} test ./...
 
 cover:
-	courtney -o={{COVERPROFILE}} | richgo testfilter
+	courtney -v -o={{COVERPROFILE}} | richgo testfilter
 
 fmt:
 	{{GO}} mod tidy
