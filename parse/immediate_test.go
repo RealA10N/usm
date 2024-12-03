@@ -14,6 +14,11 @@ func TestImmediateValue(t *testing.T) {
 	testExpectedImmediate(t, src, src)
 }
 
+func TestImmediatePointerValue(t *testing.T) {
+	src := "$32 * #0"
+	testExpectedImmediate(t, src, src)
+}
+
 func TestImmediateBlockOneLine(t *testing.T) {
 	src := "$custom { .a #1337 .b #2902 }"
 	expected := `$custom {

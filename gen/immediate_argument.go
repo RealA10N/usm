@@ -28,14 +28,14 @@ func (g *ImmediateArgumentGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.ImmediateNode,
 ) (ArgumentInfo, core.ResultList) {
-	typeName := string(node.Type.Raw(ctx.SourceContext))
+	typeName := string(node.Type.Identifier.Raw(ctx.SourceContext))
 	typ := ctx.Types.GetType(typeName)
 	if typ == nil {
 		return nil, list.FromSingle(NewUndefinedTypeResult(node.View()))
 	}
 
 	immediate, ok := node.Value.(parse.ImmediateFinalValueNode)
-	if !ok {
+	if !ok || len(node.Type.Decorators) > 0 {
 		v := node.View()
 		return nil, list.FromSingle(core.Result{{
 			Type:     core.ErrorResult,
@@ -44,7 +44,9 @@ func (g *ImmediateArgumentGenerator[InstT]) Generate(
 		}})
 	}
 
-	value, ok := new(big.Int).SetString(string(immediate.Raw(ctx.SourceContext)), 0)
+	immediate.Start += 1 // to skip the '#' character
+	valueStr := string(immediate.Raw(ctx.SourceContext))
+	value, ok := new(big.Int).SetString(valueStr, 0)
 	if !ok {
 		v := immediate.View()
 		return nil, list.FromSingle(core.Result{{
