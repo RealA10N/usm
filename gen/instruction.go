@@ -124,7 +124,7 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 	if registerInfo.Type != targetType {
 		return nil, core.Result{{
 			Type:     core.InternalErrorResult,
-			Message:  "internal register type mismatch",
+			Message:  "Internal register type mismatch",
 			Location: &nodeView,
 		}}
 	}
@@ -150,7 +150,7 @@ func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
 		v := node.View()
 		return nil, list.FromSingle(core.Result{{
 			Type:     core.InternalErrorResult,
-			Message:  "targets length mismatch",
+			Message:  "Targets length mismatch",
 			Location: &v,
 		}})
 	}
@@ -168,7 +168,7 @@ func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
 			v := target.View()
 			results.Append(core.Result{{
 				Type:     core.InternalErrorResult,
-				Message:  "unexpected nil register",
+				Message:  "Unexpected nil register",
 				Location: &v,
 			}})
 		}
