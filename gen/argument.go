@@ -31,34 +31,17 @@ type GlobalInfo struct {
 
 // MARK: Generator
 
-type ArgumentGenerator[InstT BaseInstruction] struct{}
+type ArgumentGenerator[InstT BaseInstruction] struct {
+	RegisterArgumentGenerator[InstT]
+}
 
 func (g *ArgumentGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.ArgumentNode,
 ) (*ArgumentInfo, core.ResultList) {
 	switch arg := node.(type) {
-
 	case parse.RegisterNode:
-		// TODO: duplicated code: make function that extracts register name from node.
-		registerName := string(arg.Raw(ctx.SourceContext))
-		registerInfo := ctx.Registers.GetRegister(registerName)
-
-		if registerInfo == nil {
-			v := node.View()
-			return nil, list.FromSingle(core.Result{{
-				Type:     core.ErrorResult,
-				Message:  "Undefined register used as argument",
-				Location: &v,
-			}})
-		}
-
-		argumentInfo := ArgumentInfo{
-			Type: registerInfo.Type,
-		}
-
-		return &argumentInfo, core.ResultList{}
-
+		return g.RegisterArgumentGenerator.Generate(ctx, arg)
 	default:
 		v := node.View()
 		return nil, list.FromSingle(core.Result{{
