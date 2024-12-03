@@ -119,9 +119,9 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 		return newRegisterInfo, ctx.Registers.NewRegister(newRegisterInfo)
 	}
 
-	// register is already defined;
-	// sanity check: ensure the type matches the previously defined one.
+	// register is already defined
 	if registerInfo.Type != targetType {
+		// notest: sanity check only
 		return nil, core.Result{{
 			Type:     core.InternalErrorResult,
 			Message:  "Internal register type mismatch",
