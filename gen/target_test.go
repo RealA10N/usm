@@ -21,7 +21,7 @@ func TestTargetRegisterAlreadyDefined(t *testing.T) {
 		},
 	}
 
-	intType := &gen.TypeInfo{Name: "$32", Size: 4}
+	intType := &gen.NamedTypeInfo{Name: "$32", Size: 4}
 	types := TypeMap{intType.Name: intType}
 
 	registers := RegisterMap{

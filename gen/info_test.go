@@ -7,9 +7,9 @@ import (
 
 // MARK: TypesMap
 
-type TypeMap map[string]*gen.TypeInfo
+type TypeMap map[string]*gen.NamedTypeInfo
 
-func (t *TypeMap) GetType(name string) *gen.TypeInfo {
+func (t *TypeMap) GetType(name string) *gen.NamedTypeInfo {
 	val, ok := (*t)[name]
 	if !ok {
 		return nil
@@ -17,7 +17,7 @@ func (t *TypeMap) GetType(name string) *gen.TypeInfo {
 	return val
 }
 
-func (t *TypeMap) NewType(typ *gen.TypeInfo) core.Result {
+func (t *TypeMap) NewType(typ *gen.NamedTypeInfo) core.Result {
 	if _, exists := (*t)[typ.Name]; exists {
 		return core.Result{{
 			Type:     core.ErrorResult,
@@ -31,7 +31,7 @@ func (t *TypeMap) NewType(typ *gen.TypeInfo) core.Result {
 }
 
 func (t *TypeMap) newBuiltinType(name string, size core.UsmUint) core.Result {
-	info := &gen.TypeInfo{
+	info := &gen.NamedTypeInfo{
 		Name:        name,
 		Size:        size,
 		Declaration: core.UnmanagedSourceView{},

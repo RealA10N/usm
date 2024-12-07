@@ -11,12 +11,12 @@ import (
 // MARK: Info
 
 type ImmediateInfo struct {
-	Type  *TypeInfo
+	Type  *NamedTypeInfo
 	Value *big.Int // TODO: Add floating types
 	// TODO: more complex and complete representation of immediate structs.
 }
 
-func (i *ImmediateInfo) GetType() *TypeInfo {
+func (i *ImmediateInfo) GetType() *NamedTypeInfo {
 	return i.Type
 }
 

@@ -33,9 +33,9 @@ type InstructionDefinition[InstT BaseInstruction] interface {
 	// instruction set definition API, and should wrap it with a limited interface.
 	InferTargetTypes(
 		ctx *GenerationContext[InstT],
-		targets []*TypeInfo,
-		arguments []*TypeInfo,
-	) ([]*TypeInfo, core.ResultList)
+		targets []*NamedTypeInfo,
+		arguments []*NamedTypeInfo,
+	) ([]*NamedTypeInfo, core.ResultList)
 }
 
 // MARK: Manager
@@ -74,8 +74,8 @@ func (g *InstructionGenerator[InstT]) generateArguments(
 func (g *InstructionGenerator[InstT]) generateExplicitTargetsTypes(
 	ctx *GenerationContext[InstT],
 	node parse.InstructionNode,
-) ([]*TypeInfo, core.ResultList) {
-	targets := make([]*TypeInfo, len(node.Targets))
+) ([]*NamedTypeInfo, core.ResultList) {
+	targets := make([]*NamedTypeInfo, len(node.Targets))
 	results := core.ResultList{}
 
 	// Different targets should not effect one another.
@@ -90,8 +90,8 @@ func (g *InstructionGenerator[InstT]) generateExplicitTargetsTypes(
 	return targets, results
 }
 
-func argumentsToArgumentTypes(arguments []ArgumentInfo) []*TypeInfo {
-	types := make([]*TypeInfo, len(arguments))
+func argumentsToArgumentTypes(arguments []ArgumentInfo) []*NamedTypeInfo {
+	types := make([]*NamedTypeInfo, len(arguments))
 	for i, arg := range arguments {
 		types[i] = arg.GetType()
 	}
@@ -101,7 +101,7 @@ func argumentsToArgumentTypes(arguments []ArgumentInfo) []*TypeInfo {
 func (g *InstructionGenerator[InstT]) getTargetRegister(
 	ctx *GenerationContext[InstT],
 	node parse.TargetNode,
-	targetType *TypeInfo,
+	targetType *NamedTypeInfo,
 ) (*RegisterInfo, core.Result) {
 	registerName := string(node.Register.Raw(ctx.SourceContext))
 	registerInfo := ctx.Registers.GetRegister(registerName)
@@ -143,7 +143,7 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
 	ctx *GenerationContext[InstT],
 	node parse.InstructionNode,
-	targetTypes []*TypeInfo,
+	targetTypes []*NamedTypeInfo,
 ) ([]*RegisterInfo, core.ResultList) {
 	if len(node.Targets) != len(targetTypes) {
 		// notest: sanity check: ensure lengths match.

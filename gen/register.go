@@ -10,7 +10,7 @@ type RegisterInfo struct {
 
 	// A pointer to the TypeInfo instance that corresponds to the type of the
 	// register.
-	Type *TypeInfo
+	Type *NamedTypeInfo
 
 	// The first location in the source code in which the register is declared
 	// or assigned a value.

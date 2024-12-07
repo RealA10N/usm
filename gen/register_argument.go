@@ -7,10 +7,10 @@ import (
 )
 
 type RegisterArgumentInfo struct {
-	Type *TypeInfo
+	Type *NamedTypeInfo
 }
 
-func (i *RegisterArgumentInfo) GetType() *TypeInfo {
+func (i *RegisterArgumentInfo) GetType() *NamedTypeInfo {
 	return i.Type
 }
 

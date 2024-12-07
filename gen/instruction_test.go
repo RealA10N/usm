@@ -24,9 +24,9 @@ func (AddInstructionDefinition) BuildInstruction(
 
 func (AddInstructionDefinition) InferTargetTypes(
 	ctx *gen.GenerationContext[Instruction],
-	targets []*gen.TypeInfo,
-	arguments []*gen.TypeInfo,
-) ([]*gen.TypeInfo, core.ResultList) {
+	targets []*gen.NamedTypeInfo,
+	arguments []*gen.NamedTypeInfo,
+) ([]*gen.NamedTypeInfo, core.ResultList) {
 	if len(arguments) != 2 {
 		return nil, list.FromSingle(core.Result{{
 			Type:    core.ErrorResult,
@@ -48,7 +48,7 @@ func (AddInstructionDefinition) InferTargetTypes(
 		}})
 	}
 
-	return []*gen.TypeInfo{arguments[0]}, core.ResultList{}
+	return []*gen.NamedTypeInfo{arguments[0]}, core.ResultList{}
 }
 
 type InstructionMap map[string]gen.InstructionDefinition[Instruction]
@@ -80,7 +80,7 @@ func TestInstructionCreateTarget(t *testing.T) {
 	node, result := parse.NewInstructionParser().Parse(&tknView)
 	assert.Nil(t, result)
 
-	intType := &gen.TypeInfo{Name: "$32", Size: 4}
+	intType := &gen.NamedTypeInfo{Name: "$32", Size: 4}
 	types := TypeMap{intType.Name: intType}
 
 	registers := RegisterMap{

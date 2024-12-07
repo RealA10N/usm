@@ -13,10 +13,10 @@ type TargetGenerator[InstT BaseInstruction] struct{}
 func (g *TargetGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.TargetNode,
-) (*TypeInfo, core.ResultList) {
+) (*NamedTypeInfo, core.ResultList) {
 
 	// if an explicit type is provided to the target, get the type info.
-	var explicitType *TypeInfo
+	var explicitType *NamedTypeInfo
 	if node.Type != nil {
 		explicitTypeName := string(node.Type.Identifier.Raw(ctx.SourceContext))
 		explicitType = ctx.Types.GetType(explicitTypeName)

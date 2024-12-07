@@ -8,7 +8,7 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-type TypeInfo struct {
+type NamedTypeInfo struct {
 	Name        string
 	Size        core.UsmUint
 	Declaration core.UnmanagedSourceView
@@ -21,7 +21,7 @@ type TypeManager interface {
 	//
 	// The implementation should also return information about builtin types,
 	// although the creation of such types can be possibly done lazily.
-	GetType(name string) *TypeInfo
+	GetType(name string) *NamedTypeInfo
 
 	// Register a new type with the provided name and type information.
 	// The generator will call this method when it encounters a new type
@@ -30,7 +30,7 @@ type TypeManager interface {
 	// The implementation should raise an error if the new registered type is
 	// invalid, for example if there already exists a type with the same name,
 	// or if its a builtin type.
-	NewType(typ *TypeInfo) core.Result
+	NewType(typ *NamedTypeInfo) core.Result
 }
 
 // Valid type decorators should match the regex ".\d*" where the first rune is
@@ -148,10 +148,10 @@ func CalculateTypeSizeFromTypeDeclaration[InstT BaseInstruction](
 func TypeInfoFromTypeDeclaration[InstT BaseInstruction](
 	genCtx *GenerationContext[InstT],
 	node parse.TypeDeclarationNode,
-) (TypeInfo, core.Result) {
+) (NamedTypeInfo, core.Result) {
 	size, err := CalculateTypeSizeFromTypeDeclaration(genCtx, node)
 	name := string(node.Identifier.Raw(genCtx.SourceContext))
-	return TypeInfo{
+	return NamedTypeInfo{
 		Name: name,
 		Size: size,
 	}, err
