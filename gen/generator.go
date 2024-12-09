@@ -1,9 +1,8 @@
 package gen
 
 import (
-	"text/template/parse"
-
 	"alon.kr/x/usm/core"
+	"alon.kr/x/usm/parse"
 )
 
 type ArchInfo struct {
