@@ -1,6 +1,7 @@
 package core
 
 import (
+	"math/bits"
 	"strconv"
 	"unsafe"
 )
@@ -18,4 +19,18 @@ func ParseUint(s string) (UsmUint, error) {
 	// not defined in the USM spec.
 	n, err := strconv.ParseUint(s, 10, int(UsmUintBitSize))
 	return UsmUint(n), err
+}
+
+// MARK: Arithmetics
+// Implementation is based on math.bits.
+// Only a subset of required operations is implemented (add more as needed).
+
+func Add(x, y UsmUint) (res UsmUint, ok bool) {
+	res, carry := bits.Add32(x, y, 0)
+	return res, carry == 0
+}
+
+func Mul(x, y UsmUint) (res UsmUint, ok bool) {
+	high, low := bits.Mul32(x, y)
+	return low, high == 0
 }
