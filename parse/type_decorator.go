@@ -23,6 +23,10 @@ func (n TypeDecoratorNode) String(ctx *StringContext) string {
 	return string(n.Raw(ctx.SourceContext))
 }
 
+func (n TypeDecoratorNode) View() core.UnmanagedSourceView {
+	return n.UnmanagedSourceView
+}
+
 // MARK: Parser
 
 type TypeDecoratorParser struct{}
