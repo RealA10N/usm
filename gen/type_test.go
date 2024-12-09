@@ -36,7 +36,9 @@ func TestTypeAliasDeclaration(t *testing.T) {
 		Types:         &typeManager,
 	}
 
-	typeInfo, err := gen.TypeInfoFromTypeDeclaration(&genCtx, typeDeclarationNode)
+	generator := gen.NewNamedTypeGenerator[gen.BaseInstruction]()
+	typeInfo, err := generator.Generate(&genCtx, typeDeclarationNode)
+
 	assert.Nil(t, err)
 	assert.NotNil(t, typeInfo)
 	assert.Equal(t, "$myType", string(typeInfo.Name))
@@ -77,7 +79,9 @@ func TestPointerTypeDeclaration(t *testing.T) {
 		Types:         &typeManager,
 	}
 
-	typeInfo, err := gen.TypeInfoFromTypeDeclaration(&genCtx, typeDeclarationNode)
+	generator := gen.NewNamedTypeGenerator[gen.BaseInstruction]()
+	typeInfo, err := generator.Generate(&genCtx, typeDeclarationNode)
+
 	assert.Nil(t, err)
 	assert.NotNil(t, typeInfo)
 	assert.Equal(t, "$myType", string(typeInfo.Name))
@@ -117,7 +121,9 @@ func TestRepeatTypeDeclaration(t *testing.T) {
 		Types:         &typeManager,
 	}
 
-	typeInfo, err := gen.TypeInfoFromTypeDeclaration(&genCtx, typeDeclarationNode)
+	generator := gen.NewNamedTypeGenerator[gen.BaseInstruction]()
+	typeInfo, err := generator.Generate(&genCtx, typeDeclarationNode)
+
 	assert.Nil(t, err)
 	assert.NotNil(t, typeInfo)
 	assert.Equal(t, "$myType", typeInfo.Name)
@@ -137,7 +143,9 @@ func TestVoidTypeDeclaration(t *testing.T) {
 		Types: &typeManager,
 	}
 
-	typeInfo, err := gen.TypeInfoFromTypeDeclaration(&genCtx, typeDeclarationNode)
+	generator := gen.NewNamedTypeGenerator[gen.BaseInstruction]()
+	typeInfo, err := generator.Generate(&genCtx, typeDeclarationNode)
+
 	assert.Nil(t, err)
 	assert.NotNil(t, typeInfo)
 	assert.EqualValues(t, 0, typeInfo.Size)

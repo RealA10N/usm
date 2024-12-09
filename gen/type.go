@@ -102,6 +102,12 @@ type TypeManager interface {
 
 type DescriptorGenerator[InstT BaseInstruction] struct{}
 
+func NewDescriptorGenerator[InstT BaseInstruction]() Generator[InstT, parse.TypeDecoratorNode, TypeDescriptorInfo] {
+	return Generator[InstT, parse.TypeDecoratorNode, TypeDescriptorInfo](
+		&DescriptorGenerator[InstT]{},
+	)
+}
+
 // Valid type decorators should match the regex ".\d*" where the first rune is
 // the decorator identifier (pointer, repeat, etc.), and immediately follows
 // the an optional decimal number that is interpreted differently depending on
@@ -189,6 +195,15 @@ type ReferencedTypeGenerator[InstT BaseInstruction] struct {
 	DescriptorGenerator Generator[InstT, parse.TypeDecoratorNode, TypeDescriptorInfo]
 }
 
+func NewReferencedTypeGenerator[InstT BaseInstruction]() Generator[InstT, parse.TypeNode, *ReferencedTypeInfo] {
+	return Generator[InstT, parse.TypeNode, *ReferencedTypeInfo](
+		&ReferencedTypeGenerator[InstT]{
+			DescriptorGenerator: NewDescriptorGenerator[InstT](),
+		},
+	)
+
+}
+
 func (g *ReferencedTypeGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.TypeNode,
@@ -230,6 +245,12 @@ func (g *ReferencedTypeGenerator[InstT]) Generate(
 
 type NamedTypeGenerator[InstT BaseInstruction] struct {
 	ReferencedTypeGenerator Generator[InstT, parse.TypeNode, *ReferencedTypeInfo]
+}
+
+func NewNamedTypeGenerator[InstT BaseInstruction]() NamedTypeGenerator[InstT] {
+	return NamedTypeGenerator[InstT]{
+		ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
+	}
 }
 
 func (g *NamedTypeGenerator[InstT]) Generate(
