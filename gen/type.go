@@ -40,42 +40,9 @@ type TypeDescriptorInfo struct {
 type ReferencedTypeInfo struct {
 	// A pointer to the base, named type that this type reference refers to.
 	Base        *NamedTypeInfo
+	Size        core.UsmUint
 	Descriptors []TypeDescriptorInfo
 	Declaration core.UnmanagedSourceView
-}
-
-// Calculate the size of the type.
-// Iterates over all type descriptors in linear time.
-func (i *ReferencedTypeInfo) Size(
-	archInfo *ArchInfo,
-) (core.UsmUint, core.ResultList) {
-	size := core.UsmUint(i.Base.Size)
-
-	for _, descriptor := range i.Descriptors {
-		switch descriptor.Type {
-		case PointerTypeDescriptor:
-			size = archInfo.PointerSize
-		case RepeatTypeDescriptor:
-			var ok bool
-			size, ok = core.Mul(size, descriptor.Amount)
-			if !ok {
-				return 0, list.FromSingle(core.Result{{
-					Type:     core.ErrorResult,
-					Message:  "Type size overflow",
-					Location: &i.Declaration,
-				}})
-			}
-		default:
-			// notest
-			return 0, list.FromSingle(core.Result{{
-				Type:     core.InternalErrorResult,
-				Message:  "Unknown type descriptor",
-				Location: &i.Declaration,
-			}})
-		}
-	}
-
-	return size, core.ResultList{}
 }
 
 // MARK: Manager
@@ -202,7 +169,43 @@ func NewReferencedTypeGenerator[InstT BaseInstruction]() Generator[InstT, parse.
 			DescriptorGenerator: NewDescriptorGenerator[InstT](),
 		},
 	)
+}
 
+func (g *ReferencedTypeGenerator[InstT]) calculateTypeSize(
+	ctx *GenerationContext[InstT],
+	node parse.TypeNode,
+	baseType *NamedTypeInfo,
+	descriptors []TypeDescriptorInfo,
+) (core.UsmUint, core.ResultList) {
+	size := core.UsmUint(baseType.Size)
+
+	for _, descriptor := range descriptors {
+		switch descriptor.Type {
+		case PointerTypeDescriptor:
+			size = ctx.ArchInfo.PointerSize
+		case RepeatTypeDescriptor:
+			var ok bool
+			size, ok = core.Mul(size, descriptor.Amount)
+			if !ok {
+				v := node.View()
+				return 0, list.FromSingle(core.Result{{
+					Type:     core.ErrorResult,
+					Message:  "Type size overflow",
+					Location: &v,
+				}})
+			}
+		default:
+			// notest
+			v := node.View()
+			return 0, list.FromSingle(core.Result{{
+				Type:     core.InternalErrorResult,
+				Message:  "Unknown type descriptor",
+				Location: &v,
+			}})
+		}
+	}
+
+	return size, core.ResultList{}
 }
 
 func (g *ReferencedTypeGenerator[InstT]) Generate(
@@ -233,8 +236,14 @@ func (g *ReferencedTypeGenerator[InstT]) Generate(
 		descriptors = append(descriptors, descriptorInfo)
 	}
 
+	size, results := g.calculateTypeSize(ctx, node, baseType, descriptors)
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
 	typeInfo := &ReferencedTypeInfo{
 		Base:        baseType,
+		Size:        size,
 		Descriptors: descriptors,
 		Declaration: node.View(),
 	}
@@ -293,14 +302,9 @@ func (g *NamedTypeGenerator[InstT]) Generate(
 		return nil, results
 	}
 
-	typeSize, results := referencedTypeInfo.Size(&ctx.ArchInfo)
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
 	typeInfo = &NamedTypeInfo{
 		Name:        identifier,
-		Size:        typeSize,
+		Size:        referencedTypeInfo.Size,
 		Declaration: declaration,
 	}
 

@@ -18,9 +18,10 @@ func TestParseUintDecimal(t *testing.T) {
 // expected behavior).
 // TODO: consider adding support for other bases?
 
-func TestParseUintBinaryFail(t *testing.T) {
-	_, err := core.ParseUint("0b101")
-	assert.NotNil(t, err)
+func TestParseUintBinary(t *testing.T) {
+	n, err := core.ParseUint("0b101")
+	assert.Nil(t, err)
+	assert.Equal(t, core.UsmUint(5), n)
 }
 
 func TestParseUintPadding(t *testing.T) {
