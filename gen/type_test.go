@@ -151,3 +151,34 @@ func TestRepeatTypeDeclaration(t *testing.T) {
 // 	assert.NotNil(t, typeInfo)
 // 	assert.EqualValues(t, 0, typeInfo.Size)
 // }
+
+func TestRepeatTypeTooLarge(t *testing.T) {
+	typeManager := make(TypeMap)
+	typeManager.newBuiltinType("$32", 4)
+
+	v := core.NewSourceView("$32 ^1_000_000 ^1_000_000")
+	unmanaged := v.Unmanaged()
+
+	node := parse.TypeNode{
+		Identifier: unmanaged.Subview(0, 3),
+		Decorators: []parse.TypeDecoratorNode{
+			{
+				UnmanagedSourceView: unmanaged.Subview(4, 14),
+				Type:                parse.RepeatTypeDecorator,
+			},
+			{
+				UnmanagedSourceView: unmanaged.Subview(15, 25),
+				Type:                parse.RepeatTypeDecorator,
+			},
+		},
+	}
+
+	genCtx := gen.GenerationContext[gen.BaseInstruction]{
+		SourceContext: v.Ctx(),
+		Types:         &typeManager,
+	}
+
+	generator := gen.NewReferencedTypeGenerator[gen.BaseInstruction]()
+	_, results := generator.Generate(&genCtx, node)
+	assert.False(t, results.IsEmpty())
+}

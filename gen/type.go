@@ -66,6 +66,7 @@ func (i *ReferencedTypeInfo) Size(
 				}})
 			}
 		default:
+			// notest
 			return 0, list.FromSingle(core.Result{{
 				Type:     core.InternalErrorResult,
 				Message:  "Unknown type descriptor",
