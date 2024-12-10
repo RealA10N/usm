@@ -130,6 +130,46 @@ func TestRepeatTypeDeclaration(t *testing.T) {
 	assert.EqualValues(t, 9, typeInfo.Size)
 }
 
+func TestAlreadyDefinedTypeDeclaration(t *testing.T) {
+	typeManager := make(TypeMap)
+	typeManager.newBuiltinType("$32", 4)
+	intTypeInfo := gen.NamedTypeInfo{
+		Name: "$int",
+		Size: 8,
+	}
+	typeManager.NewType(&intTypeInfo)
+
+	view := core.NewSourceView("type $int $32")
+	unmanaged := view.Unmanaged()
+
+	node := parse.TypeDeclarationNode{
+		UnmanagedSourceView: unmanaged,
+		Identifier:          unmanaged.Subview(5, 9),
+		Fields: parse.BlockNode[parse.TypeFieldNode]{
+			Nodes: []parse.TypeFieldNode{
+				{
+					Type: parse.TypeNode{
+						Identifier: unmanaged.Subview(10, 13),
+						Decorators: []parse.TypeDecoratorNode{},
+					},
+				},
+			},
+		},
+	}
+
+	genCtx := gen.GenerationContext[gen.BaseInstruction]{
+		SourceContext: view.Ctx(),
+		Types:         &typeManager,
+	}
+
+	generator := gen.NewNamedTypeGenerator[gen.BaseInstruction]()
+	_, results := generator.Generate(&genCtx, node)
+
+	assert.Len(t, results.ToSlice(), 1)
+	result := results.Head.Value
+	assert.Contains(t, result[0].Message, "already defined")
+}
+
 // TODO: add back this test when more complex types are supported!
 // func TestVoidTypeDeclaration(t *testing.T) {
 // 	typeManager := make(TypeMap)
