@@ -127,6 +127,7 @@ func (g *DescriptorGenerator[InstT]) parsedDescriptorToGenDescriptorType(
 	case parse.RepeatTypeDecorator:
 		return RepeatTypeDescriptor, core.ResultList{}
 	default:
+		// notest
 		return 0, list.FromSingle(core.Result{
 			{
 				Type:     core.InternalErrorResult,
