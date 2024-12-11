@@ -31,12 +31,12 @@ func TestTypeAliasDeclaration(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.GenerationContext[gen.BaseInstruction]{
+	genCtx := gen.FileGenerationContext{
 		SourceContext: view.Ctx(),
 		Types:         &typeManager,
 	}
 
-	generator := gen.NewNamedTypeGenerator[gen.BaseInstruction]()
+	generator := gen.NewNamedTypeGenerator()
 	typeInfo, results := generator.Generate(&genCtx, typeDeclarationNode)
 
 	assert.True(t, results.IsEmpty())
@@ -73,13 +73,13 @@ func TestPointerTypeDeclaration(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.GenerationContext[gen.BaseInstruction]{
-		SourceContext: view.Ctx(),
-		ArchInfo:      gen.ArchInfo{PointerSize: 1337},
-		Types:         &typeManager,
+	genCtx := gen.FileGenerationContext{
+		GenerationContext: &gen.GenerationContext{PointerSize: 1337},
+		SourceContext:     view.Ctx(),
+		Types:             &typeManager,
 	}
 
-	generator := gen.NewNamedTypeGenerator[gen.BaseInstruction]()
+	generator := gen.NewNamedTypeGenerator()
 	typeInfo, results := generator.Generate(&genCtx, typeDeclarationNode)
 
 	assert.True(t, results.IsEmpty())
@@ -116,12 +116,12 @@ func TestRepeatTypeDeclaration(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.GenerationContext[gen.BaseInstruction]{
+	genCtx := gen.FileGenerationContext{
 		SourceContext: view.Ctx(),
 		Types:         &typeManager,
 	}
 
-	generator := gen.NewNamedTypeGenerator[gen.BaseInstruction]()
+	generator := gen.NewNamedTypeGenerator()
 	typeInfo, results := generator.Generate(&genCtx, typeDeclarationNode)
 
 	assert.True(t, results.IsEmpty())
@@ -157,12 +157,12 @@ func TestAlreadyDefinedTypeDeclaration(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.GenerationContext[gen.BaseInstruction]{
+	genCtx := gen.FileGenerationContext{
 		SourceContext: view.Ctx(),
 		Types:         &typeManager,
 	}
 
-	generator := gen.NewNamedTypeGenerator[gen.BaseInstruction]()
+	generator := gen.NewNamedTypeGenerator()
 	_, results := generator.Generate(&genCtx, node)
 
 	assert.Len(t, results.ToSlice(), 1)
@@ -213,12 +213,12 @@ func TestRepeatTypeTooLarge(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.GenerationContext[gen.BaseInstruction]{
+	genCtx := gen.FileGenerationContext{
 		SourceContext: v.Ctx(),
 		Types:         &typeManager,
 	}
 
-	generator := gen.NewReferencedTypeGenerator[gen.BaseInstruction]()
+	generator := gen.NewReferencedTypeGenerator()
 	_, results := generator.Generate(&genCtx, node)
 	assert.False(t, results.IsEmpty())
 }

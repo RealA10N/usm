@@ -14,12 +14,16 @@ func TestUndefinedRegisterArgument(t *testing.T) {
 	unmanaged := src.Unmanaged()
 	node := parse.RegisterNode{UnmanagedSourceView: unmanaged}
 
-	ctx := gen.GenerationContext[Instruction]{
-		ArchInfo:      gen.ArchInfo{PointerSize: 8},
-		SourceContext: src.Ctx(),
-		Types:         &TypeMap{},
-		Registers:     &RegisterMap{},
-		Instructions:  &InstructionMap{},
+	ctx := gen.FunctionGenerationContext[Instruction]{
+		FileGenerationContext: &gen.FileGenerationContext{
+			GenerationContext: &gen.GenerationContext{
+				PointerSize: 8,
+			},
+			SourceContext: src.Ctx(),
+			Types:         &TypeMap{},
+		},
+		Registers:    &RegisterMap{},
+		Instructions: &InstructionMap{},
 	}
 
 	generator := gen.NewArgumentGenerator[Instruction]()

@@ -23,7 +23,7 @@ func (AddInstructionDefinition) BuildInstruction(
 }
 
 func (AddInstructionDefinition) InferTargetTypes(
-	ctx *gen.GenerationContext[Instruction],
+	ctx *gen.FunctionGenerationContext[Instruction],
 	targets []*gen.ReferencedTypeInfo,
 	arguments []gen.ReferencedTypeInfo,
 ) ([]gen.ReferencedTypeInfo, core.ResultList) {
@@ -99,12 +99,16 @@ func TestInstructionCreateTarget(t *testing.T) {
 		"%b": &gen.RegisterInfo{Name: "%b", Type: intTypeRef},
 	}
 
-	ctx := &gen.GenerationContext[Instruction]{
-		ArchInfo:      gen.ArchInfo{PointerSize: 8},
-		SourceContext: src.Ctx(),
-		Types:         &types,
-		Registers:     &registers,
-		Instructions:  &instructions,
+	ctx := &gen.FunctionGenerationContext[Instruction]{
+		FileGenerationContext: &gen.FileGenerationContext{
+			GenerationContext: &gen.GenerationContext{
+				PointerSize: 8,
+			},
+			SourceContext: src.Ctx(),
+			Types:         &types,
+		},
+		Registers:    &registers,
+		Instructions: &instructions,
 	}
 
 	generator := gen.NewInstructionGenerator[Instruction]()

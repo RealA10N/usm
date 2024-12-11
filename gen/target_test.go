@@ -33,12 +33,16 @@ func TestTargetRegisterAlreadyDefined(t *testing.T) {
 		"%a": &gen.RegisterInfo{Name: "%a", Type: intTypeRef},
 	}
 
-	ctx := gen.GenerationContext[Instruction]{
-		ArchInfo:      gen.ArchInfo{PointerSize: 8},
-		SourceContext: src.Ctx(),
-		Types:         &types,
-		Registers:     &registers,
-		Instructions:  &InstructionMap{},
+	ctx := gen.FunctionGenerationContext[Instruction]{
+		FileGenerationContext: &gen.FileGenerationContext{
+			GenerationContext: &gen.GenerationContext{
+				PointerSize: 8,
+			},
+			SourceContext: src.Ctx(),
+			Types:         &types,
+		},
+		Registers:    &registers,
+		Instructions: &InstructionMap{},
 	}
 
 	generator := gen.NewTargetGenerator[Instruction]()

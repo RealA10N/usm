@@ -31,12 +31,16 @@ func TestFunctionGeneration(t *testing.T) {
 
 	intType := &gen.NamedTypeInfo{Name: "$32", Size: 4}
 
-	ctx := &gen.GenerationContext[Instruction]{
-		ArchInfo:      gen.ArchInfo{PointerSize: 8},
-		SourceContext: src.Ctx(),
-		Types:         &TypeMap{intType.Name: intType},
-		Registers:     &RegisterMap{},
-		Instructions:  &instructions,
+	ctx := &gen.FunctionGenerationContext[Instruction]{
+		FileGenerationContext: &gen.FileGenerationContext{
+			GenerationContext: &gen.GenerationContext{
+				PointerSize: 8,
+			},
+			SourceContext: src.Ctx(),
+			Types:         &TypeMap{intType.Name: intType},
+		},
+		Registers:    &RegisterMap{},
+		Instructions: &instructions,
 	}
 
 	generator := gen.NewFunctionGenerator[Instruction]()
