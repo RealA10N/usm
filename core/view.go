@@ -47,3 +47,8 @@ func ReadSource(reader io.Reader) (view SourceView, err error) {
 func NewEofUnmanagedSourceView() UnmanagedSourceView {
 	return UnmanagedSourceView{Start: ^SourceViewOffset(0), End: ^SourceViewOffset(0)}
 }
+
+// Returns an unmanaged view that covers the whole source.
+func NewFullUnmanagedSourceView() UnmanagedSourceView {
+	return UnmanagedSourceView{Start: 0, End: ^SourceViewOffset(0)}
+}

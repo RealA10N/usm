@@ -12,6 +12,10 @@ type FileNode struct {
 	Variables []VarDeclarationNode
 }
 
+func (n FileNode) View() core.UnmanagedSourceView {
+	return core.NewFullUnmanagedSourceView()
+}
+
 func (n FileNode) countAllNodes() int {
 	return len(n.Functions) + len(n.Types) + len(n.Constants) + len(n.Variables)
 }
