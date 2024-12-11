@@ -14,7 +14,13 @@ import (
 // MARK: Info
 
 type LabelInfo struct {
-	Name        string
+	// The name of the label, as it appears in the source code.
+	Name string
+
+	// The index of the instruction that the label is referencing.
+	InstructionIndex core.UsmUint
+
+	// A view of the label declaration in the source code.
 	Declaration core.UnmanagedSourceView
 }
 
@@ -25,15 +31,29 @@ type LabelManager interface {
 	NewLabel(info LabelInfo) core.Result
 }
 
-// MARK: Definition
+// MARK: Generator
 
+type LabelGenerationContext[InstT BaseInstruction] struct {
+	GenerationContext[InstT]
+
+	// The index of the instruction which is currently being iterated upon.
+	//
+	// Used in the pass before we generate the instruction instances, to
+	// go over the labels in a function and give each label a corresponding
+	// instruction index.
+	CurrentInstructionIndex core.UsmUint
+}
+
+// Generator for label *definition* nodes.
+// Will create and add the label to the function context,
+// and return an error if a label with the same name already exists.
 type LabelDefinitionGenerator[InstT BaseInstruction] struct{}
 
 func (g *LabelDefinitionGenerator[InstT]) Generate(
-	ctx *GenerationContext[InstT],
+	ctx *LabelGenerationContext[InstT],
 	node parse.LabelNode,
 ) (LabelInfo, core.ResultList) {
-	name := nodeToSourceString(ctx, node)
+	name := nodeToSourceString(&ctx.GenerationContext, node)
 	labelInfo := ctx.Labels.GetLabel(name)
 	declaration := node.View()
 
@@ -53,34 +73,10 @@ func (g *LabelDefinitionGenerator[InstT]) Generate(
 	}
 
 	newLabelInfo := LabelInfo{
-		Name:        name,
-		Declaration: declaration,
+		Name:             name,
+		InstructionIndex: ctx.CurrentInstructionIndex,
+		Declaration:      declaration,
 	}
 
 	return newLabelInfo, core.ResultList{}
-}
-
-// MARK: Reference
-
-type LabelReferenceGenerator[InstT BaseInstruction] struct{}
-
-func (g *LabelReferenceGenerator[InstT]) Generate(
-	ctx *GenerationContext[InstT],
-	node parse.LabelNode,
-) (LabelInfo, core.ResultList) {
-	name := nodeToSourceString(ctx, node)
-	labelInfo := ctx.Labels.GetLabel(name)
-
-	if labelInfo == nil {
-		v := node.View()
-		return LabelInfo{}, list.FromSingle(core.Result{
-			{
-				Type:     core.ErrorResult,
-				Message:  "Undefined label",
-				Location: &v,
-			},
-		})
-	}
-
-	return *labelInfo, core.ResultList{}
 }
