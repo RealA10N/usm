@@ -45,6 +45,28 @@ type ReferencedTypeInfo struct {
 	Declaration core.UnmanagedSourceView
 }
 
+func (info ReferencedTypeInfo) Equals(other ReferencedTypeInfo) bool {
+	if info.Base != other.Base {
+		return false
+	}
+
+	if info.Size != other.Size {
+		return false
+	}
+
+	if len(info.Descriptors) != len(other.Descriptors) {
+		return false
+	}
+
+	for i := range info.Descriptors {
+		if info.Descriptors[i] != other.Descriptors[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
 // MARK: Manager
 
 type TypeManager interface {
