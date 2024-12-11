@@ -24,9 +24,9 @@ func (AddInstructionDefinition) BuildInstruction(
 
 func (AddInstructionDefinition) InferTargetTypes(
 	ctx *gen.GenerationContext[Instruction],
-	targets []*gen.ReferencedTypeInfo,
-	arguments []*gen.ReferencedTypeInfo,
-) ([]*gen.ReferencedTypeInfo, core.ResultList) {
+	targets []gen.ReferencedTypeInfo,
+	arguments []gen.ReferencedTypeInfo,
+) ([]gen.ReferencedTypeInfo, core.ResultList) {
 	if len(arguments) != 2 {
 		return nil, list.FromSingle(core.Result{{
 			Type:    core.ErrorResult,
@@ -41,14 +41,14 @@ func (AddInstructionDefinition) InferTargetTypes(
 		}})
 	}
 
-	if !arguments[0].Equals(*arguments[1]) {
+	if !arguments[0].Equals(arguments[1]) {
 		return nil, list.FromSingle(core.Result{{
 			Type:    core.ErrorResult,
 			Message: "expected both arguments to be of the same type",
 		}})
 	}
 
-	return []*gen.ReferencedTypeInfo{
+	return []gen.ReferencedTypeInfo{
 		{
 			Base:        arguments[0].Base,
 			Size:        arguments[0].Size,

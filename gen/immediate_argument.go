@@ -11,19 +11,19 @@ import (
 // MARK: Info
 
 type ImmediateInfo struct {
-	Type  *ReferencedTypeInfo
+	Type  ReferencedTypeInfo
 	Value *big.Int // TODO: Add floating types
 	// TODO: more complex and complete representation of immediate structs.
 }
 
-func (i *ImmediateInfo) GetType() *ReferencedTypeInfo {
+func (i *ImmediateInfo) GetType() ReferencedTypeInfo {
 	return i.Type
 }
 
 // MARK: Generator
 
 type ImmediateArgumentGenerator[InstT BaseInstruction] struct {
-	ReferencedTypeGenerator Generator[InstT, parse.TypeNode, *ReferencedTypeInfo]
+	ReferencedTypeGenerator Generator[InstT, parse.TypeNode, ReferencedTypeInfo]
 }
 
 func NewImmediateArgumentGenerator[InstT BaseInstruction]() Generator[InstT, parse.ImmediateNode, ArgumentInfo] {

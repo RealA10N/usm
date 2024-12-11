@@ -185,8 +185,8 @@ type ReferencedTypeGenerator[InstT BaseInstruction] struct {
 	DescriptorGenerator Generator[InstT, parse.TypeDecoratorNode, TypeDescriptorInfo]
 }
 
-func NewReferencedTypeGenerator[InstT BaseInstruction]() Generator[InstT, parse.TypeNode, *ReferencedTypeInfo] {
-	return Generator[InstT, parse.TypeNode, *ReferencedTypeInfo](
+func NewReferencedTypeGenerator[InstT BaseInstruction]() Generator[InstT, parse.TypeNode, ReferencedTypeInfo] {
+	return Generator[InstT, parse.TypeNode, ReferencedTypeInfo](
 		&ReferencedTypeGenerator[InstT]{
 			DescriptorGenerator: NewDescriptorGenerator[InstT](),
 		},
@@ -233,12 +233,12 @@ func (g *ReferencedTypeGenerator[InstT]) calculateTypeSize(
 func (g *ReferencedTypeGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.TypeNode,
-) (*ReferencedTypeInfo, core.ResultList) {
+) (ReferencedTypeInfo, core.ResultList) {
 	baseIdentifier := string(node.Identifier.Raw(ctx.SourceContext))
 	baseType := ctx.Types.GetType(baseIdentifier)
 
 	if baseType == nil {
-		return nil, list.FromSingle(core.Result{
+		return ReferencedTypeInfo{}, list.FromSingle(core.Result{
 			{
 				Type:     core.ErrorResult,
 				Message:  "Undefined type",
@@ -252,7 +252,7 @@ func (g *ReferencedTypeGenerator[InstT]) Generate(
 	for _, descriptor := range node.Decorators {
 		descriptorInfo, results := g.DescriptorGenerator.Generate(ctx, descriptor)
 		if !results.IsEmpty() {
-			return nil, results
+			return ReferencedTypeInfo{}, results
 		}
 
 		descriptors = append(descriptors, descriptorInfo)
@@ -260,10 +260,10 @@ func (g *ReferencedTypeGenerator[InstT]) Generate(
 
 	size, results := g.calculateTypeSize(ctx, node, baseType, descriptors)
 	if !results.IsEmpty() {
-		return nil, results
+		return ReferencedTypeInfo{}, results
 	}
 
-	typeInfo := &ReferencedTypeInfo{
+	typeInfo := ReferencedTypeInfo{
 		Base:        baseType,
 		Size:        size,
 		Descriptors: descriptors,
@@ -275,7 +275,7 @@ func (g *ReferencedTypeGenerator[InstT]) Generate(
 // MARK: Named Generator
 
 type NamedTypeGenerator[InstT BaseInstruction] struct {
-	ReferencedTypeGenerator Generator[InstT, parse.TypeNode, *ReferencedTypeInfo]
+	ReferencedTypeGenerator Generator[InstT, parse.TypeNode, ReferencedTypeInfo]
 }
 
 func NewNamedTypeGenerator[InstT BaseInstruction]() NamedTypeGenerator[InstT] {

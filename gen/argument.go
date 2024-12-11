@@ -11,7 +11,7 @@ import (
 type ArgumentInfo interface {
 	// A pointer to the TypeInfo instance that corresponds to the type of the
 	// register.
-	GetType() *ReferencedTypeInfo
+	GetType() ReferencedTypeInfo
 }
 
 // MARK: Generator
