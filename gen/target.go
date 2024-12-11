@@ -12,6 +12,14 @@ type TargetGenerator[InstT BaseInstruction] struct {
 	ReferencedTypeGenerator Generator[InstT, parse.TypeNode, *ReferencedTypeInfo]
 }
 
+func NewTargetGenerator[InstT BaseInstruction]() Generator[InstT, parse.TargetNode, *ReferencedTypeInfo] {
+	return Generator[InstT, parse.TargetNode, *ReferencedTypeInfo](
+		&TargetGenerator[InstT]{
+			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
+		},
+	)
+}
+
 func (g *TargetGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.TargetNode,
