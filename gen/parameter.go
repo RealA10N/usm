@@ -18,6 +18,24 @@ func NewParameterGenerator[InstT BaseInstruction]() Generator[InstT, parse.Param
 	)
 }
 
+func NewRegisterAlreadyDefinedResult(
+	NewDeclaration core.UnmanagedSourceView,
+	FirstDeclaration core.UnmanagedSourceView,
+) core.ResultList {
+	return list.FromSingle(core.Result{
+		{
+			Type:     core.ErrorResult,
+			Message:  "Register already defined",
+			Location: &NewDeclaration,
+		},
+		{
+			Type:     core.HintResult,
+			Message:  "Previous definition here",
+			Location: &FirstDeclaration,
+		},
+	})
+}
+
 // Asserts that a register with the same name does not exist yet,
 // creates the new register, registers it to the register manager,
 // and returns the unique register info structure pointer.

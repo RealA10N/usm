@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/parse"
 )
@@ -17,6 +18,24 @@ func NewTargetGenerator[InstT BaseInstruction]() Generator[InstT, parse.TargetNo
 			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
 		},
 	)
+}
+
+func NewRegisterTypeMismatchResult(
+	NewDeclaration core.UnmanagedSourceView,
+	FirstDeclaration core.UnmanagedSourceView,
+) core.ResultList {
+	return list.FromSingle(core.Result{
+		{
+			Type:     core.ErrorResult,
+			Message:  "Explicit register type does not match previous declaration",
+			Location: &NewDeclaration,
+		},
+		{
+			Type:     core.HintResult,
+			Message:  "Previous declaration here",
+			Location: &FirstDeclaration,
+		},
+	})
 }
 
 func (g *TargetGenerator[InstT]) Generate(
