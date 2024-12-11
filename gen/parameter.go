@@ -48,7 +48,7 @@ func (g *ParameterGenerator[InstT]) Generate(
 	typeInfo, typeResults := g.ReferencedTypeGenerator.Generate(ctx, node.Type)
 	results.Extend(&typeResults)
 
-	registerName := getRegisterNameFromRegisterNode(ctx, node.Register)
+	registerName := nodeToSourceString(ctx, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	if registerInfo != nil {
 		registerResults := NewRegisterAlreadyDefinedResult(

@@ -120,7 +120,7 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 	node parse.TargetNode,
 	targetType ReferencedTypeInfo,
 ) (*RegisterInfo, core.Result) {
-	registerName := getRegisterNameFromRegisterNode(ctx, node.Register)
+	registerName := nodeToSourceString(ctx, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	nodeView := node.View()
 
@@ -210,7 +210,7 @@ func (g *InstructionGenerator[InstT]) Generate(
 	// and processing the targets and arguments. We accumulate the results,
 	// since those processes do not effect each other.
 
-	instName := string(node.Operator.Raw(ctx.SourceContext))
+	instName := viewToSourceString(ctx, node.Operator)
 	instDef, results := ctx.Instructions.GetInstructionDefinition(instName)
 
 	arguments, curResults := g.generateArguments(ctx, node)

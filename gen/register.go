@@ -70,18 +70,11 @@ func UndefinedRegisterResult(node parse.RegisterNode) core.ResultList {
 	})
 }
 
-func getRegisterNameFromRegisterNode[InstT BaseInstruction](
-	ctx *GenerationContext[InstT],
-	node parse.RegisterNode,
-) string {
-	return string(node.Raw(ctx.SourceContext))
-}
-
 func (g *RegisterGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.RegisterNode,
 ) (*RegisterInfo, core.ResultList) {
-	name := getRegisterNameFromRegisterNode(ctx, node)
+	name := nodeToSourceString(ctx, node)
 	register := ctx.Registers.GetRegister(name)
 
 	if register == nil {

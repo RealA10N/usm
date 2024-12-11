@@ -120,7 +120,8 @@ func (g *DescriptorGenerator[InstT]) parseDescriptorAmount(
 	}
 
 	numView := decorator.Subview(1, decorator.Len())
-	num, err := core.ParseUint(string(numView.Raw(genCtx.SourceContext)))
+	numStr := viewToSourceString(genCtx, numView)
+	num, err := core.ParseUint(numStr)
 
 	if err != nil {
 		return 0, list.FromSingle(core.Result{
@@ -234,7 +235,7 @@ func (g *ReferencedTypeGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.TypeNode,
 ) (ReferencedTypeInfo, core.ResultList) {
-	baseIdentifier := string(node.Identifier.Raw(ctx.SourceContext))
+	baseIdentifier := viewToSourceString(ctx, node.Identifier)
 	baseType := ctx.Types.GetType(baseIdentifier)
 
 	if baseType == nil {
@@ -288,7 +289,7 @@ func (g *NamedTypeGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.TypeDeclarationNode,
 ) (*NamedTypeInfo, core.ResultList) {
-	identifier := string(node.Identifier.Raw(ctx.SourceContext))
+	identifier := viewToSourceString(ctx, node.Identifier)
 	declaration := node.View()
 
 	typeInfo := ctx.Types.GetType(identifier)

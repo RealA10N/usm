@@ -32,3 +32,17 @@ type Generator[InstT BaseInstruction, NodeT parse.Node, InfoT any] interface {
 		node NodeT,
 	) (info InfoT, results core.ResultList)
 }
+
+func viewToSourceString[InstT BaseInstruction](
+	ctx *GenerationContext[InstT],
+	view core.UnmanagedSourceView,
+) string {
+	return string(view.Raw(ctx.SourceContext))
+}
+
+func nodeToSourceString[InstT BaseInstruction](
+	ctx *GenerationContext[InstT],
+	node parse.Node,
+) string {
+	return viewToSourceString(ctx, node.View())
+}
