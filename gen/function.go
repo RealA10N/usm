@@ -12,15 +12,17 @@ type FunctionInfo[InstT BaseInstruction] struct {
 }
 
 type FunctionGenerator[InstT BaseInstruction] struct {
-	InstructionGenerator Generator[InstT, parse.InstructionNode, InstT]
-	ParameterGenerator   Generator[InstT, parse.ParameterNode, *RegisterInfo]
+	InstructionGenerator     Generator[InstT, parse.InstructionNode, InstT]
+	ParameterGenerator       Generator[InstT, parse.ParameterNode, *RegisterInfo]
+	LabelDefinitionGenerator LabelGenerator[InstT, parse.LabelNode, LabelInfo]
 }
 
 func NewFunctionGenerator[InstT BaseInstruction]() Generator[InstT, parse.FunctionNode, *FunctionInfo[InstT]] {
 	return Generator[InstT, parse.FunctionNode, *FunctionInfo[InstT]](
 		&FunctionGenerator[InstT]{
-			InstructionGenerator: NewInstructionGenerator[InstT](),
-			ParameterGenerator:   NewParameterGenerator[InstT](),
+			InstructionGenerator:     NewInstructionGenerator[InstT](),
+			ParameterGenerator:       NewParameterGenerator[InstT](),
+			LabelDefinitionGenerator: NewLabelDefinitionGenerator[InstT](),
 		},
 	)
 }
@@ -38,6 +40,28 @@ func (g *FunctionGenerator[InstT]) createParameterRegisters(
 	}
 
 	return registers, results
+}
+
+func (g *FunctionGenerator[InstT]) collectLabelDefinitions(
+	ctx *GenerationContext[InstT],
+	instructions []parse.InstructionNode,
+) (results core.ResultList) {
+
+	labelCtx := LabelGenerationContext[InstT]{
+		GenerationContext:       ctx,
+		CurrentInstructionIndex: 0,
+	}
+
+	for _, instruction := range instructions {
+		for _, label := range instruction.Labels {
+			_, curResults := g.LabelDefinitionGenerator.Generate(&labelCtx, label)
+			results.Extend(&curResults)
+		}
+
+		labelCtx.CurrentInstructionIndex++
+	}
+
+	return results
 }
 
 func (g *FunctionGenerator[InstT]) generateFunctionBody(
@@ -66,8 +90,13 @@ func (g *FunctionGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.FunctionNode,
 ) (*FunctionInfo[InstT], core.ResultList) {
+	var results core.ResultList
+	parameters, paramResults := g.createParameterRegisters(ctx, node.Signature.Parameters)
+	results.Extend(&paramResults)
 
-	parameters, results := g.createParameterRegisters(ctx, node.Signature.Parameters)
+	labelResults := g.collectLabelDefinitions(ctx, node.Instructions.Nodes)
+	results.Extend(&labelResults)
+
 	if !results.IsEmpty() {
 		return nil, results
 	}
