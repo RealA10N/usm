@@ -22,7 +22,7 @@ func TestUndefinedRegisterArgument(t *testing.T) {
 		Instructions:  &InstructionMap{},
 	}
 
-	generator := gen.ArgumentGenerator[Instruction]{}
+	generator := gen.NewArgumentGenerator[Instruction]()
 	_, results := generator.Generate(&ctx, node)
 
 	assert.EqualValues(t, 1, results.Len())

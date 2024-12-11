@@ -48,8 +48,17 @@ type InstructionManager[InstT BaseInstruction] interface {
 // MARK: Generator
 
 type InstructionGenerator[InstT BaseInstruction] struct {
-	ArgumentGenerator ArgumentGenerator[InstT]
-	TargetGenerator   TargetGenerator[InstT]
+	ArgumentGenerator Generator[InstT, parse.ArgumentNode, ArgumentInfo]
+	TargetGenerator   Generator[InstT, parse.TargetNode, *ReferencedTypeInfo]
+}
+
+func NewInstructionGenerator[InstT BaseInstruction]() Generator[InstT, parse.InstructionNode, InstT] {
+	return Generator[InstT, parse.InstructionNode, InstT](
+		&InstructionGenerator[InstT]{
+			ArgumentGenerator: NewArgumentGenerator[InstT](),
+			TargetGenerator:   NewTargetGenerator[InstT](),
+		},
+	)
 }
 
 func (g *InstructionGenerator[InstT]) generateArguments(

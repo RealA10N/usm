@@ -107,7 +107,7 @@ func TestInstructionCreateTarget(t *testing.T) {
 		Instructions:  &instructions,
 	}
 
-	generator := gen.InstructionGenerator[Instruction]{}
+	generator := gen.NewInstructionGenerator[Instruction]()
 	_, results := generator.Generate(ctx, node)
 	assert.True(t, results.IsEmpty())
 

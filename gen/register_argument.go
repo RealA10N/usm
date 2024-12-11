@@ -16,6 +16,12 @@ func (i *RegisterArgumentInfo) GetType() *ReferencedTypeInfo {
 
 type RegisterArgumentGenerator[InstT BaseInstruction] struct{}
 
+func NewRegisterArgumentGenerator[InstT BaseInstruction]() Generator[InstT, parse.RegisterNode, ArgumentInfo] {
+	return Generator[InstT, parse.RegisterNode, ArgumentInfo](
+		&RegisterArgumentGenerator[InstT]{},
+	)
+}
+
 func (g *RegisterArgumentGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.RegisterNode,

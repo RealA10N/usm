@@ -17,8 +17,17 @@ type ArgumentInfo interface {
 // MARK: Generator
 
 type ArgumentGenerator[InstT BaseInstruction] struct {
-	RegisterArgumentGenerator[InstT]
-	ImmediateArgumentGenerator[InstT]
+	RegisterArgumentGenerator  Generator[InstT, parse.RegisterNode, ArgumentInfo]
+	ImmediateArgumentGenerator Generator[InstT, parse.ImmediateNode, ArgumentInfo]
+}
+
+func NewArgumentGenerator[InstT BaseInstruction]() Generator[InstT, parse.ArgumentNode, ArgumentInfo] {
+	return Generator[InstT, parse.ArgumentNode, ArgumentInfo](
+		&ArgumentGenerator[InstT]{
+			RegisterArgumentGenerator:  NewRegisterArgumentGenerator[InstT](),
+			ImmediateArgumentGenerator: NewImmediateArgumentGenerator[InstT](),
+		},
+	)
 }
 
 func (g *ArgumentGenerator[InstT]) Generate(
