@@ -7,12 +7,28 @@ import (
 
 // MARK: Context
 
+type ManagerCreators struct {
+	RegisterManagerCreator func() RegisterManager
+	LabelManagerCreator    func() LabelManager
+	TypeManagerCreator     func() TypeManager
+}
+
 // This structure is the most broad level of generation context.
 // It contains information that is used in different parts of the compilation,
 // and which are essential across the whole pipeline.
 //
 // It mainly contains information about the compilation target.
-type GenerationContext struct {
+type GenerationContext[InstT BaseInstruction] struct {
+	ManagerCreators
+
+	// An instruction (definition) manager, which contains all instruction
+	// definitions that are supported in the current architecture (ISA).
+	//
+	// When processing a new instruction from the source code, the compiler
+	// talks with the instruction manager, retrieves the relevant instruction
+	// definition, and uses it to farther process the instruction.
+	Instructions InstructionManager[InstT]
+
 	// The size of a pointer type in the current target architecture.
 	//
 	// TODO: I'm not sure that we need this information in this step of the
@@ -20,8 +36,8 @@ type GenerationContext struct {
 	PointerSize core.UsmUint
 }
 
-type FileGenerationContext struct {
-	*GenerationContext
+type FileGenerationContext[InstT BaseInstruction] struct {
+	*GenerationContext[InstT]
 
 	// The source code of the file that we are currently processing.
 	core.SourceContext
@@ -35,15 +51,7 @@ type FileGenerationContext struct {
 }
 
 type FunctionGenerationContext[InstT BaseInstruction] struct {
-	*FileGenerationContext
-
-	// An instruction (definition) manager, which contains all instruction
-	// definitions that are supported in the current architecture (ISA).
-	//
-	// When processing a new instruction from the source code, the compiler
-	// talks with the instruction manager, retrieves the relevant instruction
-	// definition, and uses it to farther process the instruction.
-	Instructions InstructionManager[InstT]
+	*FileGenerationContext[InstT]
 
 	// A register manager, which contains all active registers in the function.
 	// The compiler can query register information from the register manager
@@ -51,6 +59,7 @@ type FunctionGenerationContext[InstT BaseInstruction] struct {
 	// information structures and pass them to the manager, which stores them.
 	Registers RegisterManager
 
+	// A label manager, which stores and manages all labels defined in a function.
 	Labels LabelManager
 }
 
