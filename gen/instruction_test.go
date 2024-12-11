@@ -41,7 +41,7 @@ func (AddInstructionDefinition) InferTargetTypes(
 		}})
 	}
 
-	if arguments[0] != arguments[1] {
+	if !arguments[0].Equals(*arguments[1]) {
 		return nil, list.FromSingle(core.Result{{
 			Type:    core.ErrorResult,
 			Message: "expected both arguments to be of the same type",
@@ -114,6 +114,6 @@ func TestInstructionCreateTarget(t *testing.T) {
 	target := registers.GetRegister("%c")
 	assert.NotNil(t, target)
 	assert.Equal(t, "%c", target.Name)
-	assert.Equal(t, intType, target.Type)
+	assert.Equal(t, intType, target.Type.Base)
 	assert.Equal(t, src.Unmanaged().Subview(0, 2), target.Declaration)
 }
