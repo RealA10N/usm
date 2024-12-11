@@ -103,7 +103,13 @@ func (p FileParser) parseNextNode(v *TokenView, node *FileNode) core.Result {
 		}
 		node.Variables = append(node.Variables, variable)
 	default:
-		panic("unreachable")
+		return core.Result{
+			{
+				Type:     core.InternalErrorResult,
+				Message:  "Unexpected token",
+				Location: &tkn.View,
+			},
+		}
 	}
 
 	return nil
