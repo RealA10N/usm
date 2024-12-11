@@ -7,10 +7,10 @@ import (
 )
 
 type RegisterArgumentInfo struct {
-	Type *NamedTypeInfo
+	Type *ReferencedTypeInfo
 }
 
-func (i *RegisterArgumentInfo) GetType() *NamedTypeInfo {
+func (i *RegisterArgumentInfo) GetType() *ReferencedTypeInfo {
 	return i.Type
 }
 
@@ -28,7 +28,7 @@ func (g *RegisterArgumentGenerator[InstT]) Generate(
 	}
 
 	argument := RegisterArgumentInfo{
-		Type: register.Type,
+		Type: &register.Type,
 	}
 
 	return &argument, core.ResultList{}

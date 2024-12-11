@@ -11,31 +11,32 @@ import (
 // MARK: Info
 
 type ImmediateInfo struct {
-	Type  *NamedTypeInfo
+	Type  *ReferencedTypeInfo
 	Value *big.Int // TODO: Add floating types
 	// TODO: more complex and complete representation of immediate structs.
 }
 
-func (i *ImmediateInfo) GetType() *NamedTypeInfo {
+func (i *ImmediateInfo) GetType() *ReferencedTypeInfo {
 	return i.Type
 }
 
 // MARK: Generator
 
-type ImmediateArgumentGenerator[InstT BaseInstruction] struct{}
+type ImmediateArgumentGenerator[InstT BaseInstruction] struct {
+	ReferencedTypeGenerator Generator[InstT, parse.TypeNode, *ReferencedTypeInfo]
+}
 
 func (g *ImmediateArgumentGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.ImmediateNode,
 ) (ArgumentInfo, core.ResultList) {
-	typeName := string(node.Type.Identifier.Raw(ctx.SourceContext))
-	typ := ctx.Types.GetType(typeName)
-	if typ == nil {
-		return nil, list.FromSingle(NewUndefinedTypeResult(node.View()))
+	typeInfo, results := g.ReferencedTypeGenerator.Generate(ctx, node.Type)
+	if !results.IsEmpty() {
+		return nil, results
 	}
 
 	immediate, ok := node.Value.(parse.ImmediateFinalValueNode)
-	if !ok || len(node.Type.Decorators) > 0 {
+	if !ok {
 		v := node.View()
 		return nil, list.FromSingle(core.Result{{
 			Type:     core.ErrorResult,
@@ -57,7 +58,7 @@ func (g *ImmediateArgumentGenerator[InstT]) Generate(
 	}
 
 	info := ImmediateInfo{
-		Type:  typ,
+		Type:  typeInfo,
 		Value: value,
 	}
 

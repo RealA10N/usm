@@ -8,18 +8,23 @@ import (
 
 // MARK: Generator
 
-type TargetGenerator[InstT BaseInstruction] struct{}
+type TargetGenerator[InstT BaseInstruction] struct {
+	ReferencedTypeGenerator Generator[InstT, parse.TypeNode, *ReferencedTypeInfo]
+}
 
 func (g *TargetGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.TargetNode,
-) (*NamedTypeInfo, core.ResultList) {
+) (*ReferencedTypeInfo, core.ResultList) {
+	var explicitType *ReferencedTypeInfo
 
 	// if an explicit type is provided to the target, get the type info.
-	var explicitType *NamedTypeInfo
 	if node.Type != nil {
-		explicitTypeName := string(node.Type.Identifier.Raw(ctx.SourceContext))
-		explicitType = ctx.Types.GetType(explicitTypeName)
+		var results core.ResultList
+		explicitType, results = g.ReferencedTypeGenerator.Generate(ctx, *node.Type)
+		if !results.IsEmpty() {
+			return nil, results
+		}
 	}
 
 	registerName := string(node.Register.Raw(ctx.SourceContext))
@@ -29,7 +34,7 @@ func (g *TargetGenerator[InstT]) Generate(
 		// register is already previously defined
 		if explicitType != nil {
 			// ensure explicit type matches the previously declared one.
-			if explicitType != registerInfo.Type {
+			if !explicitType.Equals(registerInfo.Type) {
 				return nil, list.FromSingle(
 					NewRegisterTypeMismatchResult(
 						node.View(),
@@ -40,7 +45,7 @@ func (g *TargetGenerator[InstT]) Generate(
 		}
 
 		// all checks passed; return previously defined register type.
-		return registerInfo.Type, core.ResultList{}
+		return &registerInfo.Type, core.ResultList{}
 
 	} else {
 		// this is the first appearance of the register; if the type is provided

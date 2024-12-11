@@ -33,9 +33,9 @@ type InstructionDefinition[InstT BaseInstruction] interface {
 	// instruction set definition API, and should wrap it with a limited interface.
 	InferTargetTypes(
 		ctx *GenerationContext[InstT],
-		targets []*NamedTypeInfo,
-		arguments []*NamedTypeInfo,
-	) ([]*NamedTypeInfo, core.ResultList)
+		targets []*ReferencedTypeInfo,
+		arguments []*ReferencedTypeInfo,
+	) ([]*ReferencedTypeInfo, core.ResultList)
 }
 
 // MARK: Manager
@@ -74,8 +74,8 @@ func (g *InstructionGenerator[InstT]) generateArguments(
 func (g *InstructionGenerator[InstT]) generateExplicitTargetsTypes(
 	ctx *GenerationContext[InstT],
 	node parse.InstructionNode,
-) ([]*NamedTypeInfo, core.ResultList) {
-	targets := make([]*NamedTypeInfo, len(node.Targets))
+) ([]*ReferencedTypeInfo, core.ResultList) {
+	targets := make([]*ReferencedTypeInfo, len(node.Targets))
 	results := core.ResultList{}
 
 	// Different targets should not effect one another.
@@ -90,8 +90,8 @@ func (g *InstructionGenerator[InstT]) generateExplicitTargetsTypes(
 	return targets, results
 }
 
-func argumentsToArgumentTypes(arguments []ArgumentInfo) []*NamedTypeInfo {
-	types := make([]*NamedTypeInfo, len(arguments))
+func argumentsToArgumentTypes(arguments []ArgumentInfo) []*ReferencedTypeInfo {
+	types := make([]*ReferencedTypeInfo, len(arguments))
 	for i, arg := range arguments {
 		types[i] = arg.GetType()
 	}
@@ -101,7 +101,7 @@ func argumentsToArgumentTypes(arguments []ArgumentInfo) []*NamedTypeInfo {
 func (g *InstructionGenerator[InstT]) getTargetRegister(
 	ctx *GenerationContext[InstT],
 	node parse.TargetNode,
-	targetType *NamedTypeInfo,
+	targetType *ReferencedTypeInfo,
 ) (*RegisterInfo, core.Result) {
 	registerName := string(node.Register.Raw(ctx.SourceContext))
 	registerInfo := ctx.Registers.GetRegister(registerName)
@@ -112,7 +112,7 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 		// it's type.
 		newRegisterInfo := &RegisterInfo{
 			Name:        registerName,
-			Type:        targetType,
+			Type:        *targetType,
 			Declaration: nodeView,
 		}
 
@@ -120,7 +120,7 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 	}
 
 	// register is already defined
-	if registerInfo.Type != targetType {
+	if !registerInfo.Type.Equals(*targetType) {
 		// notest: sanity check only
 		return nil, core.Result{{
 			Type:     core.InternalErrorResult,
@@ -143,7 +143,7 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
 	ctx *GenerationContext[InstT],
 	node parse.InstructionNode,
-	targetTypes []*NamedTypeInfo,
+	targetTypes []*ReferencedTypeInfo,
 ) ([]*RegisterInfo, core.ResultList) {
 	if len(node.Targets) != len(targetTypes) {
 		// notest: sanity check: ensure lengths match.
