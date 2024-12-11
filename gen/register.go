@@ -18,6 +18,14 @@ type RegisterInfo struct {
 	Declaration core.UnmanagedSourceView
 }
 
+func (i RegisterInfo) toPartialRegisterInfo() partialRegisterInfo {
+	return partialRegisterInfo{
+		Name:        i.Name,
+		Type:        &i.Type,
+		Declaration: i.Declaration,
+	}
+}
+
 // This represents partial register information, possibly without an associated
 // type (yet). This is used internally before the compiler has finally determined
 // the type of the register, if the type is implicit.

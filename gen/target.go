@@ -12,8 +12,8 @@ type TargetGenerator[InstT BaseInstruction] struct {
 	ReferencedTypeGenerator Generator[InstT, parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewTargetGenerator[InstT BaseInstruction]() Generator[InstT, parse.TargetNode, ReferencedTypeInfo] {
-	return Generator[InstT, parse.TargetNode, ReferencedTypeInfo](
+func NewTargetGenerator[InstT BaseInstruction]() Generator[InstT, parse.TargetNode, partialRegisterInfo] {
+	return Generator[InstT, parse.TargetNode, partialRegisterInfo](
 		&TargetGenerator[InstT]{
 			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
 		},
@@ -23,17 +23,18 @@ func NewTargetGenerator[InstT BaseInstruction]() Generator[InstT, parse.TargetNo
 func (g *TargetGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.TargetNode,
-) (ReferencedTypeInfo, core.ResultList) {
-	var explicitType ReferencedTypeInfo
+) (partialRegisterInfo, core.ResultList) {
+	var explicitType *ReferencedTypeInfo
 
 	// if an explicit type is provided to the target, get the type info.
 	explicitTypeProvided := node.Type != nil
 	if explicitTypeProvided {
-		var results core.ResultList
-		explicitType, results = g.ReferencedTypeGenerator.Generate(ctx, *node.Type)
+		explicitTypeValue, results := g.ReferencedTypeGenerator.Generate(ctx, *node.Type)
 		if !results.IsEmpty() {
-			return ReferencedTypeInfo{}, results
+			return partialRegisterInfo{}, results
 		}
+
+		explicitType = &explicitTypeValue
 	}
 
 	registerName := string(node.Register.Raw(ctx.SourceContext))
@@ -41,10 +42,10 @@ func (g *TargetGenerator[InstT]) Generate(
 
 	registerAlreadyDefined := registerInfo != nil
 	if registerAlreadyDefined {
-		if explicitTypeProvided {
+		if explicitType != nil {
 			// ensure explicit type matches the previously declared one.
 			if !explicitType.Equals(registerInfo.Type) {
-				return ReferencedTypeInfo{}, list.FromSingle(
+				return partialRegisterInfo{}, list.FromSingle(
 					NewRegisterTypeMismatchResult(
 						node.View(),
 						registerInfo.Declaration,
@@ -54,7 +55,7 @@ func (g *TargetGenerator[InstT]) Generate(
 		}
 
 		// all checks passed; return previously defined register type.
-		return registerInfo.Type, core.ResultList{}
+		return registerInfo.toPartialRegisterInfo(), core.ResultList{}
 
 	} else {
 		// this is the first appearance of the register; if the type is provided
@@ -62,6 +63,10 @@ func (g *TargetGenerator[InstT]) Generate(
 		// the target register at this.
 		// the type and register will be finalized when the instruction is built,
 		// and only then it is added to the register manager.
-		return explicitType, core.ResultList{}
+		return partialRegisterInfo{
+			Name:        registerName,
+			Type:        explicitType,
+			Declaration: node.View(),
+		}, core.ResultList{}
 	}
 }

@@ -33,7 +33,7 @@ type InstructionDefinition[InstT BaseInstruction] interface {
 	// instruction set definition API, and should wrap it with a limited interface.
 	InferTargetTypes(
 		ctx *GenerationContext[InstT],
-		targets []ReferencedTypeInfo,
+		targets []*ReferencedTypeInfo,
 		arguments []ReferencedTypeInfo,
 	) ([]ReferencedTypeInfo, core.ResultList)
 }
@@ -49,7 +49,7 @@ type InstructionManager[InstT BaseInstruction] interface {
 
 type InstructionGenerator[InstT BaseInstruction] struct {
 	ArgumentGenerator Generator[InstT, parse.ArgumentNode, ArgumentInfo]
-	TargetGenerator   Generator[InstT, parse.TargetNode, ReferencedTypeInfo]
+	TargetGenerator   Generator[InstT, parse.TargetNode, partialRegisterInfo]
 }
 
 func NewInstructionGenerator[InstT BaseInstruction]() Generator[InstT, parse.InstructionNode, InstT] {
@@ -80,11 +80,11 @@ func (g *InstructionGenerator[InstT]) generateArguments(
 	return arguments, results
 }
 
-func (g *InstructionGenerator[InstT]) generateExplicitTargetsTypes(
+func (g *InstructionGenerator[InstT]) generatePartialTargetsInfo(
 	ctx *GenerationContext[InstT],
 	node parse.InstructionNode,
-) ([]ReferencedTypeInfo, core.ResultList) {
-	targets := make([]ReferencedTypeInfo, len(node.Targets))
+) ([]partialRegisterInfo, core.ResultList) {
+	targets := make([]partialRegisterInfo, len(node.Targets))
 	results := core.ResultList{}
 
 	// Different targets should not effect one another.
@@ -99,7 +99,15 @@ func (g *InstructionGenerator[InstT]) generateExplicitTargetsTypes(
 	return targets, results
 }
 
-func argumentsToArgumentTypes(arguments []ArgumentInfo) []ReferencedTypeInfo {
+func partialTargetsToTypes(targets []partialRegisterInfo) []*ReferencedTypeInfo {
+	types := make([]*ReferencedTypeInfo, len(targets))
+	for i, target := range targets {
+		types[i] = target.Type
+	}
+	return types
+}
+
+func argumentsToTypes(arguments []ArgumentInfo) []ReferencedTypeInfo {
 	types := make([]ReferencedTypeInfo, len(arguments))
 	for i, arg := range arguments {
 		types[i] = arg.GetType()
@@ -208,7 +216,7 @@ func (g *InstructionGenerator[InstT]) Generate(
 	arguments, curResults := g.generateArguments(ctx, node)
 	results.Extend(&curResults)
 
-	explicitTargets, curResults := g.generateExplicitTargetsTypes(ctx, node)
+	partialTargets, curResults := g.generatePartialTargetsInfo(ctx, node)
 	results.Extend(&curResults)
 
 	// Now it's time to check if we have any errors so far.
@@ -216,8 +224,9 @@ func (g *InstructionGenerator[InstT]) Generate(
 		return
 	}
 
-	argumentTypes := argumentsToArgumentTypes(arguments)
-	targetTypes, results := instDef.InferTargetTypes(ctx, explicitTargets, argumentTypes)
+	explicitTargetTypes := partialTargetsToTypes(partialTargets)
+	argumentTypes := argumentsToTypes(arguments)
+	targetTypes, results := instDef.InferTargetTypes(ctx, explicitTargetTypes, argumentTypes)
 	// TODO: validate that the returned target types matches expected constraints.
 
 	if !results.IsEmpty() {

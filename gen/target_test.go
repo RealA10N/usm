@@ -44,5 +44,5 @@ func TestTargetRegisterAlreadyDefined(t *testing.T) {
 	generator := gen.NewTargetGenerator[Instruction]()
 	info, results := generator.Generate(&ctx, node)
 	assert.True(t, results.IsEmpty())
-	assert.Equal(t, intType, info.Base)
+	assert.Equal(t, intType, info.Type.Base)
 }

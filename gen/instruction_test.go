@@ -24,7 +24,7 @@ func (AddInstructionDefinition) BuildInstruction(
 
 func (AddInstructionDefinition) InferTargetTypes(
 	ctx *gen.GenerationContext[Instruction],
-	targets []gen.ReferencedTypeInfo,
+	targets []*gen.ReferencedTypeInfo,
 	arguments []gen.ReferencedTypeInfo,
 ) ([]gen.ReferencedTypeInfo, core.ResultList) {
 	if len(arguments) != 2 {
