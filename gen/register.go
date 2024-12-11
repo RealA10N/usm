@@ -39,33 +39,6 @@ type partialRegisterInfo struct {
 	Declaration core.UnmanagedSourceView
 }
 
-// Converts the partial register information type into a full register information
-// structure, with the a guaranteed register type.
-//
-// Returns an error if the provided actual type does not match the explicit
-// partial type.
-func (i partialRegisterInfo) toRegisterInfo(
-	actualType ReferencedTypeInfo,
-) (RegisterInfo, core.ResultList) {
-	if i.Type != nil && !i.Type.Equals(actualType) {
-		return RegisterInfo{}, list.FromSingle(core.Result{
-			{
-				Type:     core.InternalErrorResult,
-				Message:  "Explicit type does not match implicit type",
-				Location: &i.Declaration,
-			},
-		})
-	}
-
-	info := RegisterInfo{
-		Name:        i.Name,
-		Type:        actualType,
-		Declaration: i.Declaration,
-	}
-
-	return info, core.ResultList{}
-}
-
 // MARK: Manager
 
 type RegisterManager interface {
