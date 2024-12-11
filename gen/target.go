@@ -9,13 +9,13 @@ import (
 // MARK: Generator
 
 type TargetGenerator[InstT BaseInstruction] struct {
-	ReferencedTypeGenerator Generator[InstT, parse.TypeNode, ReferencedTypeInfo]
+	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewTargetGenerator[InstT BaseInstruction]() Generator[InstT, parse.TargetNode, partialRegisterInfo] {
-	return Generator[InstT, parse.TargetNode, partialRegisterInfo](
+func NewTargetGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.TargetNode, partialRegisterInfo] {
+	return FunctionContextGenerator[InstT, parse.TargetNode, partialRegisterInfo](
 		&TargetGenerator[InstT]{
-			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
+			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
 	)
 }
@@ -39,7 +39,7 @@ func NewRegisterTypeMismatchResult(
 }
 
 func (g *TargetGenerator[InstT]) Generate(
-	ctx *GenerationContext[InstT],
+	ctx *FunctionGenerationContext[InstT],
 	node parse.TargetNode,
 ) (partialRegisterInfo, core.ResultList) {
 	var explicitType *ReferencedTypeInfo
@@ -47,7 +47,10 @@ func (g *TargetGenerator[InstT]) Generate(
 	// if an explicit type is provided to the target, get the type info.
 	explicitTypeProvided := node.Type != nil
 	if explicitTypeProvided {
-		explicitTypeValue, results := g.ReferencedTypeGenerator.Generate(ctx, *node.Type)
+		explicitTypeValue, results := g.ReferencedTypeGenerator.Generate(
+			ctx.FileGenerationContext,
+			*node.Type,
+		)
 		if !results.IsEmpty() {
 			return partialRegisterInfo{}, results
 		}
@@ -55,7 +58,7 @@ func (g *TargetGenerator[InstT]) Generate(
 		explicitType = &explicitTypeValue
 	}
 
-	registerName := nodeToSourceString(ctx, node.Register)
+	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 
 	registerAlreadyDefined := registerInfo != nil

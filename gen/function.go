@@ -12,13 +12,13 @@ type FunctionInfo[InstT BaseInstruction] struct {
 }
 
 type FunctionGenerator[InstT BaseInstruction] struct {
-	InstructionGenerator     Generator[InstT, parse.InstructionNode, InstT]
-	ParameterGenerator       Generator[InstT, parse.ParameterNode, *RegisterInfo]
-	LabelDefinitionGenerator LabelGenerator[InstT, parse.LabelNode, LabelInfo]
+	InstructionGenerator     FunctionContextGenerator[InstT, parse.InstructionNode, InstT]
+	ParameterGenerator       FunctionContextGenerator[InstT, parse.ParameterNode, *RegisterInfo]
+	LabelDefinitionGenerator LabelContextGenerator[InstT, parse.LabelNode, LabelInfo]
 }
 
-func NewFunctionGenerator[InstT BaseInstruction]() Generator[InstT, parse.FunctionNode, *FunctionInfo[InstT]] {
-	return Generator[InstT, parse.FunctionNode, *FunctionInfo[InstT]](
+func NewFunctionGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.FunctionNode, *FunctionInfo[InstT]] {
+	return FunctionContextGenerator[InstT, parse.FunctionNode, *FunctionInfo[InstT]](
 		&FunctionGenerator[InstT]{
 			InstructionGenerator:     NewInstructionGenerator[InstT](),
 			ParameterGenerator:       NewParameterGenerator[InstT](),
@@ -28,7 +28,7 @@ func NewFunctionGenerator[InstT BaseInstruction]() Generator[InstT, parse.Functi
 }
 
 func (g *FunctionGenerator[InstT]) createParameterRegisters(
-	ctx *GenerationContext[InstT],
+	ctx *FunctionGenerationContext[InstT],
 	parameters []parse.ParameterNode,
 ) (registers []*RegisterInfo, results core.ResultList) {
 	registers = make([]*RegisterInfo, 0, len(parameters))
@@ -43,13 +43,13 @@ func (g *FunctionGenerator[InstT]) createParameterRegisters(
 }
 
 func (g *FunctionGenerator[InstT]) collectLabelDefinitions(
-	ctx *GenerationContext[InstT],
+	ctx *FunctionGenerationContext[InstT],
 	instructions []parse.InstructionNode,
 ) (results core.ResultList) {
 
 	labelCtx := LabelGenerationContext[InstT]{
-		GenerationContext:       ctx,
-		CurrentInstructionIndex: 0,
+		FunctionGenerationContext: ctx,
+		CurrentInstructionIndex:   0,
 	}
 
 	for _, instruction := range instructions {
@@ -65,7 +65,7 @@ func (g *FunctionGenerator[InstT]) collectLabelDefinitions(
 }
 
 func (g *FunctionGenerator[InstT]) generateFunctionBody(
-	ctx *GenerationContext[InstT],
+	ctx *FunctionGenerationContext[InstT],
 	instNodes []parse.InstructionNode,
 ) ([]InstT, core.ResultList) {
 	instructions := make([]InstT, 0, len(instNodes))
@@ -87,7 +87,7 @@ func (g *FunctionGenerator[InstT]) generateFunctionBody(
 }
 
 func (g *FunctionGenerator[InstT]) Generate(
-	ctx *GenerationContext[InstT],
+	ctx *FunctionGenerationContext[InstT],
 	node parse.FunctionNode,
 ) (*FunctionInfo[InstT], core.ResultList) {
 	var results core.ResultList

@@ -89,11 +89,11 @@ type TypeManager interface {
 
 // MARK: Descriptor Generator
 
-type DescriptorGenerator[InstT BaseInstruction] struct{}
+type DescriptorGenerator struct{}
 
-func NewDescriptorGenerator[InstT BaseInstruction]() Generator[InstT, parse.TypeDecoratorNode, TypeDescriptorInfo] {
-	return Generator[InstT, parse.TypeDecoratorNode, TypeDescriptorInfo](
-		&DescriptorGenerator[InstT]{},
+func NewDescriptorGenerator() FileContextGenerator[parse.TypeDecoratorNode, TypeDescriptorInfo] {
+	return FileContextGenerator[parse.TypeDecoratorNode, TypeDescriptorInfo](
+		&DescriptorGenerator{},
 	)
 }
 
@@ -109,8 +109,8 @@ func NewDescriptorGenerator[InstT BaseInstruction]() Generator[InstT, parse.Type
 // Why don't we do this at the `parse` module? because the `parse` module parses
 // the structure of tokens only, and does not look inside the content of the
 // tokens. More specifically, it does not have access to the source context.
-func (g *DescriptorGenerator[InstT]) parseDescriptorAmount(
-	genCtx *GenerationContext[InstT],
+func (g *DescriptorGenerator) parseDescriptorAmount(
+	ctx *FileGenerationContext,
 	decorator parse.TypeDecoratorNode,
 ) (core.UsmUint, core.ResultList) {
 	if decorator.Len() <= 1 {
@@ -120,7 +120,7 @@ func (g *DescriptorGenerator[InstT]) parseDescriptorAmount(
 	}
 
 	numView := decorator.Subview(1, decorator.Len())
-	numStr := viewToSourceString(genCtx, numView)
+	numStr := viewToSourceString(ctx, numView)
 	num, err := core.ParseUint(numStr)
 
 	if err != nil {
@@ -140,7 +140,7 @@ func (g *DescriptorGenerator[InstT]) parseDescriptorAmount(
 	return num, core.ResultList{}
 }
 
-func (g *DescriptorGenerator[InstT]) parsedDescriptorToGenDescriptorType(
+func (g *DescriptorGenerator) parsedDescriptorToGenDescriptorType(
 	node parse.TypeDecoratorNode,
 ) (genType TypeDescriptorType, results core.ResultList) {
 	switch node.Type {
@@ -160,8 +160,8 @@ func (g *DescriptorGenerator[InstT]) parsedDescriptorToGenDescriptorType(
 	}
 }
 
-func (g *DescriptorGenerator[InstT]) Generate(
-	ctx *GenerationContext[InstT],
+func (g *DescriptorGenerator) Generate(
+	ctx *FileGenerationContext,
 	node parse.TypeDecoratorNode,
 ) (info TypeDescriptorInfo, results core.ResultList) {
 	typ, results := g.parsedDescriptorToGenDescriptorType(node)
@@ -182,20 +182,20 @@ func (g *DescriptorGenerator[InstT]) Generate(
 
 // MARK: Ref'ed Generator
 
-type ReferencedTypeGenerator[InstT BaseInstruction] struct {
-	DescriptorGenerator Generator[InstT, parse.TypeDecoratorNode, TypeDescriptorInfo]
+type ReferencedTypeGenerator struct {
+	DescriptorGenerator FileContextGenerator[parse.TypeDecoratorNode, TypeDescriptorInfo]
 }
 
-func NewReferencedTypeGenerator[InstT BaseInstruction]() Generator[InstT, parse.TypeNode, ReferencedTypeInfo] {
-	return Generator[InstT, parse.TypeNode, ReferencedTypeInfo](
-		&ReferencedTypeGenerator[InstT]{
-			DescriptorGenerator: NewDescriptorGenerator[InstT](),
+func NewReferencedTypeGenerator() FileContextGenerator[parse.TypeNode, ReferencedTypeInfo] {
+	return FileContextGenerator[parse.TypeNode, ReferencedTypeInfo](
+		&ReferencedTypeGenerator{
+			DescriptorGenerator: NewDescriptorGenerator(),
 		},
 	)
 }
 
-func (g *ReferencedTypeGenerator[InstT]) calculateTypeSize(
-	ctx *GenerationContext[InstT],
+func (g *ReferencedTypeGenerator) calculateTypeSize(
+	ctx *FileGenerationContext,
 	node parse.TypeNode,
 	baseType *NamedTypeInfo,
 	descriptors []TypeDescriptorInfo,
@@ -205,7 +205,7 @@ func (g *ReferencedTypeGenerator[InstT]) calculateTypeSize(
 	for _, descriptor := range descriptors {
 		switch descriptor.Type {
 		case PointerTypeDescriptor:
-			size = ctx.ArchInfo.PointerSize
+			size = ctx.PointerSize
 		case RepeatTypeDescriptor:
 			var ok bool
 			size, ok = core.Mul(size, descriptor.Amount)
@@ -231,8 +231,8 @@ func (g *ReferencedTypeGenerator[InstT]) calculateTypeSize(
 	return size, core.ResultList{}
 }
 
-func (g *ReferencedTypeGenerator[InstT]) Generate(
-	ctx *GenerationContext[InstT],
+func (g *ReferencedTypeGenerator) Generate(
+	ctx *FileGenerationContext,
 	node parse.TypeNode,
 ) (ReferencedTypeInfo, core.ResultList) {
 	baseIdentifier := viewToSourceString(ctx, node.Identifier)
@@ -275,18 +275,20 @@ func (g *ReferencedTypeGenerator[InstT]) Generate(
 
 // MARK: Named Generator
 
-type NamedTypeGenerator[InstT BaseInstruction] struct {
-	ReferencedTypeGenerator Generator[InstT, parse.TypeNode, ReferencedTypeInfo]
+type NamedTypeGenerator struct {
+	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewNamedTypeGenerator[InstT BaseInstruction]() NamedTypeGenerator[InstT] {
-	return NamedTypeGenerator[InstT]{
-		ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
-	}
+func NewNamedTypeGenerator() FileContextGenerator[parse.TypeDeclarationNode, *NamedTypeInfo] {
+	return FileContextGenerator[parse.TypeDeclarationNode, *NamedTypeInfo](
+		&NamedTypeGenerator{
+			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
+		},
+	)
 }
 
-func (g *NamedTypeGenerator[InstT]) Generate(
-	ctx *GenerationContext[InstT],
+func (g *NamedTypeGenerator) Generate(
+	ctx *FileGenerationContext,
 	node parse.TypeDeclarationNode,
 ) (*NamedTypeInfo, core.ResultList) {
 	identifier := viewToSourceString(ctx, node.Identifier)

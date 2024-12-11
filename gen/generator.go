@@ -34,17 +34,6 @@ type FileGenerationContext struct {
 	// TODO: add globals, variables, constants.
 }
 
-type LabelGenerationContext struct {
-	*FileGenerationContext
-
-	// The index of the instruction which is currently being iterated upon.
-	//
-	// Used in the pass before we generate the instruction instances, to
-	// go over the labels in a function and give each label a corresponding
-	// instruction index.
-	CurrentInstructionIndex core.UsmUint
-}
-
 type FunctionGenerationContext[InstT BaseInstruction] struct {
 	*FileGenerationContext
 
@@ -65,6 +54,17 @@ type FunctionGenerationContext[InstT BaseInstruction] struct {
 	Labels LabelManager
 }
 
+type LabelGenerationContext[InstT BaseInstruction] struct {
+	*FunctionGenerationContext[InstT]
+
+	// The index of the instruction which is currently being iterated upon.
+	//
+	// Used in the pass before we generate the instruction instances, to
+	// go over the labels in a function and give each label a corresponding
+	// instruction index.
+	CurrentInstructionIndex core.UsmUint
+}
+
 // MARK: Generator
 
 type Generator[NodeT parse.Node, InfoT any] interface {
@@ -81,16 +81,16 @@ type FileContextGenerator[NodeT parse.Node, InfoT any] interface {
 	) (info InfoT, results core.ResultList)
 }
 
-type LabelContextGenerator[NodeT parse.Node, InfoT any] interface {
+type FunctionContextGenerator[InstT BaseInstruction, NodeT parse.Node, InfoT any] interface {
 	Generate(
-		ctx *LabelGenerationContext,
+		ctx *FunctionGenerationContext[InstT],
 		node NodeT,
 	) (info InfoT, results core.ResultList)
 }
 
-type FunctionContextGenerator[InstT BaseInstruction, NodeT parse.Node, InfoT any] interface {
+type LabelContextGenerator[InstT BaseInstruction, NodeT parse.Node, InfoT any] interface {
 	Generate(
-		ctx *FunctionGenerationContext[InstT],
+		ctx *LabelGenerationContext[InstT],
 		node NodeT,
 	) (info InfoT, results core.ResultList)
 }

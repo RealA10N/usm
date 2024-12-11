@@ -7,13 +7,13 @@ import (
 )
 
 type ParameterGenerator[InstT BaseInstruction] struct {
-	ReferencedTypeGenerator Generator[InstT, parse.TypeNode, ReferencedTypeInfo]
+	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewParameterGenerator[InstT BaseInstruction]() Generator[InstT, parse.ParameterNode, *RegisterInfo] {
-	return Generator[InstT, parse.ParameterNode, *RegisterInfo](
+func NewParameterGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.ParameterNode, *RegisterInfo] {
+	return FunctionContextGenerator[InstT, parse.ParameterNode, *RegisterInfo](
 		&ParameterGenerator[InstT]{
-			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
+			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
 	)
 }
@@ -40,15 +40,18 @@ func NewRegisterAlreadyDefinedResult(
 // creates the new register, registers it to the register manager,
 // and returns the unique register info structure pointer.
 func (g *ParameterGenerator[InstT]) Generate(
-	ctx *GenerationContext[InstT],
+	ctx *FunctionGenerationContext[InstT],
 	node parse.ParameterNode,
 ) (*RegisterInfo, core.ResultList) {
 	results := core.ResultList{}
 
-	typeInfo, typeResults := g.ReferencedTypeGenerator.Generate(ctx, node.Type)
+	typeInfo, typeResults := g.ReferencedTypeGenerator.Generate(
+		ctx.FileGenerationContext,
+		node.Type,
+	)
 	results.Extend(&typeResults)
 
-	registerName := nodeToSourceString(ctx, node.Register)
+	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	if registerInfo != nil {
 		registerResults := NewRegisterAlreadyDefinedResult(

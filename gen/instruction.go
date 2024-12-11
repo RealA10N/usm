@@ -32,7 +32,7 @@ type InstructionDefinition[InstT BaseInstruction] interface {
 	// TODO: perhaps we should not pass the bare generation context to the "public"
 	// instruction set definition API, and should wrap it with a limited interface.
 	InferTargetTypes(
-		ctx *GenerationContext[InstT],
+		ctx *FunctionGenerationContext[InstT],
 		targets []*ReferencedTypeInfo,
 		arguments []ReferencedTypeInfo,
 	) ([]ReferencedTypeInfo, core.ResultList)
@@ -48,12 +48,12 @@ type InstructionManager[InstT BaseInstruction] interface {
 // MARK: Generator
 
 type InstructionGenerator[InstT BaseInstruction] struct {
-	ArgumentGenerator Generator[InstT, parse.ArgumentNode, ArgumentInfo]
-	TargetGenerator   Generator[InstT, parse.TargetNode, partialRegisterInfo]
+	ArgumentGenerator FunctionContextGenerator[InstT, parse.ArgumentNode, ArgumentInfo]
+	TargetGenerator   FunctionContextGenerator[InstT, parse.TargetNode, partialRegisterInfo]
 }
 
-func NewInstructionGenerator[InstT BaseInstruction]() Generator[InstT, parse.InstructionNode, InstT] {
-	return Generator[InstT, parse.InstructionNode, InstT](
+func NewInstructionGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.InstructionNode, InstT] {
+	return FunctionContextGenerator[InstT, parse.InstructionNode, InstT](
 		&InstructionGenerator[InstT]{
 			ArgumentGenerator: NewArgumentGenerator[InstT](),
 			TargetGenerator:   NewTargetGenerator[InstT](),
@@ -62,7 +62,7 @@ func NewInstructionGenerator[InstT BaseInstruction]() Generator[InstT, parse.Ins
 }
 
 func (g *InstructionGenerator[InstT]) generateArguments(
-	ctx *GenerationContext[InstT],
+	ctx *FunctionGenerationContext[InstT],
 	node parse.InstructionNode,
 ) ([]ArgumentInfo, core.ResultList) {
 	arguments := make([]ArgumentInfo, len(node.Arguments))
@@ -81,7 +81,7 @@ func (g *InstructionGenerator[InstT]) generateArguments(
 }
 
 func (g *InstructionGenerator[InstT]) generatePartialTargetsInfo(
-	ctx *GenerationContext[InstT],
+	ctx *FunctionGenerationContext[InstT],
 	node parse.InstructionNode,
 ) ([]partialRegisterInfo, core.ResultList) {
 	targets := make([]partialRegisterInfo, len(node.Targets))
@@ -116,11 +116,11 @@ func argumentsToTypes(arguments []ArgumentInfo) []ReferencedTypeInfo {
 }
 
 func (g *InstructionGenerator[InstT]) getTargetRegister(
-	ctx *GenerationContext[InstT],
+	ctx *FunctionGenerationContext[InstT],
 	node parse.TargetNode,
 	targetType ReferencedTypeInfo,
 ) (*RegisterInfo, core.Result) {
-	registerName := nodeToSourceString(ctx, node.Register)
+	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	nodeView := node.View()
 
@@ -158,7 +158,7 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 // This also returns the full list of register targets for the provided
 // instruction.
 func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
-	ctx *GenerationContext[InstT],
+	ctx *FunctionGenerationContext[InstT],
 	node parse.InstructionNode,
 	targetTypes []ReferencedTypeInfo,
 ) ([]*RegisterInfo, core.ResultList) {
@@ -203,14 +203,14 @@ func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
 // instruction targets), the register is created and added to the generation
 // context.
 func (g *InstructionGenerator[InstT]) Generate(
-	ctx *GenerationContext[InstT],
+	ctx *FunctionGenerationContext[InstT],
 	node parse.InstructionNode,
 ) (inst InstT, results core.ResultList) {
 	// We start generating the instruction, by getting the definition interface,
 	// and processing the targets and arguments. We accumulate the results,
 	// since those processes do not effect each other.
 
-	instName := viewToSourceString(ctx, node.Operator)
+	instName := viewToSourceString(ctx.FileGenerationContext, node.Operator)
 	instDef, results := ctx.Instructions.GetInstructionDefinition(instName)
 
 	arguments, curResults := g.generateArguments(ctx, node)

@@ -39,8 +39,8 @@ type LabelManager interface {
 // and return an error if a label with the same name already exists.
 type LabelDefinitionGenerator[InstT BaseInstruction] struct{}
 
-func NewLabelDefinitionGenerator[InstT BaseInstruction]() LabelGenerator[InstT, parse.LabelNode, LabelInfo] {
-	return LabelGenerator[InstT, parse.LabelNode, LabelInfo](
+func NewLabelDefinitionGenerator[InstT BaseInstruction]() LabelContextGenerator[InstT, parse.LabelNode, LabelInfo] {
+	return LabelContextGenerator[InstT, parse.LabelNode, LabelInfo](
 		&LabelDefinitionGenerator[InstT]{},
 	)
 }
@@ -49,7 +49,7 @@ func (g *LabelDefinitionGenerator[InstT]) Generate(
 	ctx *LabelGenerationContext[InstT],
 	node parse.LabelNode,
 ) (LabelInfo, core.ResultList) {
-	name := nodeToSourceString(ctx.GenerationContext, node)
+	name := nodeToSourceString(ctx.FileGenerationContext, node)
 	labelInfo := ctx.Labels.GetLabel(name)
 	declaration := node.View()
 
