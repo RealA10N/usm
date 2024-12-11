@@ -37,7 +37,7 @@ func (g *TargetGenerator[InstT]) Generate(
 		explicitType = &explicitTypeValue
 	}
 
-	registerName := string(node.Register.Raw(ctx.SourceContext))
+	registerName := getRegisterNameFromRegisterNode(ctx, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 
 	registerAlreadyDefined := registerInfo != nil

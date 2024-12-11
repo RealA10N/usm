@@ -120,7 +120,7 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 	node parse.TargetNode,
 	targetType ReferencedTypeInfo,
 ) (*RegisterInfo, core.Result) {
-	registerName := string(node.Register.Raw(ctx.SourceContext))
+	registerName := getRegisterNameFromRegisterNode(ctx, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	nodeView := node.View()
 

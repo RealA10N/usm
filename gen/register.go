@@ -75,6 +75,9 @@ type RegisterManager interface {
 
 // MARK: Generator
 
+// Used to convert parse.RegisterNode instances to *existing* register instances.
+// Returns an error on generation if the provided register node references a
+// register that does not exist.
 type RegisterGenerator[InstT BaseInstruction] struct{}
 
 func NewRegisterGenerator[InstT BaseInstruction]() Generator[InstT, parse.RegisterNode, *RegisterInfo] {
@@ -94,11 +97,18 @@ func UndefinedRegisterResult(node parse.RegisterNode) core.ResultList {
 	})
 }
 
+func getRegisterNameFromRegisterNode[InstT BaseInstruction](
+	ctx *GenerationContext[InstT],
+	node parse.RegisterNode,
+) string {
+	return string(node.Raw(ctx.SourceContext))
+}
+
 func (g *RegisterGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.RegisterNode,
 ) (*RegisterInfo, core.ResultList) {
-	name := string(node.Raw(ctx.SourceContext))
+	name := getRegisterNameFromRegisterNode(ctx, node)
 	register := ctx.Registers.GetRegister(name)
 
 	if register == nil {
