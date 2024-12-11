@@ -42,7 +42,6 @@ type ReferencedTypeInfo struct {
 	Base        *NamedTypeInfo
 	Size        core.UsmUint
 	Descriptors []TypeDescriptorInfo
-	Declaration core.UnmanagedSourceView
 }
 
 func (info ReferencedTypeInfo) Equals(other ReferencedTypeInfo) bool {
@@ -268,7 +267,6 @@ func (g *ReferencedTypeGenerator[InstT]) Generate(
 		Base:        baseType,
 		Size:        size,
 		Descriptors: descriptors,
-		Declaration: node.View(),
 	}
 
 	return typeInfo, core.ResultList{}

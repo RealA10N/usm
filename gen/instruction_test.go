@@ -24,9 +24,9 @@ func (AddInstructionDefinition) BuildInstruction(
 
 func (AddInstructionDefinition) InferTargetTypes(
 	ctx *gen.GenerationContext[Instruction],
-	targets []*gen.NamedTypeInfo,
-	arguments []*gen.NamedTypeInfo,
-) ([]*gen.NamedTypeInfo, core.ResultList) {
+	targets []*gen.ReferencedTypeInfo,
+	arguments []*gen.ReferencedTypeInfo,
+) ([]*gen.ReferencedTypeInfo, core.ResultList) {
 	if len(arguments) != 2 {
 		return nil, list.FromSingle(core.Result{{
 			Type:    core.ErrorResult,
@@ -48,7 +48,13 @@ func (AddInstructionDefinition) InferTargetTypes(
 		}})
 	}
 
-	return []*gen.NamedTypeInfo{arguments[0]}, core.ResultList{}
+	return []*gen.ReferencedTypeInfo{
+		{
+			Base:        arguments[0].Base,
+			Size:        arguments[0].Size,
+			Descriptors: arguments[0].Descriptors,
+		},
+	}, core.ResultList{}
 }
 
 type InstructionMap map[string]gen.InstructionDefinition[Instruction]
@@ -83,9 +89,14 @@ func TestInstructionCreateTarget(t *testing.T) {
 	intType := &gen.NamedTypeInfo{Name: "$32", Size: 4}
 	types := TypeMap{intType.Name: intType}
 
+	intTypeRef := gen.ReferencedTypeInfo{
+		Base: intType,
+		Size: intType.Size,
+	}
+
 	registers := RegisterMap{
-		"%a": &gen.RegisterInfo{Name: "%a", Type: intType},
-		"%b": &gen.RegisterInfo{Name: "%b", Type: intType},
+		"%a": &gen.RegisterInfo{Name: "%a", Type: intTypeRef},
+		"%b": &gen.RegisterInfo{Name: "%b", Type: intTypeRef},
 	}
 
 	ctx := &gen.GenerationContext[Instruction]{

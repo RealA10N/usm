@@ -26,6 +26,14 @@ type ImmediateArgumentGenerator[InstT BaseInstruction] struct {
 	ReferencedTypeGenerator Generator[InstT, parse.TypeNode, *ReferencedTypeInfo]
 }
 
+func NewImmediateArgumentGenerator[InstT BaseInstruction]() Generator[InstT, parse.ImmediateNode, ArgumentInfo] {
+	return Generator[InstT, parse.ImmediateNode, ArgumentInfo](
+		&ImmediateArgumentGenerator[InstT]{
+			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
+		},
+	)
+}
+
 func (g *ImmediateArgumentGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.ImmediateNode,

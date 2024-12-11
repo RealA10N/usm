@@ -32,11 +32,11 @@ func TestImmediateValueArgument(t *testing.T) {
 		Instructions:  &InstructionMap{},
 	}
 
-	generator := gen.ImmediateArgumentGenerator[Instruction]{}
+	generator := gen.NewImmediateArgumentGenerator[Instruction]()
 	argument, results := generator.Generate(&ctx, node)
 
 	assert.True(t, results.IsEmpty())
-	assert.Equal(t, intType, argument.GetType())
+	assert.Equal(t, intType, argument.GetType().Base)
 
 	immediateArgument, ok := argument.(*gen.ImmediateInfo)
 	assert.True(t, ok)
