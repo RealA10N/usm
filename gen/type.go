@@ -297,12 +297,12 @@ func (g *NamedTypeGenerator[InstT]) Generate(
 		return nil, list.FromSingle(core.Result{
 			{
 				Type:     core.ErrorResult,
-				Message:  "Trying to defined an already defined type",
+				Message:  "Type already defined",
 				Location: &declaration,
 			},
 			{
 				Type:     core.HintResult,
-				Message:  "Previously defined here",
+				Message:  "Previous definition here",
 				Location: &typeInfo.Declaration,
 			},
 		})
