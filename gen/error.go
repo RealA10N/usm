@@ -10,14 +10,6 @@ func NewUndefinedTypeResult(location core.UnmanagedSourceView) core.Result {
 	}}
 }
 
-func NewUndefinedRegisterResult(location core.UnmanagedSourceView) core.Result {
-	return core.Result{{
-		Type:     core.ErrorResult,
-		Message:  "Undefined register",
-		Location: &location,
-	}}
-}
-
 func NewRegisterTypeMismatchResult(
 	NewDeclaration core.UnmanagedSourceView,
 	FirstDeclaration core.UnmanagedSourceView,

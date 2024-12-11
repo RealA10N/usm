@@ -3,6 +3,7 @@ package gen
 import (
 	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
+	"alon.kr/x/usm/parse"
 )
 
 // MARK: Info
@@ -70,4 +71,39 @@ func (i partialRegisterInfo) toRegisterInfo(
 type RegisterManager interface {
 	GetRegister(name string) *RegisterInfo
 	NewRegister(reg *RegisterInfo) core.Result
+}
+
+// MARK: Generator
+
+type RegisterGenerator[InstT BaseInstruction] struct{}
+
+func NewRegisterGenerator[InstT BaseInstruction]() Generator[InstT, parse.RegisterNode, *RegisterInfo] {
+	return Generator[InstT, parse.RegisterNode, *RegisterInfo](
+		&RegisterGenerator[InstT]{},
+	)
+}
+
+func UndefinedRegisterResult(node parse.RegisterNode) core.ResultList {
+	v := node.View()
+	return list.FromSingle(core.Result{
+		{
+			Type:     core.ErrorResult,
+			Message:  "Undefined register",
+			Location: &v,
+		},
+	})
+}
+
+func (g *RegisterGenerator[InstT]) Generate(
+	ctx *GenerationContext[InstT],
+	node parse.RegisterNode,
+) (*RegisterInfo, core.ResultList) {
+	name := string(node.Raw(ctx.SourceContext))
+	register := ctx.Registers.GetRegister(name)
+
+	if register == nil {
+		return nil, UndefinedRegisterResult(node)
+	}
+
+	return register, core.ResultList{}
 }

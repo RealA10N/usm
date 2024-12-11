@@ -26,7 +26,7 @@ func TestUndefinedRegisterArgument(t *testing.T) {
 	_, results := generator.Generate(&ctx, node)
 
 	assert.EqualValues(t, 1, results.Len())
-
 	result := results.Head.Value
-	assert.Equal(t, gen.NewUndefinedRegisterResult(unmanaged), result)
+	expectedResult := gen.UndefinedRegisterResult(node).Head.Value
+	assert.EqualValues(t, expectedResult, result)
 }
