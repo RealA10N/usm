@@ -21,6 +21,7 @@ type GenerationContext[InstT BaseInstruction] struct {
 	Instructions InstructionManager[InstT]
 	Types        TypeManager
 	Registers    RegisterManager
+	Labels       LabelManager
 	// TODO: add globals, functions, etc.
 }
 
