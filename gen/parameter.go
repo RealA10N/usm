@@ -7,19 +7,20 @@ import (
 )
 
 type ParameterGenerator[InstT BaseInstruction] struct {
-	RegisterGenerator       Generator[InstT, parse.RegisterNode, *RegisterInfo]
 	ReferencedTypeGenerator Generator[InstT, parse.TypeNode, ReferencedTypeInfo]
 }
 
 func NewParameterGenerator[InstT BaseInstruction]() Generator[InstT, parse.ParameterNode, *RegisterInfo] {
 	return Generator[InstT, parse.ParameterNode, *RegisterInfo](
 		&ParameterGenerator[InstT]{
-			RegisterGenerator:       NewRegisterGenerator[InstT](),
 			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
 		},
 	)
 }
 
+// Asserts that a register with the same name does not exist yet,
+// creates the new register, registers it to the register manager,
+// and returns the unique register info structure pointer.
 func (g *ParameterGenerator[InstT]) Generate(
 	ctx *GenerationContext[InstT],
 	node parse.ParameterNode,
@@ -29,27 +30,29 @@ func (g *ParameterGenerator[InstT]) Generate(
 	typeInfo, typeResults := g.ReferencedTypeGenerator.Generate(ctx, node.Type)
 	results.Extend(&typeResults)
 
-	registerInfo, registerResults := g.RegisterGenerator.Generate(ctx, node.Register)
-	results.Extend(&registerResults)
+	registerName := getRegisterNameFromRegisterNode(ctx, node.Register)
+	registerInfo := ctx.Registers.GetRegister(registerName)
+	if registerInfo != nil {
+		registerResults := NewRegisterAlreadyDefinedResult(
+			node.View(),
+			registerInfo.Declaration,
+		)
+		results.Extend(&registerResults)
+	}
 
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
-	if !typeInfo.Equals(registerInfo.Type) {
-		v := node.View()
-		return nil, list.FromSingle(core.Result{
-			{
-				Type:     core.ErrorResult,
-				Message:  "Register previously declared with different type",
-				Location: &v,
-			},
-			{
-				Type:     core.HintResult,
-				Message:  "Previously declared here",
-				Location: &registerInfo.Declaration,
-			},
-		})
+	registerInfo = &RegisterInfo{
+		Name:        registerName,
+		Type:        typeInfo,
+		Declaration: node.View(),
+	}
+
+	result := ctx.Registers.NewRegister(registerInfo)
+	if result != nil {
+		return nil, list.FromSingle(result)
 	}
 
 	return registerInfo, core.ResultList{}

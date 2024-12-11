@@ -1,7 +1,6 @@
 package gen
 
 import (
-	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/parse"
 )
@@ -45,11 +44,9 @@ func (g *TargetGenerator[InstT]) Generate(
 		if explicitType != nil {
 			// ensure explicit type matches the previously declared one.
 			if !explicitType.Equals(registerInfo.Type) {
-				return partialRegisterInfo{}, list.FromSingle(
-					NewRegisterTypeMismatchResult(
-						node.View(),
-						registerInfo.Declaration,
-					),
+				return partialRegisterInfo{}, NewRegisterTypeMismatchResult(
+					node.View(),
+					registerInfo.Declaration,
 				)
 			}
 		}
