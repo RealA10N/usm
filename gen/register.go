@@ -53,8 +53,8 @@ type RegisterManager interface {
 // register that does not exist.
 type RegisterGenerator[InstT BaseInstruction] struct{}
 
-func NewRegisterGenerator[InstT BaseInstruction]() Generator[InstT, parse.RegisterNode, *RegisterInfo] {
-	return Generator[InstT, parse.RegisterNode, *RegisterInfo](
+func NewRegisterGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.RegisterNode, *RegisterInfo] {
+	return FunctionContextGenerator[InstT, parse.RegisterNode, *RegisterInfo](
 		&RegisterGenerator[InstT]{},
 	)
 }
@@ -71,10 +71,10 @@ func UndefinedRegisterResult(node parse.RegisterNode) core.ResultList {
 }
 
 func (g *RegisterGenerator[InstT]) Generate(
-	ctx *GenerationContext[InstT],
+	ctx *FunctionGenerationContext[InstT],
 	node parse.RegisterNode,
 ) (*RegisterInfo, core.ResultList) {
-	name := nodeToSourceString(ctx, node)
+	name := nodeToSourceString(ctx.FileGenerationContext, node)
 	register := ctx.Registers.GetRegister(name)
 
 	if register == nil {

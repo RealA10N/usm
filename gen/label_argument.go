@@ -22,17 +22,17 @@ func (i *LabelArgumentInfo[InstT]) GetType() ReferencedTypeInfo {
 
 type LabelArgumentGenerator[InstT BaseInstruction] struct{}
 
-func NewLabelArgumentGenerator[InstT BaseInstruction]() Generator[InstT, parse.LabelNode, ArgumentInfo] {
-	return Generator[InstT, parse.LabelNode, ArgumentInfo](
+func NewLabelArgumentGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.LabelNode, ArgumentInfo] {
+	return FunctionContextGenerator[InstT, parse.LabelNode, ArgumentInfo](
 		&LabelArgumentGenerator[InstT]{},
 	)
 }
 
 func (g *LabelArgumentGenerator[InstT]) Generate(
-	ctx *GenerationContext[InstT],
+	ctx *FunctionGenerationContext[InstT],
 	node parse.LabelNode,
 ) (ArgumentInfo, core.ResultList) {
-	name := nodeToSourceString(ctx, node)
+	name := nodeToSourceString(ctx.FileGenerationContext, node)
 	labelInfo := ctx.Labels.GetLabel(name)
 
 	if labelInfo == nil {

@@ -14,11 +14,11 @@ func (i *RegisterArgumentInfo) GetType() ReferencedTypeInfo {
 }
 
 type RegisterArgumentGenerator[InstT BaseInstruction] struct {
-	RegisterGenerator Generator[InstT, parse.RegisterNode, *RegisterInfo]
+	RegisterGenerator FunctionContextGenerator[InstT, parse.RegisterNode, *RegisterInfo]
 }
 
-func NewRegisterArgumentGenerator[InstT BaseInstruction]() Generator[InstT, parse.RegisterNode, ArgumentInfo] {
-	return Generator[InstT, parse.RegisterNode, ArgumentInfo](
+func NewRegisterArgumentGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.RegisterNode, ArgumentInfo] {
+	return FunctionContextGenerator[InstT, parse.RegisterNode, ArgumentInfo](
 		&RegisterArgumentGenerator[InstT]{
 			RegisterGenerator: NewRegisterGenerator[InstT](),
 		},
@@ -26,7 +26,7 @@ func NewRegisterArgumentGenerator[InstT BaseInstruction]() Generator[InstT, pars
 }
 
 func (g *RegisterArgumentGenerator[InstT]) Generate(
-	ctx *GenerationContext[InstT],
+	ctx *FunctionGenerationContext[InstT],
 	node parse.RegisterNode,
 ) (ArgumentInfo, core.ResultList) {
 	register, results := g.RegisterGenerator.Generate(ctx, node)
