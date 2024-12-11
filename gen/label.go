@@ -33,8 +33,14 @@ type LabelManager interface {
 
 // MARK: Generator
 
+// We deviate a bit from the `Generator` interface, since we require a bit
+// more context for label generation.
+
+// The LabelGenerationContext extends (is a superset) of the regular
+// `GenerationContext` structure, but contains additional fields which are
+// used for label generation only.
 type LabelGenerationContext[InstT BaseInstruction] struct {
-	GenerationContext[InstT]
+	*GenerationContext[InstT]
 
 	// The index of the instruction which is currently being iterated upon.
 	//
@@ -44,16 +50,33 @@ type LabelGenerationContext[InstT BaseInstruction] struct {
 	CurrentInstructionIndex core.UsmUint
 }
 
+// We define a new interface, the `LabelGenerator` interface, which is similar
+// to the regular `Generator` interface, but accepts a `LabelGenerationContext`
+// context structure instead of the regular `GenerationContext` one.
+type LabelGenerator[InstT BaseInstruction, NodeT parse.Node, info any] interface {
+	Generate(
+		ctx *LabelGenerationContext[InstT],
+		node NodeT,
+	) (info, core.ResultList)
+}
+
 // Generator for label *definition* nodes.
+//
 // Will create and add the label to the function context,
 // and return an error if a label with the same name already exists.
 type LabelDefinitionGenerator[InstT BaseInstruction] struct{}
+
+func NewLabelDefinitionGenerator[InstT BaseInstruction]() LabelGenerator[InstT, parse.LabelNode, LabelInfo] {
+	return LabelGenerator[InstT, parse.LabelNode, LabelInfo](
+		&LabelDefinitionGenerator[InstT]{},
+	)
+}
 
 func (g *LabelDefinitionGenerator[InstT]) Generate(
 	ctx *LabelGenerationContext[InstT],
 	node parse.LabelNode,
 ) (LabelInfo, core.ResultList) {
-	name := nodeToSourceString(&ctx.GenerationContext, node)
+	name := nodeToSourceString(ctx.GenerationContext, node)
 	labelInfo := ctx.Labels.GetLabel(name)
 	declaration := node.View()
 
