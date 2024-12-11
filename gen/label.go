@@ -33,33 +33,6 @@ type LabelManager interface {
 
 // MARK: Generator
 
-// We deviate a bit from the `Generator` interface, since we require a bit
-// more context for label generation.
-
-// The LabelGenerationContext extends (is a superset) of the regular
-// `GenerationContext` structure, but contains additional fields which are
-// used for label generation only.
-type LabelGenerationContext[InstT BaseInstruction] struct {
-	*GenerationContext[InstT]
-
-	// The index of the instruction which is currently being iterated upon.
-	//
-	// Used in the pass before we generate the instruction instances, to
-	// go over the labels in a function and give each label a corresponding
-	// instruction index.
-	CurrentInstructionIndex core.UsmUint
-}
-
-// We define a new interface, the `LabelGenerator` interface, which is similar
-// to the regular `Generator` interface, but accepts a `LabelGenerationContext`
-// context structure instead of the regular `GenerationContext` one.
-type LabelGenerator[InstT BaseInstruction, NodeT parse.Node, info any] interface {
-	Generate(
-		ctx *LabelGenerationContext[InstT],
-		node NodeT,
-	) (info, core.ResultList)
-}
-
 // Generator for label *definition* nodes.
 //
 // Will create and add the label to the function context,
