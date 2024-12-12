@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
@@ -10,9 +11,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var inputFilepath string = ""
+
 func setInputSource(cmd *cobra.Command, args []string) error {
 	if len(args) > 0 {
-		file, err := os.Open(args[0])
+		inputFilepath = filepath.Clean(args[0])
+		file, err := os.Open(inputFilepath)
 		if err != nil {
 			return fmt.Errorf("error opening file: %v", err)
 		}
@@ -61,7 +65,7 @@ func fmtCommand(cmd *cobra.Command, args []string) {
 		strCtx := parse.StringContext{SourceContext: view.Ctx()}
 		fmt.Print(file.String(&strCtx))
 	} else {
-		stringer := core.NewResultStringer()
+		stringer := core.NewResultStringer(view.Ctx(), inputFilepath)
 		fmt.Print(stringer.StringResult(result))
 	}
 }
