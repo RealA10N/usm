@@ -10,30 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testInstructionSet = gen.InstructionManager[Instruction](
-	&InstructionMap{
-		"ADD": &AddInstructionDefinition{},
-	},
-)
-
-var testManagerCreators = gen.ManagerCreators{
-	LabelManagerCreator: func() gen.LabelManager {
-		return gen.LabelManager(&LabelMap{})
-	},
-	RegisterManagerCreator: func() gen.RegisterManager {
-		return gen.RegisterManager(&RegisterMap{})
-	},
-	TypeManagerCreator: func() gen.TypeManager {
-		return gen.TypeManager(&TypeMap{})
-	},
-}
-
-var testGenerationContext = gen.GenerationContext[Instruction]{
-	ManagerCreators: testManagerCreators,
-	Instructions:    testInstructionSet,
-	PointerSize:     8,
-}
-
 func TestFunctionGeneration(t *testing.T) {
 	src := core.NewSourceView(
 		`func $32 @add $32 %a {

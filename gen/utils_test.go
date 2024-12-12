@@ -64,3 +64,29 @@ func (m *LabelMap) NewLabel(label gen.LabelInfo) core.Result {
 	(*m)[label.Name] = label
 	return nil
 }
+
+// MARK: Context
+
+var testInstructionSet = gen.InstructionManager[Instruction](
+	&InstructionMap{
+		"ADD": &AddInstructionDefinition{},
+	},
+)
+
+var testManagerCreators = gen.ManagerCreators{
+	LabelManagerCreator: func() gen.LabelManager {
+		return gen.LabelManager(&LabelMap{})
+	},
+	RegisterManagerCreator: func() gen.RegisterManager {
+		return gen.RegisterManager(&RegisterMap{})
+	},
+	TypeManagerCreator: func() gen.TypeManager {
+		return gen.TypeManager(&TypeMap{})
+	},
+}
+
+var testGenerationContext = gen.GenerationContext[Instruction]{
+	ManagerCreators: testManagerCreators,
+	Instructions:    testInstructionSet,
+	PointerSize:     314, // An arbitrary, unique value.
+}
