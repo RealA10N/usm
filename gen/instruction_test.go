@@ -51,7 +51,6 @@ func (AddInstructionDefinition) InferTargetTypes(
 	return []gen.ReferencedTypeInfo{
 		{
 			Base:        arguments[0].Base,
-			Size:        arguments[0].Size,
 			Descriptors: arguments[0].Descriptors,
 		},
 	}, core.ResultList{}
@@ -87,7 +86,6 @@ func TestInstructionCreateTarget(t *testing.T) {
 
 	intTypeRef := gen.ReferencedTypeInfo{
 		Base: intType,
-		Size: intType.Size,
 	}
 
 	registers := RegisterMap{

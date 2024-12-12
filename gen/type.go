@@ -43,16 +43,11 @@ type TypeDescriptorInfo struct {
 type ReferencedTypeInfo struct {
 	// A pointer to the base, named type that this type reference refers to.
 	Base        *NamedTypeInfo
-	Size        core.UsmUint
 	Descriptors []TypeDescriptorInfo
 }
 
 func (info ReferencedTypeInfo) Equals(other ReferencedTypeInfo) bool {
 	if info.Base != other.Base {
-		return false
-	}
-
-	if info.Size != other.Size {
 		return false
 	}
 
@@ -197,43 +192,6 @@ func NewReferencedTypeGenerator[InstT BaseInstruction]() FileContextGenerator[In
 	)
 }
 
-func (g *ReferencedTypeGenerator[InstT]) calculateTypeSize(
-	ctx *FileGenerationContext[InstT],
-	node parse.TypeNode,
-	baseType *NamedTypeInfo,
-	descriptors []TypeDescriptorInfo,
-) (core.UsmUint, core.ResultList) {
-	size := core.UsmUint(baseType.Size)
-
-	for _, descriptor := range descriptors {
-		switch descriptor.Type {
-		case PointerTypeDescriptor:
-			size = ctx.PointerSize
-		case RepeatTypeDescriptor:
-			var ok bool
-			size, ok = core.Mul(size, descriptor.Amount)
-			if !ok {
-				v := node.View()
-				return 0, list.FromSingle(core.Result{{
-					Type:     core.ErrorResult,
-					Message:  "Type size overflow",
-					Location: &v,
-				}})
-			}
-		default:
-			// notest
-			v := node.View()
-			return 0, list.FromSingle(core.Result{{
-				Type:     core.InternalErrorResult,
-				Message:  "Unknown type descriptor",
-				Location: &v,
-			}})
-		}
-	}
-
-	return size, core.ResultList{}
-}
-
 func (g *ReferencedTypeGenerator[InstT]) Generate(
 	ctx *FileGenerationContext[InstT],
 	node parse.TypeNode,
@@ -262,14 +220,8 @@ func (g *ReferencedTypeGenerator[InstT]) Generate(
 		descriptors = append(descriptors, descriptorInfo)
 	}
 
-	size, results := g.calculateTypeSize(ctx, node, baseType, descriptors)
-	if !results.IsEmpty() {
-		return ReferencedTypeInfo{}, results
-	}
-
 	typeInfo := ReferencedTypeInfo{
 		Base:        baseType,
-		Size:        size,
 		Descriptors: descriptors,
 	}
 
@@ -288,6 +240,42 @@ func NewNamedTypeGenerator[InstT BaseInstruction]() FileContextGenerator[InstT, 
 			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
 		},
 	)
+}
+
+func (g *NamedTypeGenerator[InstT]) calculateTypeSize(
+	ctx *FileGenerationContext[InstT],
+	node parse.TypeNode,
+	typeInfo ReferencedTypeInfo,
+) (core.UsmUint, core.ResultList) {
+	size := core.UsmUint(typeInfo.Base.Size)
+
+	for _, descriptor := range typeInfo.Descriptors {
+		switch descriptor.Type {
+		case PointerTypeDescriptor:
+			size = ctx.PointerSize
+		case RepeatTypeDescriptor:
+			var ok bool
+			size, ok = core.Mul(size, descriptor.Amount)
+			if !ok {
+				v := node.View()
+				return 0, list.FromSingle(core.Result{{
+					Type:     core.ErrorResult,
+					Message:  "Type size overflow",
+					Location: &v,
+				}})
+			}
+		default:
+			// notest
+			v := node.View()
+			return 0, list.FromSingle(core.Result{{
+				Type:     core.InternalErrorResult,
+				Message:  "Unknown type descriptor",
+				Location: &v,
+			}})
+		}
+	}
+
+	return size, core.ResultList{}
 }
 
 func (g *NamedTypeGenerator[InstT]) Generate(
@@ -323,15 +311,20 @@ func (g *NamedTypeGenerator[InstT]) Generate(
 		})
 	}
 
-	referencedType := node.Fields.Nodes[0].Type
-	referencedTypeInfo, results := g.ReferencedTypeGenerator.Generate(ctx, referencedType)
+	referencedTypeNode := node.Fields.Nodes[0].Type
+	referencedTypeInfo, results := g.ReferencedTypeGenerator.Generate(ctx, referencedTypeNode)
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	size, results := g.calculateTypeSize(ctx, referencedTypeNode, referencedTypeInfo)
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
 	typeInfo = &NamedTypeInfo{
 		Name:        identifier,
-		Size:        referencedTypeInfo.Size,
+		Size:        size,
 		Declaration: &declaration,
 	}
 

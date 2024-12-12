@@ -26,7 +26,6 @@ func TestTargetRegisterAlreadyDefined(t *testing.T) {
 
 	intTypeRef := gen.ReferencedTypeInfo{
 		Base: intType,
-		Size: intType.Size,
 	}
 
 	registers := RegisterMap{

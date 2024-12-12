@@ -199,30 +199,41 @@ func TestRepeatTypeTooLarge(t *testing.T) {
 	typeManager := make(TypeMap)
 	typeManager.newBuiltinType("$32", 4)
 
-	v := core.NewSourceView("$32 ^1_000_000 ^1_000_000")
+	v := core.NewSourceView("type $tooLarge { $32 ^1_000_000 ^1_000_000 }")
 	unmanaged := v.Unmanaged()
 
-	node := parse.TypeNode{
-		Identifier: unmanaged.Subview(0, 3),
-		Decorators: []parse.TypeDecoratorNode{
-			{
-				UnmanagedSourceView: unmanaged.Subview(4, 14),
-				Type:                parse.RepeatTypeDecorator,
-			},
-			{
-				UnmanagedSourceView: unmanaged.Subview(15, 25),
-				Type:                parse.RepeatTypeDecorator,
+	node := parse.TypeDeclarationNode{
+		UnmanagedSourceView: unmanaged,
+		Identifier:          unmanaged.Subview(5, 14),
+		Fields: parse.BlockNode[parse.TypeFieldNode]{
+			UnmanagedSourceView: unmanaged.Subview(15, 44),
+			Nodes: []parse.TypeFieldNode{
+				{
+					Type: parse.TypeNode{
+						Identifier: unmanaged.Subview(17, 20),
+						Decorators: []parse.TypeDecoratorNode{
+							{
+								UnmanagedSourceView: unmanaged.Subview(21, 31),
+								Type:                parse.RepeatTypeDecorator,
+							},
+							{
+								UnmanagedSourceView: unmanaged.Subview(32, 42),
+								Type:                parse.RepeatTypeDecorator,
+							},
+						},
+					},
+				},
 			},
 		},
 	}
 
-	genCtx := gen.FileGenerationContext[Instruction]{
+	ctx := &gen.FileGenerationContext[Instruction]{
 		GenerationContext: &testGenerationContext,
 		SourceContext:     v.Ctx(),
 		Types:             &typeManager,
 	}
 
-	generator := gen.NewReferencedTypeGenerator[Instruction]()
-	_, results := generator.Generate(&genCtx, node)
+	generator := gen.NewNamedTypeGenerator[Instruction]()
+	_, results := generator.Generate(ctx, node)
 	assert.False(t, results.IsEmpty())
 }
