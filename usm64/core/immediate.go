@@ -1,6 +1,7 @@
 package usm64core
 
 import (
+	"fmt"
 	"math/big"
 
 	"alon.kr/x/list"
@@ -27,4 +28,8 @@ func NewImmediate(immediate gen.ImmediateInfo) (Immediate, core.ResultList) {
 
 func (i Immediate) Value(*EmulationContext) uint64 {
 	return uint64(i)
+}
+
+func (i Immediate) String(*EmulationContext) string {
+	return fmt.Sprintf("#%d", i)
 }

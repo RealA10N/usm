@@ -28,7 +28,7 @@ type UnmanagedSourceView = view.UnmanagedView[rune, SourceViewOffset]
 type SourceContext = view.ViewContext[rune]
 
 func NewSourceView(data string) SourceView {
-	return view.NewView[rune, uint32]([]rune(data))
+	return view.NewView[rune, uint64]([]rune(data))
 }
 
 func ReadSource(reader io.Reader) (view SourceView, err error) {

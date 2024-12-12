@@ -6,8 +6,12 @@ import (
 	"path/filepath"
 
 	"alon.kr/x/usm/core"
+	"alon.kr/x/usm/gen"
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/parse"
+	usm64core "alon.kr/x/usm/usm64/core"
+	usm64emulate "alon.kr/x/usm/usm64/emulate"
+	"alon.kr/x/usm/usm64/managers"
 	"github.com/spf13/cobra"
 )
 
@@ -60,14 +64,50 @@ func fmtCommand(cmd *cobra.Command, args []string) {
 	}
 
 	tknView := parse.NewTokenView(tokens)
-	file, result := parse.NewFileParser().Parse(&tknView)
+	node, result := parse.NewFileParser().Parse(&tknView)
 	if result == nil {
 		strCtx := parse.StringContext{SourceContext: view.Ctx()}
-		fmt.Print(file.String(&strCtx))
+		fmt.Print(node.String(&strCtx))
 	} else {
 		stringer := core.NewResultStringer(view.Ctx(), inputFilepath)
 		fmt.Print(stringer.StringResult(result))
 	}
+}
+
+func emuCommand(cmd *cobra.Command, args []string) {
+	view, err := core.ReadSource(cmd.InOrStdin())
+	if err != nil {
+		fmt.Printf("Error reading source: %v\n", err)
+		os.Exit(1)
+	}
+
+	tokens, err := lex.NewTokenizer().Tokenize(view)
+	if err != nil {
+		fmt.Printf("Error tokenizing: %v\n", err)
+		os.Exit(1)
+	}
+
+	tknView := parse.NewTokenView(tokens)
+	node, result := parse.NewFileParser().Parse(&tknView)
+	if result != nil {
+		stringer := core.NewResultStringer(view.Ctx(), inputFilepath)
+		fmt.Print(stringer.StringResult(result))
+		os.Exit(1)
+	}
+
+	ctx := managers.NewGenerationContext()
+	generator := gen.NewFileGenerator[usm64core.Instruction]()
+	info, results := generator.Generate(ctx, view.Ctx(), node)
+	if !results.IsEmpty() {
+		stringer := core.NewResultStringer(view.Ctx(), inputFilepath)
+		for result := range results.Range() {
+			fmt.Print(stringer.StringResult(result))
+		}
+		os.Exit(1)
+	}
+
+	emulator := usm64emulate.NewEmulator()
+	emulator.Emulate(info.Functions[0])
 }
 
 func main() {
@@ -92,8 +132,17 @@ func main() {
 		Run:     fmtCommand,
 	}
 
+	emuCmd := &cobra.Command{
+		Use:     "emu [file]",
+		Short:   "Emulate a the main function execution",
+		Args:    cobra.MaximumNArgs(1),
+		PreRunE: setInputSource,
+		Run:     emuCommand,
+	}
+
 	rootCmd.AddCommand(lexCmd)
 	rootCmd.AddCommand(fmtCmd)
+	rootCmd.AddCommand(emuCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

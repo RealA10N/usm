@@ -1,0 +1,4 @@
+func @main {
+    %a = ADD $64 #0 $64 #0
+    PUT %a
+}

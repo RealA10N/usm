@@ -5,7 +5,7 @@ import (
 	"alon.kr/x/usm/gen"
 )
 
-// MARK: TypesMap
+// MARK: TypeMap
 
 type TypeMap map[string]*gen.NamedTypeInfo
 

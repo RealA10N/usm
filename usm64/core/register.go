@@ -1,6 +1,8 @@
 package usm64core
 
 import (
+	"fmt"
+
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 )
@@ -15,4 +17,8 @@ func NewRegister(register *gen.RegisterInfo) (Register, core.ResultList) {
 
 func (r Register) Value(ctx *EmulationContext) uint64 {
 	return ctx.Registers[r]
+}
+
+func (r Register) String(ctx *EmulationContext) string {
+	return fmt.Sprintf("%s (#%d)", r, r.Value(ctx))
 }

@@ -9,7 +9,7 @@ import (
 // Base type for unsigned integers.
 // This defines, for example, the maximum length of a source file, and the
 // maximum type size, and other bounds for internal data structures.
-type UsmUint = uint32
+type UsmUint = uint64
 
 const UsmUintBitSize = 8 * unsafe.Sizeof(UsmUint(0))
 
@@ -23,11 +23,11 @@ func ParseUint(s string) (UsmUint, error) {
 // Only a subset of required operations is implemented (add more as needed).
 
 func Add(x, y UsmUint) (res UsmUint, ok bool) {
-	res, carry := bits.Add32(x, y, 0)
+	res, carry := bits.Add64(x, y, 0)
 	return res, carry == 0
 }
 
 func Mul(x, y UsmUint) (res UsmUint, ok bool) {
-	high, low := bits.Mul32(x, y)
+	high, low := bits.Mul64(x, y)
 	return low, high == 0
 }

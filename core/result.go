@@ -80,7 +80,7 @@ func (w *ResultStringer) getLine(row UsmUint) string {
 	if row >= UsmUint(len(w.LineStarts)-1) {
 		lineEnd = UsmUint(len(w.SourceContext))
 	} else {
-		lineEnd = w.LineStarts[row+1]
+		lineEnd = w.LineStarts[row+1] - 1
 	}
 	return string(w.SourceContext[lineStart:lineEnd])
 }
