@@ -199,7 +199,7 @@ func TestRepeatTypeTooLarge(t *testing.T) {
 	typeManager := make(TypeMap)
 	typeManager.newBuiltinType("$32", 4)
 
-	v := core.NewSourceView("type $tooLarge { $32 ^1_000_000 ^1_000_000 }")
+	v := core.NewSourceView("type $tooLarge { $32 ^1_000_000_000 ^1_000_000_000 }")
 	unmanaged := v.Unmanaged()
 
 	node := parse.TypeDeclarationNode{
