@@ -99,17 +99,17 @@ func (w *ResultStringer) stringLineContext(row, col UsmUint) string {
 }
 
 func (w *ResultStringer) StringResultDetails(details ResultDetails) string {
-	location := w.Filepath
-	suffix := ""
+	locationPrefix := ""
+	locationSuffix := ""
 	if details.Location != nil {
 		row, col := w.viewToLocation(*details.Location)
-		location += fmt.Sprintf(":%d:%d", row+1, col+1)
-		suffix = w.stringLineContext(row, col)
+		locationPrefix = fmt.Sprintf("%s:%d:%d: ", w.Filepath, row+1, col+1)
+		locationSuffix = w.stringLineContext(row, col)
 	}
 
 	title := w.Titles[details.Type]
 	message := details.Message
-	return location + ": " + title + " " + message + "\n" + suffix
+	return locationPrefix + title + " " + message + "\n" + locationSuffix
 }
 
 func (w *ResultStringer) StringResult(result Result) string {
