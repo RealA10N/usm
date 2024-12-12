@@ -48,9 +48,9 @@ func TestTypeAliasDeclaration(t *testing.T) {
 
 func TestPointerTypeDeclaration(t *testing.T) {
 	typeManager := make(TypeMap)
-	typeManager.newBuiltinType("$64", 8)
+	typeManager.newBuiltinType("$8", 1)
 
-	view := core.NewSourceView("type $myType $64 *")
+	view := core.NewSourceView("type $myType $8 *")
 	unmanaged := view.Unmanaged()
 
 	typeDeclarationNode := parse.TypeDeclarationNode{
@@ -61,10 +61,10 @@ func TestPointerTypeDeclaration(t *testing.T) {
 			Nodes: []parse.TypeFieldNode{
 				{
 					Type: parse.TypeNode{
-						Identifier: unmanaged.Subview(13, 16),
+						Identifier: unmanaged.Subview(13, 15),
 						Decorators: []parse.TypeDecoratorNode{
 							{
-								UnmanagedSourceView: unmanaged.Subview(17, 18),
+								UnmanagedSourceView: unmanaged.Subview(16, 17),
 								Type:                parse.PointerTypeDecorator,
 							},
 						},
@@ -86,7 +86,7 @@ func TestPointerTypeDeclaration(t *testing.T) {
 	assert.True(t, results.IsEmpty())
 	assert.NotNil(t, typeInfo)
 	assert.Equal(t, "$myType", string(typeInfo.Name))
-	assert.EqualValues(t, 1337, typeInfo.Size)
+	assert.EqualValues(t, testGenerationContext.PointerSize, typeInfo.Size)
 }
 
 func TestRepeatTypeDeclaration(t *testing.T) {
