@@ -52,7 +52,7 @@ func NewResultStringer(ctx SourceContext, Filepath string) ResultStringer {
 	return ResultStringer{
 		SourceContext: ctx,
 		Titles: map[ResultType]string{
-			InternalErrorResult: color.New(color.Bold, color.BgRed, color.FgWhite).Sprint("panic:"),
+			InternalErrorResult: color.New(color.Bold, color.BgRed, color.FgWhite).Sprint(" panic "),
 			ErrorResult:         color.New(color.Bold, color.FgRed).Sprint("error:"),
 			WarningResult:       color.New(color.Bold, color.FgYellow).Sprint("warning:"),
 			HintResult:          color.New(color.Bold, color.FgCyan).Sprint("note:"),
