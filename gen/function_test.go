@@ -17,7 +17,9 @@ var testInstructionSet = gen.InstructionManager[Instruction](
 )
 
 var testManagerCreators = gen.ManagerCreators{
-	// TODO: add LabelManagerCreator
+	LabelManagerCreator: func() gen.LabelManager {
+		return gen.LabelManager(&LabelMap{})
+	},
 	RegisterManagerCreator: func() gen.RegisterManager {
 		return gen.RegisterManager(&RegisterMap{})
 	},
