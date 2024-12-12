@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"alon.kr/x/list"
 	"github.com/fatih/color"
@@ -30,18 +31,11 @@ type ResultDetails struct {
 type ResultList = list.List[Result]
 
 type ResultStringer struct {
-	Titles     map[ResultType]string
-	Filepath   string
-	LineStarts []UsmUint
-}
-
-func newTitleStrings() map[ResultType]string {
-	return map[ResultType]string{
-		InternalErrorResult: color.New(color.Bold, color.BgRed, color.FgWhite).Sprint("panic:"),
-		ErrorResult:         color.New(color.Bold, color.FgRed).Sprint("error:"),
-		WarningResult:       color.New(color.Bold, color.FgYellow).Sprint("warning:"),
-		HintResult:          color.New(color.Bold, color.FgCyan).Sprint("note:"),
-	}
+	SourceContext
+	Titles             map[ResultType]string
+	SourceErrorPointer string
+	Filepath           string
+	LineStarts         []UsmUint
 }
 
 func calculateLineStartsFromSource(ctx SourceContext) []UsmUint {
@@ -56,9 +50,16 @@ func calculateLineStartsFromSource(ctx SourceContext) []UsmUint {
 
 func NewResultStringer(ctx SourceContext, Filepath string) ResultStringer {
 	return ResultStringer{
-		Titles:     newTitleStrings(),
-		LineStarts: calculateLineStartsFromSource(ctx),
-		Filepath:   Filepath,
+		SourceContext: ctx,
+		Titles: map[ResultType]string{
+			InternalErrorResult: color.New(color.Bold, color.BgRed, color.FgWhite).Sprint("panic:"),
+			ErrorResult:         color.New(color.Bold, color.FgRed).Sprint("error:"),
+			WarningResult:       color.New(color.Bold, color.FgYellow).Sprint("warning:"),
+			HintResult:          color.New(color.Bold, color.FgCyan).Sprint("note:"),
+		},
+		SourceErrorPointer: color.New(color.Bold, color.FgMagenta).Sprint("^"),
+		LineStarts:         calculateLineStartsFromSource(ctx),
+		Filepath:           Filepath,
 	}
 }
 
@@ -73,22 +74,48 @@ func (w *ResultStringer) viewToLocation(
 	return UsmUint(row), UsmUint(col)
 }
 
+func (w *ResultStringer) getLine(row UsmUint) string {
+	lineStart := w.LineStarts[row]
+	var lineEnd UsmUint
+	if row >= UsmUint(len(w.LineStarts)-1) {
+		lineEnd = UsmUint(len(w.SourceContext))
+	} else {
+		lineEnd = w.LineStarts[row+1]
+	}
+	return string(w.SourceContext[lineStart:lineEnd])
+}
+
+func (w *ResultStringer) stringLineContext(row, col UsmUint) string {
+	firstLinePad := fmt.Sprintf("%*d", 5, row+1)
+	border := " | "
+	line := w.getLine(row)
+
+	secondLinePad := strings.Repeat(" ", len(firstLinePad))
+	pointerLine := strings.Repeat(" ", int(col)) + w.SourceErrorPointer
+
+	firstLine := firstLinePad + border + line
+	secondLine := secondLinePad + border + pointerLine
+	return firstLine + "\n" + secondLine + "\n"
+}
+
 func (w *ResultStringer) StringResultDetails(details ResultDetails) string {
 	location := w.Filepath
+	suffix := ""
 	if details.Location != nil {
 		row, col := w.viewToLocation(*details.Location)
 		location += fmt.Sprintf(":%d:%d", row+1, col+1)
+		suffix = w.stringLineContext(row, col)
 	}
 
 	title := w.Titles[details.Type]
 	message := details.Message
-	return location + ": " + title + " " + message
+	return location + ": " + title + " " + message + "\n" + suffix
 }
 
 func (w *ResultStringer) StringResult(result Result) string {
 	s := ""
 	for _, details := range result {
-		s += w.StringResultDetails(details) + "\n"
+		s += w.StringResultDetails(details)
 	}
 	return s
 }
