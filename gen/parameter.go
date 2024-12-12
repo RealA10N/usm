@@ -7,13 +7,13 @@ import (
 )
 
 type ParameterGenerator[InstT BaseInstruction] struct {
-	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
+	ReferencedTypeGenerator FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo]
 }
 
 func NewParameterGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.ParameterNode, *RegisterInfo] {
 	return FunctionContextGenerator[InstT, parse.ParameterNode, *RegisterInfo](
 		&ParameterGenerator[InstT]{
-			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
+			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
 		},
 	)
 }

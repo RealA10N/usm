@@ -9,13 +9,13 @@ import (
 // MARK: Generator
 
 type TargetGenerator[InstT BaseInstruction] struct {
-	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
+	ReferencedTypeGenerator FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo]
 }
 
 func NewTargetGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.TargetNode, partialRegisterInfo] {
 	return FunctionContextGenerator[InstT, parse.TargetNode, partialRegisterInfo](
 		&TargetGenerator[InstT]{
-			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
+			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
 		},
 	)
 }

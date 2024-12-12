@@ -76,16 +76,16 @@ type LabelGenerationContext[InstT BaseInstruction] struct {
 
 // MARK: Generator
 
-type Generator[NodeT parse.Node, InfoT any] interface {
+type Generator[InstT BaseInstruction, NodeT parse.Node, InfoT any] interface {
 	Generate(
-		ctx *GenerationContext,
+		ctx *GenerationContext[InstT],
 		node NodeT,
 	) (info InfoT, results core.ResultList)
 }
 
-type FileContextGenerator[NodeT parse.Node, InfoT any] interface {
+type FileContextGenerator[InstT BaseInstruction, NodeT parse.Node, InfoT any] interface {
 	Generate(
-		ctx *FileGenerationContext,
+		ctx *FileGenerationContext[InstT],
 		node NodeT,
 	) (info InfoT, results core.ResultList)
 }
@@ -106,15 +106,15 @@ type LabelContextGenerator[InstT BaseInstruction, NodeT parse.Node, InfoT any] i
 
 // MARK: Utils
 
-func viewToSourceString(
-	ctx *FileGenerationContext,
+func viewToSourceString[InstT BaseInstruction](
+	ctx *FileGenerationContext[InstT],
 	view core.UnmanagedSourceView,
 ) string {
 	return string(view.Raw(ctx.SourceContext))
 }
 
-func nodeToSourceString(
-	ctx *FileGenerationContext,
+func nodeToSourceString[InstT BaseInstruction](
+	ctx *FileGenerationContext[InstT],
 	node parse.Node,
 ) string {
 	return viewToSourceString(ctx, node.View())

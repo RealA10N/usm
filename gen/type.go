@@ -89,11 +89,11 @@ type TypeManager interface {
 
 // MARK: Descriptor Generator
 
-type DescriptorGenerator struct{}
+type DescriptorGenerator[InstT BaseInstruction] struct{}
 
-func NewDescriptorGenerator() FileContextGenerator[parse.TypeDecoratorNode, TypeDescriptorInfo] {
-	return FileContextGenerator[parse.TypeDecoratorNode, TypeDescriptorInfo](
-		&DescriptorGenerator{},
+func NewDescriptorGenerator[InstT BaseInstruction]() FileContextGenerator[InstT, parse.TypeDecoratorNode, TypeDescriptorInfo] {
+	return FileContextGenerator[InstT, parse.TypeDecoratorNode, TypeDescriptorInfo](
+		&DescriptorGenerator[InstT]{},
 	)
 }
 
@@ -109,8 +109,8 @@ func NewDescriptorGenerator() FileContextGenerator[parse.TypeDecoratorNode, Type
 // Why don't we do this at the `parse` module? because the `parse` module parses
 // the structure of tokens only, and does not look inside the content of the
 // tokens. More specifically, it does not have access to the source context.
-func (g *DescriptorGenerator) parseDescriptorAmount(
-	ctx *FileGenerationContext,
+func (g *DescriptorGenerator[InstT]) parseDescriptorAmount(
+	ctx *FileGenerationContext[InstT],
 	decorator parse.TypeDecoratorNode,
 ) (core.UsmUint, core.ResultList) {
 	if decorator.Len() <= 1 {
@@ -140,7 +140,7 @@ func (g *DescriptorGenerator) parseDescriptorAmount(
 	return num, core.ResultList{}
 }
 
-func (g *DescriptorGenerator) parsedDescriptorToGenDescriptorType(
+func (g *DescriptorGenerator[InstT]) parsedDescriptorToGenDescriptorType(
 	node parse.TypeDecoratorNode,
 ) (genType TypeDescriptorType, results core.ResultList) {
 	switch node.Type {
@@ -160,8 +160,8 @@ func (g *DescriptorGenerator) parsedDescriptorToGenDescriptorType(
 	}
 }
 
-func (g *DescriptorGenerator) Generate(
-	ctx *FileGenerationContext,
+func (g *DescriptorGenerator[InstT]) Generate(
+	ctx *FileGenerationContext[InstT],
 	node parse.TypeDecoratorNode,
 ) (info TypeDescriptorInfo, results core.ResultList) {
 	typ, results := g.parsedDescriptorToGenDescriptorType(node)
@@ -182,20 +182,20 @@ func (g *DescriptorGenerator) Generate(
 
 // MARK: Ref'ed Generator
 
-type ReferencedTypeGenerator struct {
-	DescriptorGenerator FileContextGenerator[parse.TypeDecoratorNode, TypeDescriptorInfo]
+type ReferencedTypeGenerator[InstT BaseInstruction] struct {
+	DescriptorGenerator FileContextGenerator[InstT, parse.TypeDecoratorNode, TypeDescriptorInfo]
 }
 
-func NewReferencedTypeGenerator() FileContextGenerator[parse.TypeNode, ReferencedTypeInfo] {
-	return FileContextGenerator[parse.TypeNode, ReferencedTypeInfo](
-		&ReferencedTypeGenerator{
-			DescriptorGenerator: NewDescriptorGenerator(),
+func NewReferencedTypeGenerator[InstT BaseInstruction]() FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo] {
+	return FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo](
+		&ReferencedTypeGenerator[InstT]{
+			DescriptorGenerator: NewDescriptorGenerator[InstT](),
 		},
 	)
 }
 
-func (g *ReferencedTypeGenerator) calculateTypeSize(
-	ctx *FileGenerationContext,
+func (g *ReferencedTypeGenerator[InstT]) calculateTypeSize(
+	ctx *FileGenerationContext[InstT],
 	node parse.TypeNode,
 	baseType *NamedTypeInfo,
 	descriptors []TypeDescriptorInfo,
@@ -231,8 +231,8 @@ func (g *ReferencedTypeGenerator) calculateTypeSize(
 	return size, core.ResultList{}
 }
 
-func (g *ReferencedTypeGenerator) Generate(
-	ctx *FileGenerationContext,
+func (g *ReferencedTypeGenerator[InstT]) Generate(
+	ctx *FileGenerationContext[InstT],
 	node parse.TypeNode,
 ) (ReferencedTypeInfo, core.ResultList) {
 	baseIdentifier := viewToSourceString(ctx, node.Identifier)
@@ -275,20 +275,20 @@ func (g *ReferencedTypeGenerator) Generate(
 
 // MARK: Named Generator
 
-type NamedTypeGenerator struct {
-	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
+type NamedTypeGenerator[InstT BaseInstruction] struct {
+	ReferencedTypeGenerator FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewNamedTypeGenerator() FileContextGenerator[parse.TypeDeclarationNode, *NamedTypeInfo] {
-	return FileContextGenerator[parse.TypeDeclarationNode, *NamedTypeInfo](
-		&NamedTypeGenerator{
-			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
+func NewNamedTypeGenerator[InstT BaseInstruction]() FileContextGenerator[InstT, parse.TypeDeclarationNode, *NamedTypeInfo] {
+	return FileContextGenerator[InstT, parse.TypeDeclarationNode, *NamedTypeInfo](
+		&NamedTypeGenerator[InstT]{
+			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
 		},
 	)
 }
 
-func (g *NamedTypeGenerator) Generate(
-	ctx *FileGenerationContext,
+func (g *NamedTypeGenerator[InstT]) Generate(
+	ctx *FileGenerationContext[InstT],
 	node parse.TypeDeclarationNode,
 ) (*NamedTypeInfo, core.ResultList) {
 	identifier := viewToSourceString(ctx, node.Identifier)

@@ -17,14 +17,24 @@ type FunctionGenerator[InstT BaseInstruction] struct {
 	LabelDefinitionGenerator LabelContextGenerator[InstT, parse.LabelNode, LabelInfo]
 }
 
-func NewFunctionGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.FunctionNode, *FunctionInfo[InstT]] {
-	return FunctionContextGenerator[InstT, parse.FunctionNode, *FunctionInfo[InstT]](
+func NewFunctionGenerator[InstT BaseInstruction]() FileContextGenerator[InstT, parse.FunctionNode, *FunctionInfo[InstT]] {
+	return FileContextGenerator[InstT, parse.FunctionNode, *FunctionInfo[InstT]](
 		&FunctionGenerator[InstT]{
 			InstructionGenerator:     NewInstructionGenerator[InstT](),
 			ParameterGenerator:       NewParameterGenerator[InstT](),
 			LabelDefinitionGenerator: NewLabelDefinitionGenerator[InstT](),
 		},
 	)
+}
+
+func (g *FunctionGenerator[InstT]) createFunctionContext(
+	ctx *FileGenerationContext[InstT],
+) *FunctionGenerationContext[InstT] {
+	return &FunctionGenerationContext[InstT]{
+		FileGenerationContext: ctx,
+		Registers:             ctx.RegisterManagerCreator(),
+		Labels:                ctx.LabelManagerCreator(),
+	}
 }
 
 func (g *FunctionGenerator[InstT]) createParameterRegisters(
@@ -87,21 +97,23 @@ func (g *FunctionGenerator[InstT]) generateFunctionBody(
 }
 
 func (g *FunctionGenerator[InstT]) Generate(
-	ctx *FunctionGenerationContext[InstT],
+	ctx *FileGenerationContext[InstT],
 	node parse.FunctionNode,
 ) (*FunctionInfo[InstT], core.ResultList) {
 	var results core.ResultList
-	parameters, paramResults := g.createParameterRegisters(ctx, node.Signature.Parameters)
+	funcCtx := g.createFunctionContext(ctx)
+
+	parameters, paramResults := g.createParameterRegisters(funcCtx, node.Signature.Parameters)
 	results.Extend(&paramResults)
 
-	labelResults := g.collectLabelDefinitions(ctx, node.Instructions.Nodes)
+	labelResults := g.collectLabelDefinitions(funcCtx, node.Instructions.Nodes)
 	results.Extend(&labelResults)
 
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
-	instructions, results := g.generateFunctionBody(ctx, node.Instructions.Nodes)
+	instructions, results := g.generateFunctionBody(funcCtx, node.Instructions.Nodes)
 	if !results.IsEmpty() {
 		return nil, results
 	}

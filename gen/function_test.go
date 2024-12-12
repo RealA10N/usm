@@ -10,6 +10,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var testInstructionSet = gen.InstructionManager[Instruction](
+	&InstructionMap{
+		"ADD": &AddInstructionDefinition{},
+	},
+)
+
+var testManagerCreators = gen.ManagerCreators{
+	// TODO: add LabelManagerCreator
+	RegisterManagerCreator: func() gen.RegisterManager {
+		return gen.RegisterManager(&RegisterMap{})
+	},
+	TypeManagerCreator: func() gen.TypeManager {
+		return gen.TypeManager(&TypeMap{})
+	},
+}
+
+var testGenerationContext = gen.GenerationContext[Instruction]{
+	ManagerCreators: testManagerCreators,
+	Instructions:    testInstructionSet,
+	PointerSize:     8,
+}
+
 func TestFunctionGeneration(t *testing.T) {
 	src := core.NewSourceView(
 		`func $32 @add $32 %a {
@@ -25,22 +47,12 @@ func TestFunctionGeneration(t *testing.T) {
 	node, result := parse.NewFunctionParser().Parse(&tknView)
 	assert.Nil(t, result)
 
-	instructions := InstructionMap{
-		"ADD": &AddInstructionDefinition{},
-	}
-
 	intType := &gen.NamedTypeInfo{Name: "$32", Size: 4}
 
-	ctx := &gen.FunctionGenerationContext[Instruction]{
-		FileGenerationContext: &gen.FileGenerationContext{
-			GenerationContext: &gen.GenerationContext{
-				PointerSize: 8,
-			},
-			SourceContext: src.Ctx(),
-			Types:         &TypeMap{intType.Name: intType},
-		},
-		Registers:    &RegisterMap{},
-		Instructions: &instructions,
+	ctx := &gen.FileGenerationContext[Instruction]{
+		GenerationContext: &testGenerationContext,
+		SourceContext:     src.Ctx(),
+		Types:             &TypeMap{intType.Name: intType},
 	}
 
 	generator := gen.NewFunctionGenerator[Instruction]()

@@ -31,13 +31,14 @@ func TestTypeAliasDeclaration(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.FileGenerationContext{
-		SourceContext: view.Ctx(),
-		Types:         &typeManager,
+	ctx := gen.FileGenerationContext[Instruction]{
+		GenerationContext: &testGenerationContext,
+		SourceContext:     view.Ctx(),
+		Types:             &typeManager,
 	}
 
-	generator := gen.NewNamedTypeGenerator()
-	typeInfo, results := generator.Generate(&genCtx, typeDeclarationNode)
+	generator := gen.NewNamedTypeGenerator[Instruction]()
+	typeInfo, results := generator.Generate(&ctx, typeDeclarationNode)
 
 	assert.True(t, results.IsEmpty())
 	assert.NotNil(t, typeInfo)
@@ -73,14 +74,14 @@ func TestPointerTypeDeclaration(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.FileGenerationContext{
-		GenerationContext: &gen.GenerationContext{PointerSize: 1337},
+	ctx := gen.FileGenerationContext[Instruction]{
+		GenerationContext: &testGenerationContext,
 		SourceContext:     view.Ctx(),
 		Types:             &typeManager,
 	}
 
-	generator := gen.NewNamedTypeGenerator()
-	typeInfo, results := generator.Generate(&genCtx, typeDeclarationNode)
+	generator := gen.NewNamedTypeGenerator[Instruction]()
+	typeInfo, results := generator.Generate(&ctx, typeDeclarationNode)
 
 	assert.True(t, results.IsEmpty())
 	assert.NotNil(t, typeInfo)
@@ -116,13 +117,14 @@ func TestRepeatTypeDeclaration(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.FileGenerationContext{
-		SourceContext: view.Ctx(),
-		Types:         &typeManager,
+	ctx := gen.FileGenerationContext[Instruction]{
+		GenerationContext: &testGenerationContext,
+		SourceContext:     view.Ctx(),
+		Types:             &typeManager,
 	}
 
-	generator := gen.NewNamedTypeGenerator()
-	typeInfo, results := generator.Generate(&genCtx, typeDeclarationNode)
+	generator := gen.NewNamedTypeGenerator[Instruction]()
+	typeInfo, results := generator.Generate(&ctx, typeDeclarationNode)
 
 	assert.True(t, results.IsEmpty())
 	assert.NotNil(t, typeInfo)
@@ -157,12 +159,13 @@ func TestAlreadyDefinedTypeDeclaration(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.FileGenerationContext{
-		SourceContext: view.Ctx(),
-		Types:         &typeManager,
+	genCtx := gen.FileGenerationContext[Instruction]{
+		GenerationContext: &testGenerationContext,
+		SourceContext:     view.Ctx(),
+		Types:             &typeManager,
 	}
 
-	generator := gen.NewNamedTypeGenerator()
+	generator := gen.NewNamedTypeGenerator[Instruction]()
 	_, results := generator.Generate(&genCtx, node)
 
 	assert.Len(t, results.ToSlice(), 1)
@@ -213,12 +216,13 @@ func TestRepeatTypeTooLarge(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.FileGenerationContext{
-		SourceContext: v.Ctx(),
-		Types:         &typeManager,
+	genCtx := gen.FileGenerationContext[Instruction]{
+		GenerationContext: &testGenerationContext,
+		SourceContext:     v.Ctx(),
+		Types:             &typeManager,
 	}
 
-	generator := gen.NewReferencedTypeGenerator()
+	generator := gen.NewReferencedTypeGenerator[Instruction]()
 	_, results := generator.Generate(&genCtx, node)
 	assert.False(t, results.IsEmpty())
 }

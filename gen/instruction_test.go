@@ -73,10 +73,6 @@ func (m *InstructionMap) GetInstructionDefinition(
 }
 
 func TestInstructionCreateTarget(t *testing.T) {
-	instructions := InstructionMap{
-		"ADD": &AddInstructionDefinition{},
-	}
-
 	src := core.NewSourceView("%c = ADD %a %b")
 	tkns, err := lex.NewTokenizer().Tokenize(src)
 	assert.NoError(t, err)
@@ -100,15 +96,12 @@ func TestInstructionCreateTarget(t *testing.T) {
 	}
 
 	ctx := &gen.FunctionGenerationContext[Instruction]{
-		FileGenerationContext: &gen.FileGenerationContext{
-			GenerationContext: &gen.GenerationContext{
-				PointerSize: 8,
-			},
-			SourceContext: src.Ctx(),
-			Types:         &types,
+		FileGenerationContext: &gen.FileGenerationContext[Instruction]{
+			GenerationContext: &testGenerationContext,
+			SourceContext:     src.Ctx(),
+			Types:             &types,
 		},
-		Registers:    &registers,
-		Instructions: &instructions,
+		Registers: &registers,
 	}
 
 	generator := gen.NewInstructionGenerator[Instruction]()

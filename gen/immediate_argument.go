@@ -23,13 +23,13 @@ func (i *ImmediateInfo) GetType() ReferencedTypeInfo {
 // MARK: Generator
 
 type ImmediateArgumentGenerator[InstT BaseInstruction] struct {
-	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
+	ReferencedTypeGenerator FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo]
 }
 
 func NewImmediateArgumentGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.ImmediateNode, ArgumentInfo] {
 	return FunctionContextGenerator[InstT, parse.ImmediateNode, ArgumentInfo](
 		&ImmediateArgumentGenerator[InstT]{
-			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
+			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
 		},
 	)
 }

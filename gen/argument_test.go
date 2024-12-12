@@ -15,15 +15,15 @@ func TestUndefinedRegisterArgument(t *testing.T) {
 	node := parse.RegisterNode{UnmanagedSourceView: unmanaged}
 
 	ctx := gen.FunctionGenerationContext[Instruction]{
-		FileGenerationContext: &gen.FileGenerationContext{
-			GenerationContext: &gen.GenerationContext{
-				PointerSize: 8,
+		FileGenerationContext: &gen.FileGenerationContext[Instruction]{
+			GenerationContext: &gen.GenerationContext[Instruction]{
+				Instructions: &InstructionMap{},
+				PointerSize:  8,
 			},
 			SourceContext: src.Ctx(),
 			Types:         &TypeMap{},
 		},
-		Registers:    &RegisterMap{},
-		Instructions: &InstructionMap{},
+		Registers: &RegisterMap{},
 	}
 
 	generator := gen.NewArgumentGenerator[Instruction]()
