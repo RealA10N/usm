@@ -26,7 +26,7 @@ func (m *TypeMap) newBuiltinType(name string, size core.UsmUint) core.Result {
 	info := &gen.NamedTypeInfo{
 		Name:        name,
 		Size:        size,
-		Declaration: core.UnmanagedSourceView{},
+		Declaration: &core.UnmanagedSourceView{},
 	}
 	return m.NewType(info)
 }

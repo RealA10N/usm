@@ -15,9 +15,12 @@ import (
 // It either (1) a builtin type or (2) a type alias declared by the "type"
 // keyword.
 type NamedTypeInfo struct {
-	Name        string
-	Size        core.UsmUint
-	Declaration core.UnmanagedSourceView
+	Name string
+	Size core.UsmUint
+
+	// The source view of the type declaration.
+	// Should be nil only if it is a builtin type.
+	Declaration *core.UnmanagedSourceView
 }
 
 type TypeDescriptorType uint8
@@ -305,7 +308,7 @@ func (g *NamedTypeGenerator[InstT]) Generate(
 			{
 				Type:     core.HintResult,
 				Message:  "Previous definition here",
-				Location: &typeInfo.Declaration,
+				Location: typeInfo.Declaration,
 			},
 		})
 	}
@@ -329,7 +332,7 @@ func (g *NamedTypeGenerator[InstT]) Generate(
 	typeInfo = &NamedTypeInfo{
 		Name:        identifier,
 		Size:        referencedTypeInfo.Size,
-		Declaration: declaration,
+		Declaration: &declaration,
 	}
 
 	result := ctx.Types.NewType(typeInfo)
