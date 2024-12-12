@@ -14,6 +14,13 @@ type FileGenerator[InstT BaseInstruction] struct {
 	FunctionGenerator  FileContextGenerator[InstT, parse.FunctionNode, *FunctionInfo[InstT]]
 }
 
+func NewFileGenerator[InstT BaseInstruction]() FileGenerator[InstT] {
+	return FileGenerator[InstT]{
+		NamedTypeGenerator: NewNamedTypeGenerator[InstT](),
+		FunctionGenerator:  NewFunctionGenerator[InstT](),
+	}
+}
+
 func (g *FileGenerator[InstT]) createFileContext(
 	ctx *GenerationContext[InstT],
 	source core.SourceContext,
