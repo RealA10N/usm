@@ -9,11 +9,14 @@ import (
 	"alon.kr/x/usm/gen"
 )
 
-type Immediate uint64
+type Immediate struct {
+	value       uint64
+	declaration core.UnmanagedSourceView
+}
 
 func NewImmediate(immediate gen.ImmediateInfo) (Immediate, core.ResultList) {
 	if !immediate.Value.IsInt64() && !immediate.Value.IsUint64() {
-		return Immediate(0), list.FromSingle(core.Result{
+		return Immediate{}, list.FromSingle(core.Result{
 			{
 				Type:    core.ErrorResult,
 				Message: "Immediate overflows 64 bits",
@@ -23,13 +26,21 @@ func NewImmediate(immediate gen.ImmediateInfo) (Immediate, core.ResultList) {
 
 	m := new(big.Int).Lsh(big.NewInt(1), 64)
 	value := immediate.Value.Mod(immediate.Value, m).Uint64()
-	return Immediate(value), core.ResultList{}
+
+	return Immediate{
+		value:       value,
+		declaration: immediate.Declaration(),
+	}, core.ResultList{}
 }
 
 func (i Immediate) Value(*EmulationContext) uint64 {
-	return uint64(i)
+	return i.value
 }
 
 func (i Immediate) String(*EmulationContext) string {
 	return fmt.Sprintf("#%d", i)
+}
+
+func (i Immediate) Declaration() core.UnmanagedSourceView {
+	return i.declaration
 }
