@@ -21,7 +21,9 @@ func NewArgument(argument gen.ArgumentInfo) (Argument, core.ResultList) {
 	case *gen.ImmediateInfo:
 		return NewImmediate(*typedArgument)
 	case *gen.RegisterArgumentInfo:
-		return NewRegister(typedArgument.Register)
+		return NewRegister(typedArgument)
+	case *gen.LabelArgumentInfo:
+		return NewLabel(*typedArgument)
 	default:
 		return nil, list.FromSingle(core.Result{
 			{

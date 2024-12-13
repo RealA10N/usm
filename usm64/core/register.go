@@ -7,18 +7,26 @@ import (
 	"alon.kr/x/usm/gen"
 )
 
-// MARK: Register
+type Register struct {
+	Name        string
+	declaration core.UnmanagedSourceView
+}
 
-type Register string
-
-func NewRegister(register *gen.RegisterInfo) (Register, core.ResultList) {
-	return Register(register.Name), core.ResultList{}
+func NewRegister(arg *gen.RegisterArgumentInfo) (Register, core.ResultList) {
+	return Register{
+		Name:        arg.Register.Name,
+		declaration: arg.Declaration(),
+	}, core.ResultList{}
 }
 
 func (r Register) Value(ctx *EmulationContext) uint64 {
-	return ctx.Registers[r]
+	return ctx.Registers[r.Name]
 }
 
 func (r Register) String(ctx *EmulationContext) string {
-	return fmt.Sprintf("%s (#%d)", r, r.Value(ctx))
+	return fmt.Sprintf("%s (#%d)", r.Name, r.Value(ctx))
+}
+
+func (r Register) Declaration() core.UnmanagedSourceView {
+	return r.declaration
 }

@@ -11,13 +11,13 @@ type EmulationContext struct {
 	// Should be len(instructions) to indicate the return from the function.
 	NextInstructionIndex uint64
 
-	Registers map[Register]uint64
+	Registers map[string]uint64
 }
 
 func NewEmulationContext() EmulationContext {
 	return EmulationContext{
 		NextInstructionIndex: 0,
-		Registers:            make(map[Register]uint64),
+		Registers:            make(map[string]uint64),
 	}
 }
 
