@@ -15,7 +15,7 @@ type BaseInstruction interface{}
 type InstructionDefinition[InstT BaseInstruction] interface {
 	// Build an instruction from the provided targets and arguments.
 	BuildInstruction(
-		targets []*RegisterInfo,
+		targets []*RegisterArgumentInfo,
 		arguments []ArgumentInfo,
 	) (InstT, core.ResultList)
 
@@ -119,7 +119,7 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 	ctx *FunctionGenerationContext[InstT],
 	node parse.TargetNode,
 	targetType ReferencedTypeInfo,
-) (*RegisterInfo, core.Result) {
+) (*RegisterArgumentInfo, core.Result) {
 	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	nodeView := node.View()
@@ -133,7 +133,12 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 			Declaration: nodeView,
 		}
 
-		return newRegisterInfo, ctx.Registers.NewRegister(newRegisterInfo)
+		registerArgument := &RegisterArgumentInfo{
+			Register:    newRegisterInfo,
+			declaration: nodeView,
+		}
+
+		return registerArgument, ctx.Registers.NewRegister(newRegisterInfo)
 	}
 
 	// register is already defined
@@ -146,7 +151,12 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 		}}
 	}
 
-	return registerInfo, nil
+	registerArgument := &RegisterArgumentInfo{
+		Register:    registerInfo,
+		declaration: nodeView,
+	}
+
+	return registerArgument, nil
 }
 
 // Registers can be defined by being a target of an instruction.
@@ -161,7 +171,7 @@ func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
 	ctx *FunctionGenerationContext[InstT],
 	node parse.InstructionNode,
 	targetTypes []ReferencedTypeInfo,
-) ([]*RegisterInfo, core.ResultList) {
+) ([]*RegisterArgumentInfo, core.ResultList) {
 	if len(node.Targets) != len(targetTypes) {
 		// notest: sanity check: ensure lengths match.
 		v := node.View()
@@ -172,7 +182,7 @@ func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
 		}})
 	}
 
-	registers := make([]*RegisterInfo, len(node.Targets))
+	registers := make([]*RegisterArgumentInfo, len(node.Targets))
 	results := core.ResultList{}
 	for i, target := range node.Targets {
 		// register errors should not effect one another, so we collect them.
