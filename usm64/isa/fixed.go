@@ -21,7 +21,7 @@ type FixedInstructionDefinition struct {
 func (d *FixedInstructionDefinition) InferTargetTypes(
 	ctx *gen.FunctionGenerationContext[usm64core.Instruction],
 	targets []*gen.ReferencedTypeInfo,
-	arguments []gen.ReferencedTypeInfo,
+	arguments []*gen.ReferencedTypeInfo,
 ) ([]gen.ReferencedTypeInfo, core.ResultList) {
 	base := ctx.Types.GetType("$64")
 	if base == nil {
@@ -41,7 +41,9 @@ func (d *FixedInstructionDefinition) InferTargetTypes(
 	return inferredTargets, core.ResultList{}
 }
 
-func (d *FixedInstructionDefinition) assertTargetAmount(targets []*gen.RegisterInfo) core.ResultList {
+func (d *FixedInstructionDefinition) assertTargetAmount(
+	targets []*gen.RegisterArgumentInfo,
+) core.ResultList {
 	// TODO: possible overflow?
 	if core.UsmUint(len(targets)) != d.Targets {
 		return list.FromSingle(core.Result{
@@ -70,7 +72,7 @@ func (d *FixedInstructionDefinition) assertArgumentAmount(
 }
 
 func (d *FixedInstructionDefinition) assertInputLengths(
-	targetInfos []*gen.RegisterInfo,
+	targetInfos []*gen.RegisterArgumentInfo,
 	argumentInfos []gen.ArgumentInfo,
 ) (results core.ResultList) {
 	targetResults := d.assertTargetAmount(targetInfos)
@@ -83,7 +85,7 @@ func (d *FixedInstructionDefinition) assertInputLengths(
 }
 
 func (d *FixedInstructionDefinition) createRegisters(
-	registerInfos []*gen.RegisterInfo,
+	registerInfos []*gen.RegisterArgumentInfo,
 ) (registers []usm64core.Register, results core.ResultList) {
 	registers = make([]usm64core.Register, len(registerInfos))
 	for i, register := range registerInfos {
@@ -107,7 +109,7 @@ func (d *FixedInstructionDefinition) createArguments(
 }
 
 func (d *FixedInstructionDefinition) BuildInstruction(
-	targetInfos []*gen.RegisterInfo,
+	targetInfos []*gen.RegisterArgumentInfo,
 	argumentInfos []gen.ArgumentInfo,
 ) (usm64core.Instruction, core.ResultList) {
 	results := d.assertInputLengths(targetInfos, argumentInfos)
