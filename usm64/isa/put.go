@@ -3,7 +3,6 @@ package usm64isa
 import (
 	"fmt"
 
-	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 	usm64core "alon.kr/x/usm/usm64/core"
@@ -27,16 +26,9 @@ func NewPutInstruction(
 	targets []usm64core.Register,
 	argument []usm64core.Argument,
 ) (usm64core.Instruction, core.ResultList) {
-	valued, ok := argument[0].(usm64core.ValuedArgument)
-	if !ok {
-		v := argument[0].Declaration()
-		return nil, list.FromSingle(core.Result{
-			{
-				Type:     core.ErrorResult,
-				Message:  "Expected valued argument",
-				Location: &v,
-			},
-		})
+	valued, results := usm64core.ArgumentToValuedArgument(argument[0])
+	if !results.IsEmpty() {
+		return nil, results
 	}
 
 	return &PutInstruction{Argument: valued}, core.ResultList{}
