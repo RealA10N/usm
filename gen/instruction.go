@@ -34,7 +34,7 @@ type InstructionDefinition[InstT BaseInstruction] interface {
 	InferTargetTypes(
 		ctx *FunctionGenerationContext[InstT],
 		targets []*ReferencedTypeInfo,
-		arguments []ReferencedTypeInfo,
+		arguments []*ReferencedTypeInfo,
 	) ([]ReferencedTypeInfo, core.ResultList)
 }
 
@@ -107,8 +107,8 @@ func partialTargetsToTypes(targets []partialRegisterInfo) []*ReferencedTypeInfo 
 	return types
 }
 
-func argumentsToTypes(arguments []ArgumentInfo) []ReferencedTypeInfo {
-	types := make([]ReferencedTypeInfo, len(arguments))
+func argumentsToTypes(arguments []ArgumentInfo) []*ReferencedTypeInfo {
+	types := make([]*ReferencedTypeInfo, len(arguments))
 	for i, arg := range arguments {
 		types[i] = arg.GetType()
 	}
