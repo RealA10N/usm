@@ -7,12 +7,17 @@ type EmulationError interface{}
 // MARK: Context
 
 type EmulationContext struct {
+	// The next instruction index to execute.
+	// Should be len(instructions) to indicate the return from the function.
+	NextInstructionIndex uint64
+
 	Registers map[Register]uint64
 }
 
 func NewEmulationContext() EmulationContext {
 	return EmulationContext{
-		Registers: make(map[Register]uint64),
+		NextInstructionIndex: 0,
+		Registers:            make(map[Register]uint64),
 	}
 }
 

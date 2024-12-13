@@ -7,10 +7,14 @@ import (
 
 type Emulator struct{}
 
-func (Emulator) Emulate(function *gen.FunctionInfo[usm64core.Instruction]) usm64core.EmulationError {
+func (Emulator) Emulate(
+	function *gen.FunctionInfo[usm64core.Instruction],
+) usm64core.EmulationError {
 	ctx := usm64core.NewEmulationContext()
-	for _, instruction := range function.Instructions {
-		err := instruction.Emulate(&ctx)
+
+	for ctx.NextInstructionIndex < uint64(len(function.Instructions)) {
+		nextInstruction := function.Instructions[ctx.NextInstructionIndex]
+		err := nextInstruction.Emulate(&ctx)
 		if err != nil {
 			return err
 		}

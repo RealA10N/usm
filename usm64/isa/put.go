@@ -16,6 +16,7 @@ type PutInstruction struct {
 
 func (i *PutInstruction) Emulate(ctx *usm64core.EmulationContext) usm64core.EmulationError {
 	fmt.Println(i.Argument.Value(ctx))
+	ctx.NextInstructionIndex++
 	return nil
 }
 
