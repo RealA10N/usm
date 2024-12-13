@@ -16,6 +16,24 @@ type ValuedArgument interface {
 	Value(ctx *EmulationContext) uint64
 }
 
+func ArgumentToValuedArgument(
+	arg Argument,
+) (ValuedArgument, core.ResultList) {
+	valued, ok := arg.(ValuedArgument)
+	if !ok {
+		v := arg.Declaration()
+		return nil, list.FromSingle(core.Result{
+			{
+				Type:     core.ErrorResult,
+				Message:  "Expected valued argument",
+				Location: &v,
+			},
+		})
+	}
+
+	return valued, core.ResultList{}
+}
+
 func NewArgument(argument gen.ArgumentInfo) (Argument, core.ResultList) {
 	switch typedArgument := argument.(type) {
 	case *gen.ImmediateInfo:
