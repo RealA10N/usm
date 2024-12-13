@@ -11,13 +11,18 @@ import (
 // MARK: Info
 
 type ImmediateInfo struct {
-	Type  ReferencedTypeInfo
-	Value *big.Int // TODO: Add floating types
+	Type        ReferencedTypeInfo
+	Value       *big.Int // TODO: Add floating types
+	declaration core.UnmanagedSourceView
 	// TODO: more complex and complete representation of immediate structs.
 }
 
-func (i *ImmediateInfo) GetType() ReferencedTypeInfo {
-	return i.Type
+func (i *ImmediateInfo) GetType() *ReferencedTypeInfo {
+	return &i.Type
+}
+
+func (i *ImmediateInfo) Declaration() core.UnmanagedSourceView {
+	return i.declaration
 }
 
 // MARK: Generator
@@ -69,8 +74,9 @@ func (g *ImmediateArgumentGenerator[InstT]) Generate(
 	}
 
 	info := ImmediateInfo{
-		Type:  typeInfo,
-		Value: value,
+		Type:        typeInfo,
+		Value:       value,
+		declaration: node.View(),
 	}
 
 	return &info, core.ResultList{}
