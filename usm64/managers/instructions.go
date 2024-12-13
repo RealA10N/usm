@@ -30,8 +30,9 @@ func (m *InstructionMap) GetInstructionDefinition(
 func NewInstructionManager() gen.InstructionManager[usm64core.Instruction] {
 	return gen.InstructionManager[usm64core.Instruction](
 		&InstructionMap{
-			"add": usm64isa.NewAddInstructionDefinition(),
-			"put": usm64isa.NewPutInstructionDefinition(),
+			"add":  usm64isa.NewAddInstructionDefinition(),
+			"put":  usm64isa.NewPutInstructionDefinition(),
+			"jump": usm64isa.NewJumpInstructionDefinition(),
 		},
 	)
 }
