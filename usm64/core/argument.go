@@ -8,6 +8,7 @@ import (
 
 type Argument interface {
 	String(ctx *EmulationContext) string
+	Declaration() core.UnmanagedSourceView
 }
 
 type ValuedArgument interface {
