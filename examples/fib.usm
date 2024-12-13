@@ -1,11 +1,10 @@
-func $64 @fib $64 %n {
-	%n1 = DEC %n
-	BLE %n1 .basecase
-	%x1 = CALL @fib %n1
-	%n2 = DEC %x1
-	%x2 = CALL @fib %n2
-	%x = ADD %x1 %x2
-	RET %x
-.basecase
-	RET %n
+func @main {
+	%fib(n-1) = ADD $64 #0 $64 #0
+	%fib(n) = ADD $64 #0 $64 #1
+.loop
+	PUT %fib(n)
+	%fib(n-2) = ADD %fib(n-1) $64 #0
+	%fib(n-1) = ADD %fib(n) $64 #0
+	%fib(n) = ADD %fib(n-1) %fib(n-2)
+	JUMP .loop
 }
