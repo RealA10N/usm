@@ -7,11 +7,20 @@ import (
 
 // MARK: Var
 
-type VarNode = TokenNode
-type VarParser = TokenParser[VarNode]
+type VarNode struct{ TokenNode }
+type VarParser struct{ TokenParser[VarNode] }
 
-func NewVarParser() VarParser {
-	return VarParser{lex.VarKeywordToken}
+func VarNodeCreator(tkn lex.Token) VarNode {
+	return VarNode{TokenNode{tkn.View}}
+}
+
+func NewVarParser() Parser[VarNode] {
+	return VarParser{
+		TokenParser[VarNode]{
+			Token:       lex.VarKeywordToken,
+			NodeCreator: VarNodeCreator,
+		},
+	}
 }
 
 // MARK: Declaration

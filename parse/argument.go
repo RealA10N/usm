@@ -11,7 +11,7 @@ type ArgumentParser struct {
 	GlobalParser    Parser[GlobalNode]
 }
 
-func NewArgumentParser() ArgumentParser {
+func NewArgumentParser() Parser[ArgumentNode] {
 	return ArgumentParser{
 		RegisterParser:  NewRegisterParser(),
 		ImmediateParser: NewImmediateParser(),

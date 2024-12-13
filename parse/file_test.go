@@ -29,11 +29,11 @@ func TestSingleFunction(t *testing.T) {
 					Parameters: []parse.ParameterNode{
 						{
 							Type:     parse.TypeNode{Identifier: srcView.Subview(14, 17)},
-							Register: parse.RegisterNode{srcView.Subview(18, 20)},
+							Register: parse.RegisterNode{parse.TokenNode{srcView.Subview(18, 20)}},
 						},
 						{
 							Type:     parse.TypeNode{Identifier: srcView.Subview(21, 24)},
-							Register: parse.RegisterNode{srcView.Subview(25, 27)},
+							Register: parse.RegisterNode{parse.TokenNode{srcView.Subview(25, 27)}},
 						},
 					},
 					Returns: []parse.TypeNode{
@@ -46,20 +46,20 @@ func TestSingleFunction(t *testing.T) {
 						{
 							Operator: srcView.Subview(42, 45),
 							Arguments: []parse.ArgumentNode{
-								parse.RegisterNode{srcView.Subview(46, 48)},
-								parse.RegisterNode{srcView.Subview(49, 51)},
+								parse.RegisterNode{parse.TokenNode{srcView.Subview(46, 48)}},
+								parse.RegisterNode{parse.TokenNode{srcView.Subview(49, 51)}},
 							},
 							Targets: []parse.TargetNode{
 								{
 									Type:     &parse.TypeNode{Identifier: srcView.Subview(31, 34)},
-									Register: parse.RegisterNode{srcView.Subview(35, 39)},
+									Register: parse.RegisterNode{parse.TokenNode{srcView.Subview(35, 39)}},
 								},
 							},
 						},
 						{
 							Operator: srcView.Subview(53, 56),
 							Arguments: []parse.ArgumentNode{
-								parse.RegisterNode{srcView.Subview(57, 61)},
+								parse.RegisterNode{parse.TokenNode{srcView.Subview(57, 61)}},
 							},
 						},
 					},

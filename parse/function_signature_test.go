@@ -42,7 +42,7 @@ func TestSignatureParserVoidFunction(t *testing.T) {
 		Parameters: []parse.ParameterNode{
 			{
 				Type:     parse.TypeNode{Identifier: typ.View},
-				Register: parse.RegisterNode{reg.View},
+				Register: parse.RegisterNode{parse.TokenNode{reg.View}},
 			},
 		},
 	}
@@ -73,11 +73,11 @@ func TestSignatureParserSingleReturn(t *testing.T) {
 		Parameters: []parse.ParameterNode{
 			{
 				Type:     parse.TypeNode{Identifier: param1Typ.View},
-				Register: parse.RegisterNode{param1Reg.View},
+				Register: parse.RegisterNode{parse.TokenNode{param1Reg.View}},
 			},
 			{
 				Type:     parse.TypeNode{Identifier: param2Typ.View},
-				Register: parse.RegisterNode{param2Reg.View},
+				Register: parse.RegisterNode{parse.TokenNode{param2Reg.View}},
 			},
 		},
 		Returns: []parse.TypeNode{
@@ -112,11 +112,11 @@ func TestSignatureParserMutltiReturn(t *testing.T) {
 		Parameters: []parse.ParameterNode{
 			{
 				Type:     parse.TypeNode{Identifier: param1Typ.View},
-				Register: parse.RegisterNode{param1Reg.View},
+				Register: parse.RegisterNode{parse.TokenNode{param1Reg.View}},
 			},
 			{
 				Type:     parse.TypeNode{Identifier: param2Typ.View},
-				Register: parse.RegisterNode{param2Reg.View},
+				Register: parse.RegisterNode{parse.TokenNode{param2Reg.View}},
 			},
 		},
 		Returns: []parse.TypeNode{

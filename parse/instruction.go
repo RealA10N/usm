@@ -67,9 +67,9 @@ func (n InstructionNode) String(ctx *StringContext) string {
 }
 
 type InstructionParser struct {
-	LabelParser
-	TargetParser
-	ArgumentParser
+	LabelParser    Parser[LabelNode]
+	TargetParser   Parser[TargetNode]
+	ArgumentParser Parser[ArgumentNode]
 }
 
 func NewInstructionParser() InstructionParser {

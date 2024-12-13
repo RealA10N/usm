@@ -14,7 +14,9 @@ func TestTargetRegisterAlreadyDefined(t *testing.T) {
 	unmanaged := src.Unmanaged()
 	node := parse.TargetNode{
 		Register: parse.RegisterNode{
-			UnmanagedSourceView: unmanaged.Subview(4, 6),
+			TokenNode: parse.TokenNode{
+				UnmanagedSourceView: unmanaged.Subview(4, 6),
+			},
 		},
 		Type: &parse.TypeNode{
 			Identifier: unmanaged.Subview(0, 3),

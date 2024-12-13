@@ -12,7 +12,7 @@ import (
 func TestUndefinedRegisterArgument(t *testing.T) {
 	src := core.NewSourceView("%a")
 	unmanaged := src.Unmanaged()
-	node := parse.RegisterNode{UnmanagedSourceView: unmanaged}
+	node := parse.RegisterNode{TokenNode: parse.TokenNode{UnmanagedSourceView: unmanaged}}
 
 	ctx := gen.FunctionGenerationContext[Instruction]{
 		FileGenerationContext: &gen.FileGenerationContext[Instruction]{

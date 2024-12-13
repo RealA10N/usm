@@ -34,7 +34,7 @@ type TargetParser struct {
 	RegisterParser Parser[RegisterNode]
 }
 
-func NewTargetParser() TargetParser {
+func NewTargetParser() Parser[TargetNode] {
 	return TargetParser{
 		RegisterParser: NewRegisterParser(),
 	}

@@ -21,8 +21,9 @@ func (n TokenNode) String(ctx *StringContext) string {
 
 // MARK: Parser
 
-type TokenParser[NodeT TokenNode] struct {
-	Token lex.TokenType
+type TokenParser[NodeT Node] struct {
+	Token       lex.TokenType
+	NodeCreator func(lex.Token) NodeT
 }
 
 func (p TokenParser[NodeT]) Parse(v *TokenView) (node NodeT, err core.Result) {
@@ -31,5 +32,5 @@ func (p TokenParser[NodeT]) Parse(v *TokenView) (node NodeT, err core.Result) {
 		return
 	}
 
-	return NodeT{tkn.View}, nil
+	return p.NodeCreator(tkn), nil
 }

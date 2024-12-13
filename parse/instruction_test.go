@@ -17,17 +17,17 @@ func TestInstructionParserMultipleTargets(t *testing.T) {
 	expected := parse.InstructionNode{
 		Operator: unmanaged.Subview(20, 26),
 		Arguments: []parse.ArgumentNode{
-			parse.RegisterNode{unmanaged.Subview(27, 29)},
-			parse.RegisterNode{unmanaged.Subview(30, 32)},
+			parse.RegisterNode{parse.TokenNode{unmanaged.Subview(27, 29)}},
+			parse.RegisterNode{parse.TokenNode{unmanaged.Subview(30, 32)}},
 		},
 		Targets: []parse.TargetNode{
 			{
 				Type:     &parse.TypeNode{Identifier: unmanaged.Subview(0, 3)},
-				Register: parse.RegisterNode{unmanaged.Subview(4, 8)},
+				Register: parse.RegisterNode{parse.TokenNode{unmanaged.Subview(4, 8)}},
 			},
 			{
 				Type:     &parse.TypeNode{Identifier: unmanaged.Subview(9, 12)},
-				Register: parse.RegisterNode{unmanaged.Subview(13, 17)},
+				Register: parse.RegisterNode{parse.TokenNode{unmanaged.Subview(13, 17)}},
 			},
 		},
 	}
@@ -44,7 +44,7 @@ func TestInstructionWithImmediateValuesAndLabel(t *testing.T) {
 	expected := parse.InstructionNode{
 		Operator: unmanaged.Subview(18, 21),
 		Arguments: []parse.ArgumentNode{
-			parse.RegisterNode{unmanaged.Subview(22, 24)},
+			parse.RegisterNode{parse.TokenNode{unmanaged.Subview(22, 24)}},
 			parse.ImmediateNode{
 				Type: parse.TypeNode{
 					Identifier: unmanaged.Subview(25, 28),
@@ -53,16 +53,16 @@ func TestInstructionWithImmediateValuesAndLabel(t *testing.T) {
 					unmanaged.Subview(29, 31),
 				},
 			},
-			parse.LabelNode{unmanaged.Subview(32, 36)},
+			parse.LabelNode{parse.TokenNode{unmanaged.Subview(32, 36)}},
 		},
 		Targets: []parse.TargetNode{
 			{
 				Type:     &parse.TypeNode{Identifier: unmanaged.Subview(7, 10)},
-				Register: parse.RegisterNode{unmanaged.Subview(11, 15)},
+				Register: parse.RegisterNode{parse.TokenNode{unmanaged.Subview(11, 15)}},
 			},
 		},
 		Labels: []parse.LabelNode{
-			{unmanaged.Subview(0, 6)},
+			{parse.TokenNode{unmanaged.Subview(0, 6)}},
 		},
 	}
 

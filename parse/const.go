@@ -5,13 +5,22 @@ import (
 	"alon.kr/x/usm/lex"
 )
 
-// MARK: Const
+// MARK: Parser
 
-type ConstNode = TokenNode
-type ConstParser = TokenParser[ConstNode]
+type ConstNode struct{ TokenNode }
+type ConstParser struct{ TokenParser[ConstNode] }
 
-func NewConstParser() ConstParser {
-	return ConstParser{lex.ConstKeywordToken}
+func ConstNodeCreator(tkn lex.Token) ConstNode {
+	return ConstNode{TokenNode{tkn.View}}
+}
+
+func NewConstParser() Parser[ConstNode] {
+	return ConstParser{
+		TokenParser: TokenParser[ConstNode]{
+			Token:       lex.ConstKeywordToken,
+			NodeCreator: ConstNodeCreator,
+		},
+	}
 }
 
 // MARK: Declaration

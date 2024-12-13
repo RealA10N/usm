@@ -56,7 +56,7 @@ func TestFunctionOneLine(t *testing.T) {
 					Targets: []parse.TargetNode{
 						{
 							Type:     &parse.TypeNode{Identifier: core.UnmanagedSourceView{Start: 12, End: 15}},
-							Register: parse.RegisterNode{core.UnmanagedSourceView{Start: 16, End: 18}},
+							Register: parse.RegisterNode{parse.TokenNode{core.UnmanagedSourceView{Start: 16, End: 18}}},
 						},
 					},
 				},
