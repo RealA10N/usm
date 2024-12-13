@@ -5,13 +5,22 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
+// MARK: Info
+
 type RegisterArgumentInfo struct {
-	Register *RegisterInfo
+	Register    *RegisterInfo
+	declaration core.UnmanagedSourceView
 }
 
-func (i *RegisterArgumentInfo) GetType() ReferencedTypeInfo {
-	return i.Register.Type
+func (i *RegisterArgumentInfo) GetType() *ReferencedTypeInfo {
+	return &i.Register.Type
 }
+
+func (i *RegisterArgumentInfo) Declaration() core.UnmanagedSourceView {
+	return i.declaration
+}
+
+// MARK: Generator
 
 type RegisterArgumentGenerator[InstT BaseInstruction] struct {
 	RegisterGenerator FunctionContextGenerator[InstT, parse.RegisterNode, *RegisterInfo]
@@ -35,7 +44,8 @@ func (g *RegisterArgumentGenerator[InstT]) Generate(
 	}
 
 	argument := RegisterArgumentInfo{
-		Register: register,
+		Register:    register,
+		declaration: node.View(),
 	}
 
 	return &argument, core.ResultList{}
