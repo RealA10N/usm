@@ -7,8 +7,12 @@ import (
 )
 
 type Argument interface {
-	Value(ctx *EmulationContext) uint64
 	String(ctx *EmulationContext) string
+}
+
+type ValuedArgument interface {
+	Argument
+	Value(ctx *EmulationContext) uint64
 }
 
 func NewArgument(argument gen.ArgumentInfo) (Argument, core.ResultList) {
