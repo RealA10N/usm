@@ -22,9 +22,9 @@ func (i *PutInstruction) Emulate(
 
 func NewPutInstruction(
 	targets []usm64core.Register,
-	argument []usm64core.Argument,
+	arguments []usm64core.Argument,
 ) (usm64core.Instruction, core.ResultList) {
-	valued, results := usm64core.ArgumentToValuedArgument(argument[0])
+	valued, results := usm64core.ArgumentToValuedArgument(arguments[0])
 	if !results.IsEmpty() {
 		return nil, results
 	}

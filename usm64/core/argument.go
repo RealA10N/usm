@@ -16,9 +16,7 @@ type ValuedArgument interface {
 	Value(ctx *EmulationContext) uint64
 }
 
-func ArgumentToValuedArgument(
-	arg Argument,
-) (ValuedArgument, core.ResultList) {
+func ArgumentToValuedArgument(arg Argument) (ValuedArgument, core.ResultList) {
 	valued, ok := arg.(ValuedArgument)
 	if !ok {
 		v := arg.Declaration()
@@ -32,6 +30,22 @@ func ArgumentToValuedArgument(
 	}
 
 	return valued, core.ResultList{}
+}
+
+func ArgumentToLabel(argument Argument) (Label, core.ResultList) {
+	label, ok := argument.(Label)
+	if !ok {
+		v := argument.Declaration()
+		return Label{}, list.FromSingle(core.Result{
+			{
+				Type:     core.ErrorResult,
+				Message:  "Expected label argument",
+				Location: &v,
+			},
+		})
+	}
+
+	return label, core.ResultList{}
 }
 
 func NewArgument(argument gen.ArgumentInfo) (Argument, core.ResultList) {

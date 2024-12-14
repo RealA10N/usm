@@ -22,6 +22,7 @@ func (m *InstructionMap) GetInstructionDefinition(
 		return nil, list.FromSingle(core.Result{{
 			Type:    core.ErrorResult,
 			Message: "Undefined instruction",
+			// TODO: add location
 		}})
 	}
 	return instDef, core.ResultList{}
@@ -30,10 +31,20 @@ func (m *InstructionMap) GetInstructionDefinition(
 func NewInstructionManager() gen.InstructionManager[usm64core.Instruction] {
 	return gen.InstructionManager[usm64core.Instruction](
 		&InstructionMap{
-			"":     usm64isa.NewMovInstructionDefinition(),
-			"add":  usm64isa.NewAddInstructionDefinition(),
-			"put":  usm64isa.NewPutInstructionDefinition(),
+
+			// mov
+			"":    usm64isa.NewMovInstructionDefinition(),
+			"mov": usm64isa.NewMovInstructionDefinition(),
+
+			// arithmetic
+			"add": usm64isa.NewAddInstructionDefinition(),
+
+			// control flow
 			"jump": usm64isa.NewJumpInstructionDefinition(),
+			"bz":   usm64isa.NewBzInstructionDefinition(),
+
+			// debug
+			"put": usm64isa.NewPutInstructionDefinition(),
 		},
 	)
 }
