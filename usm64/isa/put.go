@@ -8,8 +8,6 @@ import (
 	usm64core "alon.kr/x/usm/usm64/core"
 )
 
-// MARK: Debug
-
 type PutInstruction struct {
 	Argument usm64core.ValuedArgument
 }
