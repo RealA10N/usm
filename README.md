@@ -335,8 +335,9 @@ backend. However, it still differs from USM:
 - QBE is not an assembler: it generates assembler textual code. It QBE slower,
   not self contained, and harder to port and use for cross compilation.
 
-The QBE author also maintains a list of [Resources for Amateur Compiler Writers]
-seems to contain a good selection of practical articles and books.
+QBE's author, Quentin Carbonneaux, also maintains a list of
+[Resources for Amateur Compiler Writers] that seem to contain a good selection
+of practical articles and books.
 
 ### MIR<a name="mir"></a>
 
