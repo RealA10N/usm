@@ -16,10 +16,12 @@ type Immediate struct {
 
 func NewImmediate(immediate gen.ImmediateInfo) (Immediate, core.ResultList) {
 	if !immediate.Value.IsInt64() && !immediate.Value.IsUint64() {
+		v := immediate.Declaration()
 		return Immediate{}, list.FromSingle(core.Result{
 			{
-				Type:    core.ErrorResult,
-				Message: "Immediate overflows 64 bits",
+				Type:     core.ErrorResult,
+				Message:  "Immediate overflows 64 bits",
+				Location: &v,
 			},
 		})
 	}
