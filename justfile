@@ -19,6 +19,10 @@ fmt:
 	{{GO}} fmt ./...
 	mdformat .
 
+# count line of code, excluding tests.
+cloc:
+	cloc --not-match-f='.*_test.go' . 
+
 setup:
 	{{GO}} install github.com/kyoh86/richgo@v0.3.12
 	{{GO}} install github.com/dave/courtney@v0.4.3
