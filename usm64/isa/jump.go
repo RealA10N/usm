@@ -8,13 +8,13 @@ import (
 )
 
 type JumpInstruction struct {
-	JumpToInstructionIndex uint64
+	Label usm64core.Label
 }
 
 func (i *JumpInstruction) Emulate(
 	ctx *usm64core.EmulationContext,
 ) usm64core.EmulationError {
-	ctx.NextInstructionIndex = i.JumpToInstructionIndex
+	ctx.JumpToLabel(i.Label)
 	return nil
 }
 
@@ -35,9 +35,7 @@ func NewJumpInstruction(
 		})
 	}
 
-	return &JumpInstruction{
-		JumpToInstructionIndex: label.InstructionIndex,
-	}, core.ResultList{}
+	return &JumpInstruction{Label: label}, core.ResultList{}
 }
 
 func NewJumpInstructionDefinition() gen.InstructionDefinition[usm64core.Instruction] {

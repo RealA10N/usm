@@ -14,6 +14,14 @@ type EmulationContext struct {
 	Registers map[string]uint64
 }
 
+func (ctx *EmulationContext) IncrementInstructionPointer() {
+	ctx.NextInstructionIndex++
+}
+
+func (ctx *EmulationContext) JumpToLabel(label Label) {
+	ctx.NextInstructionIndex = label.InstructionIndex
+}
+
 func NewEmulationContext() EmulationContext {
 	return EmulationContext{
 		NextInstructionIndex: 0,

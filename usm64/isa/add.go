@@ -15,7 +15,7 @@ func (i *AddInstruction) Emulate(
 	ctx *usm64core.EmulationContext,
 ) usm64core.EmulationError {
 	ctx.Registers[i.Target.Name] = i.First.Value(ctx) + i.Second.Value(ctx)
-	ctx.NextInstructionIndex++
+	ctx.IncrementInstructionPointer()
 	return nil
 }
 
