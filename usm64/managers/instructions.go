@@ -40,8 +40,9 @@ func NewInstructionManager() gen.InstructionManager[usm64core.Instruction] {
 			"add": usm64isa.NewAddInstructionDefinition(),
 
 			// control flow
-			"j":  usm64isa.NewJumpInstructionDefinition(),
-			"jz": usm64isa.NewJumpZeroInstructionDefinition(),
+			"j":   usm64isa.NewJumpInstructionDefinition(),
+			"jz":  usm64isa.NewJumpZeroInstructionDefinition(),
+			"jnz": usm64isa.NewJumpNotZeroInstructionDefinition(),
 
 			// debug
 			"put": usm64isa.NewPutInstructionDefinition(),
