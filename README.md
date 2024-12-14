@@ -335,6 +335,9 @@ backend. However, it still differs from USM:
 - QBE is not an assembler: it generates assembler textual code. It QBE slower,
   not self contained, and harder to port and use for cross compilation.
 
+The QBE author also maintains a list of [Resources for Amateur Compiler Writers]
+seems to contain a good selection of practical articles and books.
+
 ### MIR<a name="mir"></a>
 
 [MIR] (Medium Internal Representation) is a lightweight IR backend, which mainly
@@ -353,3 +356,4 @@ It looks mature and decent in terms of generated code, and speed.
 [mir]: https://github.com/vnmakarov/mir
 [pre-commit.ci status]: https://results.pre-commit.ci/badge/github/RealA10N/usm/main.svg
 [qbe]: https://c9x.me/compile/
+[resources for amateur compiler writers]: https://c9x.me/compile/bib/
