@@ -17,12 +17,16 @@ type InstructionNode struct {
 func (n InstructionNode) View() (v core.UnmanagedSourceView) {
 	v = n.Operator
 
+	if len(n.Labels) > 0 {
+		v = v.MergeStart(n.Labels[0].View())
+	}
+
 	if len(n.Targets) > 0 {
-		v.Start = n.Targets[0].View().Start
+		v = v.MergeStart(n.Targets[0].View())
 	}
 
 	if len(n.Arguments) > 0 {
-		v.End = n.Arguments[len(n.Arguments)-1].View().End
+		v = v.MergeEnd(n.Arguments[len(n.Arguments)-1].View())
 	}
 
 	return
@@ -89,13 +93,28 @@ func (InstructionParser) parseEquals(v *TokenView, node *InstructionNode) (err c
 
 func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) core.Result {
 	opr, err := v.ConsumeToken(lex.OperatorToken)
+	if err != nil {
+		// There is no operator: that is ok, the operator is the empty string
+
+		nextToken, err := v.Front()
+		if err != nil {
+			return NewEofResult([]lex.TokenType{})
+		}
+
+		node.Operator = core.UnmanagedSourceView{
+			Start: nextToken.View.Start,
+			End:   nextToken.View.Start,
+		}
+		return nil
+	}
+
 	node.Operator = opr.View
-	return err
+	return nil
 }
 
 // Parsing of the following regular expression:
 //
-// > Lbl* (Reg+ Eql)? Opr Arg+ !Arg
+// > Lbl* (Reg+ Eql)? Opr? Arg+ !Arg \n+
 func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err core.Result) {
 	node.Labels, _ = ParseManyIgnoreSeparators(p.LabelParser, v)
 	node.Targets = ParseMany(p.TargetParser, v)
@@ -111,6 +130,6 @@ func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err core.R
 	}
 
 	node.Arguments = ParseMany(p.ArgumentParser, v)
-	v.ConsumeManyTokens(lex.SeparatorToken)
-	return node, nil
+	err = v.ConsumeAtLeastTokens(1, lex.SeparatorToken)
+	return node, err
 }

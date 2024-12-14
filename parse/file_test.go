@@ -79,7 +79,8 @@ func TestSingleFunction(t *testing.T) {
 }
 
 func TestFileParserTwoFunctionsNoExtraSeparator(t *testing.T) {
-	src := `func @first { ret }
+	src := `func @first { ret
+	}
 func @second   {
 ret
 	}`

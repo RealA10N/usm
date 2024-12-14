@@ -73,7 +73,7 @@ func (m *InstructionMap) GetInstructionDefinition(
 }
 
 func TestInstructionCreateTarget(t *testing.T) {
-	src := core.NewSourceView("%c = ADD %a %b")
+	src := core.NewSourceView("%c = ADD %a %b\n")
 	tkns, err := lex.NewTokenizer().Tokenize(src)
 	assert.NoError(t, err)
 

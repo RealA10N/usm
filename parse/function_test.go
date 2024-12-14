@@ -41,7 +41,7 @@ func TestFunctionOneLineZeroInstructions(t *testing.T) {
 }
 
 func TestFunctionOneLine(t *testing.T) {
-	src := "func @foo { $32 %0 = bar }"
+	src := "func @foo { $32 %0 = bar\n}"
 	expected := parse.FunctionNode{
 		UnmanagedSourceView: core.UnmanagedSourceView{Start: 0, End: 26},
 		Signature: parse.FunctionSignatureNode{

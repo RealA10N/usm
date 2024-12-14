@@ -11,7 +11,7 @@ import (
 )
 
 func TestInstructionParserMultipleTargets(t *testing.T) {
-	srcView := core.NewSourceView("$32 %div $32 %mod = divmod %x %y")
+	srcView := core.NewSourceView("$32 %div $32 %mod = divmod %x %y\n")
 	unmanaged := srcView.Unmanaged()
 
 	expected := parse.InstructionNode{
@@ -38,7 +38,7 @@ func TestInstructionParserMultipleTargets(t *testing.T) {
 }
 
 func TestInstructionWithImmediateValuesAndLabel(t *testing.T) {
-	srcView := core.NewSourceView(".entry $32 %res = add %x $32 #1 .arg")
+	srcView := core.NewSourceView(".entry $32 %res = add %x $32 #1 .arg\n")
 	unmanaged := srcView.Unmanaged()
 
 	expected := parse.InstructionNode{
