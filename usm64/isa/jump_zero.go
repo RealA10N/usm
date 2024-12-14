@@ -6,12 +6,12 @@ import (
 	usm64core "alon.kr/x/usm/usm64/core"
 )
 
-type BzInstruction struct {
+type JumpZeroInstruction struct {
 	Argument usm64core.ValuedArgument
 	Label    usm64core.Label
 }
 
-func (i *BzInstruction) Emulate(
+func (i *JumpZeroInstruction) Emulate(
 	ctx *usm64core.EmulationContext,
 ) usm64core.EmulationError {
 	if i.Argument.Value(ctx) == uint64(0) {
@@ -22,7 +22,7 @@ func (i *BzInstruction) Emulate(
 	return nil
 }
 
-func NewBzInstruction(
+func NewJumpZeroInstruction(
 	targets []usm64core.Register,
 	arguments []usm64core.Argument,
 ) (usm64core.Instruction, core.ResultList) {
@@ -38,13 +38,13 @@ func NewBzInstruction(
 		return nil, results
 	}
 
-	return &BzInstruction{Argument: argument, Label: label}, core.ResultList{}
+	return &JumpZeroInstruction{Argument: argument, Label: label}, core.ResultList{}
 }
 
-func NewBzInstructionDefinition() gen.InstructionDefinition[usm64core.Instruction] {
+func NewJumpZeroInstructionDefinition() gen.InstructionDefinition[usm64core.Instruction] {
 	return &FixedInstructionDefinition{
 		Targets:   0,
 		Arguments: 2,
-		Creator:   NewBzInstruction,
+		Creator:   NewJumpZeroInstruction,
 	}
 }
