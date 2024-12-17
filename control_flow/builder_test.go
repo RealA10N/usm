@@ -72,9 +72,9 @@ func TestLoopToEntry(t *testing.T) {
 }
 
 func TestLoopAndJumpOverLoop(t *testing.T) {
-	// +-----v jump over loop
 	// 0 1 2 3
-	//   +-^ loop
+	// +-----^ jump over loop
+	//   +-^   loop
 	//   ^-+
 
 	instructions := []control_flow.SupportsControlFlow{
@@ -96,4 +96,46 @@ func TestLoopAndJumpOverLoop(t *testing.T) {
 		InstructionIndices: []uint{1, 2},
 		ForwardEdges:       []uint{1},
 	}, graph.BasicBlocks[1])
+}
+
+func TestIfElse(t *testing.T) {
+	// 0 1 2 3
+	// +-^     if
+	// +---^   else
+	//   +---^ continue
+	//     +-^ continue
+
+	instructions := []control_flow.SupportsControlFlow{
+		&TestInstruction{NextInstructionIndices: []uint{1, 2}}, // 0
+		&TestInstruction{NextInstructionIndices: []uint{3}},    // 1
+		&TestInstruction{NextInstructionIndices: []uint{3}},    // 2
+		&TestInstruction{NextInstructionIndices: []uint{}},     // 3
+	}
+
+	graph := control_flow.NewControlFlowGraph(instructions)
+	assert.Len(t, graph.BasicBlocks, 4)
+
+	// TODO: the following asserts relay on the current implementation and
+	// assume the order of the basic blocks in the graph. This is not ideal.
+
+	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
+		InstructionIndices: []uint{0},
+		ForwardEdges:       []uint{1, 3},
+	}, graph.BasicBlocks[0])
+
+	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
+		InstructionIndices: []uint{1},
+		ForwardEdges:       []uint{2},
+	}, graph.BasicBlocks[1])
+
+	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
+		InstructionIndices: []uint{3},
+		ForwardEdges:       []uint{},
+	}, graph.BasicBlocks[2])
+
+	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
+		InstructionIndices: []uint{2},
+		ForwardEdges:       []uint{2},
+	}, graph.BasicBlocks[3])
+
 }
