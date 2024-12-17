@@ -28,17 +28,29 @@ type controlFlowGraphBuilder struct {
 	InstructionToBasicBlock []uint
 }
 
-func (b *controlFlowGraphBuilder) isEndOfBasicBlock(instruction uint) bool {
+func (b *controlFlowGraphBuilder) isLastInstructionInBasicBlock(instruction uint) bool {
 	if len(b.ForwardEdges[instruction]) != 1 {
 		return true
 	}
 
 	next := b.ForwardEdges[instruction][0]
-	if len(b.BackwardEdges[next]) != 1 {
+	if len(b.BackwardEdges[next]) != 1 || b.Visited[next] {
 		return true
 	}
 
 	return false
+}
+
+func (b *controlFlowGraphBuilder) addInstructionToBasicBlock(
+	instruction uint,
+	blockNumber uint,
+) {
+	b.Visited[instruction] = true
+	b.InstructionToBasicBlock[instruction] = blockNumber
+	b.BasicBlocks[blockNumber].InstructionIndices = append(
+		b.BasicBlocks[blockNumber].InstructionIndices,
+		instruction,
+	)
 }
 
 func (b *controlFlowGraphBuilder) exploreBasicBlock(current uint) {
@@ -53,25 +65,19 @@ func (b *controlFlowGraphBuilder) exploreBasicBlock(current uint) {
 
 	blockNumber := uint(len(b.BasicBlocks))
 	b.BasicBlocks = append(b.BasicBlocks, ControlFlowBasicBlock{
-		InstructionIndices: []uint{current},
+		InstructionIndices: []uint{},
 		ForwardEdges:       []uint{},
 	})
 
-	b.Visited[current] = true
-	b.InstructionToBasicBlock[current] = blockNumber
-
 	// traverse the current basic block while we can.
 
-	for !b.isEndOfBasicBlock(current) {
-		next := b.ForwardEdges[current][0]
-		b.Visited[next] = true
-		b.InstructionToBasicBlock[next] = blockNumber
-		b.BasicBlocks[blockNumber].InstructionIndices = append(
-			b.BasicBlocks[blockNumber].InstructionIndices,
-			next,
-		)
-		current = next
+	for !b.isLastInstructionInBasicBlock(current) {
+		b.addInstructionToBasicBlock(current, blockNumber)
+		current = b.ForwardEdges[current][0]
 	}
+
+	// finish traversal: update last instruction in the basic block.
+	b.addInstructionToBasicBlock(current, blockNumber)
 
 	// explore following basic blocks recursively.
 	for _, next := range b.ForwardEdges[current] {
