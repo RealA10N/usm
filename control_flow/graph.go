@@ -9,7 +9,6 @@ type SupportsControlFlow interface {
 type ControlFlowBasicBlock struct {
 	InstructionIndices []uint
 	ForwardEdges       []uint
-	BackwardEdges      []uint
 }
 
 type ControlFlowGraph[InstT SupportsControlFlow] struct {

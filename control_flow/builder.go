@@ -21,10 +21,11 @@ func backwardEdgesFromForwardEdges(forwardEdges [][]uint) [][]uint {
 }
 
 type controlFlowGraphBuilder struct {
-	ForwardEdges  [][]uint
-	BackwardEdges [][]uint
-	BasicBlocks   []ControlFlowBasicBlock
-	Visited       []bool
+	ForwardEdges            [][]uint
+	BackwardEdges           [][]uint
+	BasicBlocks             []ControlFlowBasicBlock
+	Visited                 []bool
+	InstructionToBasicBlock []uint
 }
 
 func (b *controlFlowGraphBuilder) isEndOfBasicBlock(instruction uint) bool {
@@ -45,36 +46,41 @@ func (b *controlFlowGraphBuilder) exploreBasicBlock(current uint) {
 		return // already visited and processed in the past.
 	}
 
-	b.Visited[current] = true
-
 	// current is the first instruction in a new basic block.
 	// we now explore the basic block by just following forward edges,
 	// until we reach an instruction that has more than 1 outgoing edge
 	// or incoming edges (or zero?).
 
-	block := ControlFlowBasicBlock{
+	blockNumber := uint(len(b.BasicBlocks))
+	b.BasicBlocks = append(b.BasicBlocks, ControlFlowBasicBlock{
 		InstructionIndices: []uint{current},
-		BackwardEdges:      b.BackwardEdges[current],
-	}
+		ForwardEdges:       []uint{},
+	})
+
+	b.Visited[current] = true
+	b.InstructionToBasicBlock[current] = blockNumber
 
 	// traverse the current basic block while we can.
 
 	for !b.isEndOfBasicBlock(current) {
 		next := b.ForwardEdges[current][0]
 		b.Visited[next] = true
-		block.InstructionIndices = append(block.InstructionIndices, next)
+		b.InstructionToBasicBlock[next] = blockNumber
+		b.BasicBlocks[blockNumber].InstructionIndices = append(
+			b.BasicBlocks[blockNumber].InstructionIndices,
+			next,
+		)
 		current = next
 	}
 
-	// finished traversing the basic block: update metadata
-
-	block.ForwardEdges = b.ForwardEdges[current]
-	b.BasicBlocks = append(b.BasicBlocks, block)
-
 	// explore following basic blocks recursively.
-
-	for _, next := range block.ForwardEdges {
+	for _, next := range b.ForwardEdges[current] {
 		b.exploreBasicBlock(next)
+		nextBlock := b.InstructionToBasicBlock[next]
+		b.BasicBlocks[blockNumber].ForwardEdges = append(
+			b.BasicBlocks[blockNumber].ForwardEdges,
+			nextBlock,
+		)
 	}
 }
 
@@ -100,10 +106,11 @@ func NewControlFlowGraph[InstT SupportsControlFlow](
 	backwardEdges := backwardEdgesFromForwardEdges(forwardEdges)
 
 	builder := controlFlowGraphBuilder{
-		ForwardEdges:  forwardEdges,
-		BackwardEdges: backwardEdges,
-		BasicBlocks:   make([]ControlFlowBasicBlock, 0),
-		Visited:       make([]bool, len(instructions)),
+		ForwardEdges:            forwardEdges,
+		BackwardEdges:           backwardEdges,
+		BasicBlocks:             make([]ControlFlowBasicBlock, 0),
+		Visited:                 make([]bool, len(instructions)),
+		InstructionToBasicBlock: make([]uint, len(instructions)),
 	}
 
 	for i := range instructions {
