@@ -33,8 +33,8 @@ func NewInstructionManager() gen.InstructionManager[usm64core.Instruction] {
 		&InstructionMap{
 
 			// mov
-			"":    usm64isa.NewMovInstructionDefinition(),
-			"mov": usm64isa.NewMovInstructionDefinition(),
+			"":    usm64isa.NewMoveInstructionDefinition(),
+			"mov": usm64isa.NewMoveInstructionDefinition(),
 
 			// arithmetic
 			"add": usm64isa.NewAddInstructionDefinition(),

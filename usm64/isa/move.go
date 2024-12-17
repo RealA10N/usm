@@ -8,12 +8,12 @@ import (
 
 // Currently, supporting only a single argument + target.
 // TODO: support n arguments and target pairs.
-type MovInstruction struct {
+type MoveInstruction struct {
 	Target usm64core.Register
 	Value  usm64core.ValuedArgument
 }
 
-func (i *MovInstruction) Emulate(
+func (i *MoveInstruction) Emulate(
 	ctx *usm64core.EmulationContext,
 ) usm64core.EmulationError {
 	ctx.Registers[i.Target.Name] = i.Value.Value(ctx)
@@ -21,7 +21,7 @@ func (i *MovInstruction) Emulate(
 	return nil
 }
 
-func NewMovInstruction(
+func NewMoveInstruction(
 	targets []usm64core.Register,
 	arguments []usm64core.Argument,
 ) (usm64core.Instruction, core.ResultList) {
@@ -34,13 +34,13 @@ func NewMovInstruction(
 		return nil, results
 	}
 
-	return &MovInstruction{Target: targets[0], Value: value}, core.ResultList{}
+	return &MoveInstruction{Target: targets[0], Value: value}, core.ResultList{}
 }
 
-func NewMovInstructionDefinition() gen.InstructionDefinition[usm64core.Instruction] {
+func NewMoveInstructionDefinition() gen.InstructionDefinition[usm64core.Instruction] {
 	return &FixedInstructionDefinition{
 		Targets:   1,
 		Arguments: 1,
-		Creator:   NewMovInstruction,
+		Creator:   NewMoveInstruction,
 	}
 }
