@@ -6,5 +6,5 @@ func @main {
 	%fib(n-2) = ADD %fib(n-1) $64 #0
 	%fib(n-1) = ADD %fib(n) $64 #0
 	%fib(n) = ADD %fib(n-1) %fib(n-2)
-	JUMP .loop
+	j .loop
 }

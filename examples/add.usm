@@ -1,7 +1,7 @@
 func @main {
-    %n = ADD $64 #0 $64 #0
+    %n = $64 #0
 .loop
-    PUT %n
-    %n = ADD %n $64 #1
-    JUMP .loop
+    put %n
+    %n = add %n $64 #1
+    j .loop
 }
