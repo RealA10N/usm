@@ -22,6 +22,8 @@ func TestBuildEmpty(t *testing.T) {
 }
 
 func TestSingleBlock(t *testing.T) {
+	// 0 -> 1 -> 2
+
 	instructions := []control_flow.SupportsControlFlow{
 		&TestInstruction{NextInstructionIndices: []uint{1}},
 		&TestInstruction{NextInstructionIndices: []uint{2}},
@@ -35,6 +37,9 @@ func TestSingleBlock(t *testing.T) {
 }
 
 func TestSimpleLoop(t *testing.T) {
+	// 0 -> 1 -> 2
+	//      ^----+
+
 	instructions := []control_flow.SupportsControlFlow{
 		&TestInstruction{NextInstructionIndices: []uint{1}},
 		&TestInstruction{NextInstructionIndices: []uint{2}},
