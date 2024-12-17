@@ -15,8 +15,22 @@ func (i *TestInstruction) PossibleNextInstructionIndices() []uint {
 	return i.NextInstructionIndices
 }
 
-func TestBuildEmptyControlFlowGraph(t *testing.T) {
+func TestBuildEmpty(t *testing.T) {
 	instructions := []control_flow.SupportsControlFlow{}
 	graph := control_flow.NewControlFlowGraph(instructions)
 	assert.Empty(t, graph.BasicBlocks)
+}
+
+func TestSingleBlock(t *testing.T) {
+	instructions := []control_flow.SupportsControlFlow{
+		&TestInstruction{NextInstructionIndices: []uint{1}},
+		&TestInstruction{NextInstructionIndices: []uint{2}},
+		&TestInstruction{NextInstructionIndices: []uint{}},
+	}
+
+	graph := control_flow.NewControlFlowGraph(instructions)
+	assert.Len(t, graph.BasicBlocks, 1)
+	assert.Equal(t, []uint{0, 1, 2}, graph.BasicBlocks[0].InstructionIndices)
+	assert.Empty(t, graph.BasicBlocks[0].ForwardEdges)
+	assert.Empty(t, graph.BasicBlocks[0].BackwardEdges)
 }

@@ -62,7 +62,7 @@ func (b *controlFlowGraphBuilder) exploreBasicBlock(current uint) {
 	for !b.isEndOfBasicBlock(current) {
 		next := b.ForwardEdges[current][0]
 		b.Visited[next] = true
-		block.InstructionIndices = append(block.InstructionIndices, current)
+		block.InstructionIndices = append(block.InstructionIndices, next)
 		current = next
 	}
 
