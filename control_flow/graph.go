@@ -11,6 +11,9 @@ type ControlFlowBasicBlock struct {
 	ForwardEdges       []uint
 }
 
+// BasicBlocks[entryNode] is the implicit entry block.
+const entryNode = 0
+
 type ControlFlowGraph[InstT SupportsControlFlow] struct {
 	Instructions []InstT
 	BasicBlocks  []ControlFlowBasicBlock

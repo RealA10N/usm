@@ -1,17 +1,47 @@
-// This file contains the implementation of the dominator tree data structure,
-// and it's construction.
-//
-// Construction algorithm is based on the Lengauer-Tarjan algorithm:
-// https://doi.org/10.1145/357062.357071
-//
-// A resource I found helpful is Henrik Knakkegaard Christensen's master's
-// thesis on "Algorithms for Finding Dominators in Directed Graphs".
-// https://users-cs.au.dk/gerth/advising/thesis/henrik-knakkegaard-christensen.pdf
-// Especially:
-// - Section 2.6 (page 14): Dominator tree properties
-// - Section 3.4 (page 30): Lengauer-Tarjan algorithm
-//
-// I've also used the "Static Single Assignment Book" extensively:
-// https://pfalcon.github.io/ssabook/latest/book-full.pdf
+// This file contains the implementation of the dominator tree data structure.
+// The construction of the data structure is implemented in
+// `dominator_tree_builder.go`.
 
 package control_flow
+
+type DominatorTree[InstT SupportsControlFlow] struct {
+	ControlFlowGraph ControlFlowGraph[InstT]
+
+	// ImmDom[node] is the immediate dominator of the node `node`.
+	// It is assumed that ImmDom[entryNode] = entryNode.
+	ImmDom []uint
+
+	// InTime[node] is the location of the node in a pre-order traversal of the
+	// DFS tree. It is assumed to be a number in [0, n).
+	InTime []uint
+
+	// InTime[node] is the index of the node in a post-order traversal of the
+	// DFS tree. It is assumed to be a number in [0, n).
+	OutTime []uint
+}
+
+func (t *DominatorTree[InstT]) IsDominatorOf(dominator uint, dominated uint) bool {
+	return (t.InTime[dominator] <= t.InTime[dominated] &&
+		t.OutTime[dominator] >= t.OutTime[dominated])
+}
+
+func (t *DominatorTree[InstT]) Dominators(node uint) []uint {
+	dominators := []uint{}
+	for ; node != entryNode; node = t.ImmDom[node] {
+		dominators = append(dominators, node)
+	}
+	return dominators
+}
+
+func (t *DominatorTree[InstT]) StrictDominators(node uint) []uint {
+	dominators := []uint{}
+
+	// It is OK to not check here if node == entryNode since we assume that
+	// ImmDom[entryNode] = entryNode.
+	node = t.ImmDom[node]
+
+	for ; node != entryNode; node = t.ImmDom[node] {
+		dominators = append(dominators, node)
+	}
+	return dominators
+}
