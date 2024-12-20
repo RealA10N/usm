@@ -25,6 +25,11 @@ func (t *DominatorTree[InstT]) IsDominatorOf(dominator uint, dominated uint) boo
 		t.OutTime[dominator] >= t.OutTime[dominated])
 }
 
+func (t *DominatorTree[InstT]) IsStrictDominatorOf(dominator uint, dominated uint) bool {
+	return (t.InTime[dominator] < t.InTime[dominated] &&
+		t.OutTime[dominator] > t.OutTime[dominated])
+}
+
 func (t *DominatorTree[InstT]) Dominators(node uint) []uint {
 	dominators := []uint{}
 	for ; node != entryNode; node = t.ImmDom[node] {
