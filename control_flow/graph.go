@@ -15,3 +15,16 @@ type ControlFlowGraph[InstT SupportsControlFlow] struct {
 	Instructions []InstT
 	BasicBlocks  []ControlFlowBasicBlock
 }
+
+// Returns the list of instruction indices in their pre-order traversal order.
+func (g *ControlFlowGraph[InstT]) PreOrderDfs() []uint {
+	builder := DfsBuilder[InstT]{
+		ControlFlowGraph: g,
+		Visited:          make([]bool, len(g.BasicBlocks)),
+		Order:            make([]uint, len(g.BasicBlocks)),
+		NextTime:         0,
+	}
+
+	builder.preOrderDfs(0)
+	return builder.Order
+}
