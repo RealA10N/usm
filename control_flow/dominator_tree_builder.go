@@ -67,3 +67,7 @@ func (b *dominatorTreeBuilder) eval(v uint) (minNode uint, root uint) {
 
 	return minNode, root
 }
+
+func (b *dominatorTreeBuilder) link(p uint, v uint) {
+	b.Parent[v] = p
+}
