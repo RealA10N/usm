@@ -70,7 +70,7 @@ func TestKnakkegaardsDominatorTreeExample(t *testing.T) {
 	assert.EqualValues(t, expectedImmDom, dominatorTree.ImmDom)
 }
 
-func TestTarjansDominatorTreeExample(t *testing.T) {
+func TestLengauerTarjansPaperDominatorTreeExample(t *testing.T) {
 	// Example taken from Lengauers's & Tarjan's paper, figures 1 & 2.
 	// https://doi.org/10.1145/357062.357071
 
@@ -109,5 +109,51 @@ func TestTarjansDominatorTreeExample(t *testing.T) {
 	dominatorTree := cfg.DominatorTree()
 	//                       R  A  B  C  D  E  F  G  H  I  J  K  L
 	expectedImmDom := []uint{R, R, R, R, R, R, C, C, R, R, G, R, D}
+	assert.EqualValues(t, expectedImmDom, dominatorTree.ImmDom)
+}
+
+func TestSsaBookDominatorTreeExample(t *testing.T) {
+	// Example taken from the SSA Book, figure 3.3(a) & 3.3(b).
+	// https://pfalcon.github.io/ssabook/latest/book-full.pdf
+	//
+	// control flow graph:
+	//        0
+	//        | \
+	//        |   1
+	//        |   | \
+	//        |   |   2
+	//        |   |   |
+	//        |   |   3
+	//        |   | /
+	//        |   4
+	//        |   |
+	//        |   5
+	//        | /
+	//        6
+	//
+	// dominator tree:
+	//        0
+	//       / \
+	//      6   1
+	//         / \
+	//        4   2
+	//        |   |
+	//        5   3
+
+	cfg := control_flow.ControlFlowGraph{
+		BasicBlocks: []control_flow.ControlFlowBasicBlock{
+			{ForwardEdges: []uint{1, 6}, BackwardEdges: []uint{}},  // 0
+			{ForwardEdges: []uint{2, 4}, BackwardEdges: []uint{0}}, // 1
+			{ForwardEdges: []uint{3}, BackwardEdges: []uint{1}},    // 2
+			{ForwardEdges: []uint{4}, BackwardEdges: []uint{2}},    // 3
+			{ForwardEdges: []uint{5}, BackwardEdges: []uint{1, 3}}, // 4
+			{ForwardEdges: []uint{6}, BackwardEdges: []uint{4}},    // 5
+			{ForwardEdges: []uint{0}, BackwardEdges: []uint{0, 5}}, // 6
+		},
+	}
+
+	dominatorTree := cfg.DominatorTree()
+	//                       0  1  2  3  4  5  6
+	expectedImmDom := []uint{0, 0, 1, 2, 1, 4, 0}
 	assert.EqualValues(t, expectedImmDom, dominatorTree.ImmDom)
 }
