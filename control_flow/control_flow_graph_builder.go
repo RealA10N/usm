@@ -90,9 +90,7 @@ func (b *controlFlowGraphBuilder) exploreBasicBlock(current uint) {
 	}
 }
 
-func NewControlFlowGraph[InstT SupportsControlFlow](
-	instructions []InstT,
-) ControlFlowGraph[InstT] {
+func NewControlFlowGraph(nodes []SupportsControlFlow) ControlFlowGraph {
 	// A new basic blocks begins if the current instruction (first instruction
 	// in the in the block), is:
 	// (1) The first instruction in the function.
@@ -108,23 +106,22 @@ func NewControlFlowGraph[InstT SupportsControlFlow](
 	// is to first iterate over all instructions, and compute all backward
 	// edges. Then, perform a DFS using the rules above to create basic blocks.
 
-	forwardEdges := getInstructionsForwardEdges(instructions)
+	forwardEdges := getInstructionsForwardEdges(nodes)
 	backwardEdges := backwardEdgesFromForwardEdges(forwardEdges)
 
 	builder := controlFlowGraphBuilder{
 		ForwardEdges:            forwardEdges,
 		BackwardEdges:           backwardEdges,
 		BasicBlocks:             make([]ControlFlowBasicBlock, 0),
-		Visited:                 make([]bool, len(instructions)),
-		InstructionToBasicBlock: make([]uint, len(instructions)),
+		Visited:                 make([]bool, len(nodes)),
+		InstructionToBasicBlock: make([]uint, len(nodes)),
 	}
 
-	for i := range instructions {
+	for i := range nodes {
 		builder.exploreBasicBlock(uint(i))
 	}
 
-	return ControlFlowGraph[InstT]{
-		Instructions: instructions,
-		BasicBlocks:  builder.BasicBlocks,
+	return ControlFlowGraph{
+		BasicBlocks: builder.BasicBlocks,
 	}
 }

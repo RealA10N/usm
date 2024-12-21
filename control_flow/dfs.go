@@ -1,13 +1,13 @@
 package control_flow
 
-type DfsBuilder[InstT SupportsControlFlow] struct {
-	*ControlFlowGraph[InstT]
+type DfsBuilder struct {
+	*ControlFlowGraph
 	Visited  []bool
 	Order    []uint
 	NextTime uint
 }
 
-func (g *DfsBuilder[InstT]) preOrderDfs(node uint) {
+func (g *DfsBuilder) preOrderDfs(node uint) {
 	if g.Visited[node] {
 		return
 	}

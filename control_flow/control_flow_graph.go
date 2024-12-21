@@ -11,17 +11,16 @@ type ControlFlowBasicBlock struct {
 	ForwardEdges       []uint
 }
 
-// BasicBlocks[entryNode] is the implicit entry block.
-const entryNode = 0
+// BasicBlocks[CfgEntryBlock] is the implicit entry block.
+const CfgEntryBlock = 0
 
-type ControlFlowGraph[InstT SupportsControlFlow] struct {
-	Instructions []InstT
-	BasicBlocks  []ControlFlowBasicBlock
+type ControlFlowGraph struct {
+	BasicBlocks []ControlFlowBasicBlock
 }
 
 // Returns the list of instruction indices in their pre-order traversal order.
-func (g *ControlFlowGraph[InstT]) PreOrderDfs() []uint {
-	builder := DfsBuilder[InstT]{
+func (g *ControlFlowGraph) PreOrderDfs() []uint {
+	builder := DfsBuilder{
 		ControlFlowGraph: g,
 		Visited:          make([]bool, len(g.BasicBlocks)),
 		Order:            make([]uint, len(g.BasicBlocks)),

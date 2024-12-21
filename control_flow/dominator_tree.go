@@ -5,7 +5,7 @@
 package control_flow
 
 type DominatorTree[InstT SupportsControlFlow] struct {
-	ControlFlowGraph ControlFlowGraph[InstT]
+	ControlFlowGraph ControlFlowGraph
 
 	// ImmDom[node] is the immediate dominator of the node `node`.
 	// It is assumed that ImmDom[entryNode] = entryNode.
@@ -32,7 +32,7 @@ func (t *DominatorTree[InstT]) IsStrictDominatorOf(dominator uint, dominated uin
 
 func (t *DominatorTree[InstT]) Dominators(node uint) []uint {
 	dominators := []uint{}
-	for ; node != entryNode; node = t.ImmDom[node] {
+	for ; node != CfgEntryBlock; node = t.ImmDom[node] {
 		dominators = append(dominators, node)
 	}
 	return dominators
@@ -45,7 +45,7 @@ func (t *DominatorTree[InstT]) StrictDominators(node uint) []uint {
 	// ImmDom[entryNode] = entryNode.
 	node = t.ImmDom[node]
 
-	for ; node != entryNode; node = t.ImmDom[node] {
+	for ; node != CfgEntryBlock; node = t.ImmDom[node] {
 		dominators = append(dominators, node)
 	}
 	return dominators
