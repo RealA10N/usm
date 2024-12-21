@@ -19,5 +19,5 @@ func (t *DominatorTree) IsDominatorOf(dominator uint, dominated uint) bool {
 }
 
 func (t *DominatorTree) IsStrictDominatorOf(dominator uint, dominated uint) bool {
-	return t.IsStrictAncestorOf(dominator, dominated)
+	return t.IsStrictAncestor(dominator, dominated)
 }
