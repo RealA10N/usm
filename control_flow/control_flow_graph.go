@@ -22,18 +22,3 @@ type ControlFlowGraph struct {
 func (g *ControlFlowGraph) Size() uint {
 	return uint(len(g.BasicBlocks))
 }
-
-// Returns the list of instruction indices in their pre-order traversal order.
-func (g *ControlFlowGraph) Dfs(root uint) Dfs {
-	builder := newDfsBuilder(g)
-	builder.dfs(root, root)
-	return builder.toDfs()
-}
-
-func (g *ControlFlowGraph) DominatorTree() DominatorTree {
-	lengauerTarjan := newLengauerTarjanContext(g)
-	immDom := lengauerTarjan.LengauerTarjan()
-	return DominatorTree{
-		ImmDom: immDom,
-	}
-}

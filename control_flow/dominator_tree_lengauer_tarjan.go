@@ -21,7 +21,7 @@ package control_flow
 // variables and passing them around, we define a struct containing them all
 // and a set of methods that manipulate it.
 type lengauerTarjanContext struct {
-	*ControlFlowGraph
+	*Graph
 	LinkEvalForest
 
 	// ImmDom[preo] is the immediate dominator (index in preorder) of the
@@ -47,12 +47,12 @@ type lengauerTarjanContext struct {
 	DfsParent []uint
 }
 
-func newLengauerTarjanContext(cfg *ControlFlowGraph) lengauerTarjanContext {
-	n := cfg.Size()
-	dfsResult := cfg.Dfs(CfgEntryBlock)
+func newLengauerTarjanContext(g *Graph) lengauerTarjanContext {
+	n := g.Size()
+	dfsResult := g.Dfs(CfgEntryBlock)
 
 	builder := lengauerTarjanContext{
-		ControlFlowGraph:   cfg,
+		Graph:              g,
 		LinkEvalForest:     NewLinkEvalForest(n),
 		ImmDom:             make([]uint, n),
 		SemiDomBuckets:     make([][]uint, n),
@@ -80,7 +80,7 @@ func reversePermutation(p []uint) []uint {
 // section 3.3.
 func (c *lengauerTarjanContext) calculateSemidominator(preoCurrent uint) uint {
 	origCurrent := c.PreorderToOriginal[preoCurrent]
-	currentBlock := c.BasicBlocks[origCurrent]
+	currentBlock := c.Nodes[origCurrent]
 
 	for _, origPredecessor := range currentBlock.BackwardEdges {
 		preoPredecessor := c.OriginalToPreorder[origPredecessor]

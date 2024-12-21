@@ -21,8 +21,8 @@ func TestIfElseDominatorTreeBuilder(t *testing.T) {
 	//    / | \
 	//   1  2  3
 
-	cfg := control_flow.ControlFlowGraph{
-		BasicBlocks: []control_flow.ControlFlowBasicBlock{
+	cfg := control_flow.Graph{
+		Nodes: []control_flow.Node{
 			{ForwardEdges: []uint{1, 2}, BackwardEdges: []uint{}}, // 0
 			{ForwardEdges: []uint{3}, BackwardEdges: []uint{0}},   // 1
 			{ForwardEdges: []uint{3}, BackwardEdges: []uint{0}},   // 2
@@ -54,8 +54,8 @@ func TestKnakkegaardsDominatorTreeExample(t *testing.T) {
 	//      / \
 	//     4   5
 
-	cfg := control_flow.ControlFlowGraph{
-		BasicBlocks: []control_flow.ControlFlowBasicBlock{
+	cfg := control_flow.Graph{
+		Nodes: []control_flow.Node{
 			{ForwardEdges: []uint{1, 2}, BackwardEdges: []uint{}},  // 0
 			{ForwardEdges: []uint{3}, BackwardEdges: []uint{0, 4}}, // 1
 			{ForwardEdges: []uint{4, 5}, BackwardEdges: []uint{0}}, // 2
@@ -88,8 +88,8 @@ func TestLengauerTarjansPaperDominatorTreeExample(t *testing.T) {
 	K := uint(11)
 	L := uint(12)
 
-	cfg := control_flow.ControlFlowGraph{
-		BasicBlocks: []control_flow.ControlFlowBasicBlock{
+	cfg := control_flow.Graph{
+		Nodes: []control_flow.Node{
 			{ForwardEdges: []uint{A, B, C}, BackwardEdges: []uint{K}},    // R
 			{ForwardEdges: []uint{D}, BackwardEdges: []uint{R, B}},       // A
 			{ForwardEdges: []uint{A, D, E}, BackwardEdges: []uint{R}},    // B
@@ -140,8 +140,8 @@ func TestSsaBookDominatorTreeExample(t *testing.T) {
 	//        |   |
 	//        5   3
 
-	cfg := control_flow.ControlFlowGraph{
-		BasicBlocks: []control_flow.ControlFlowBasicBlock{
+	cfg := control_flow.Graph{
+		Nodes: []control_flow.Node{
 			{ForwardEdges: []uint{1, 6}, BackwardEdges: []uint{}},  // 0
 			{ForwardEdges: []uint{2, 4}, BackwardEdges: []uint{0}}, // 1
 			{ForwardEdges: []uint{3}, BackwardEdges: []uint{1}},    // 2
@@ -162,8 +162,8 @@ func TestDjGraphPaperDominatorTreeExample(t *testing.T) {
 	// Example taken from Sreedhar's & Gao's paper that first introduced
 	// DJ-Graphs (figure 1): https://doi.org/10.1145/199448.199464
 
-	cfg := control_flow.ControlFlowGraph{
-		BasicBlocks: []control_flow.ControlFlowBasicBlock{
+	g := control_flow.Graph{
+		Nodes: []control_flow.Node{
 			{ForwardEdges: []uint{1, 16}, BackwardEdges: []uint{}},        // 0 (START)
 			{ForwardEdges: []uint{2, 3, 4}, BackwardEdges: []uint{0}},     // 1
 			{ForwardEdges: []uint{4, 7}, BackwardEdges: []uint{1}},        // 2
@@ -184,7 +184,7 @@ func TestDjGraphPaperDominatorTreeExample(t *testing.T) {
 		},
 	}
 
-	dominatorTree := cfg.DominatorTree()
+	dominatorTree := g.DominatorTree()
 	//                       0  1  2  3  4  5  6  7  8  9 10 11 12  13  14 15 16
 	expectedImmDom := []uint{0, 0, 1, 1, 1, 4, 5, 1, 1, 3, 9, 9, 9, 12, 13, 1, 0}
 	assert.EqualValues(t, expectedImmDom, dominatorTree.ImmDom)

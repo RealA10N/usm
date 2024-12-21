@@ -1,7 +1,7 @@
 package control_flow
 
 type dfsBuilder struct {
-	*ControlFlowGraph
+	*Graph
 
 	Visited []bool
 	Parent  []uint
@@ -13,16 +13,16 @@ type dfsBuilder struct {
 	NextPostTime uint
 }
 
-func newDfsBuilder(cfg *ControlFlowGraph) dfsBuilder {
-	n := cfg.Size()
+func newDfsBuilder(g *Graph) dfsBuilder {
+	n := g.Size()
 	return dfsBuilder{
-		ControlFlowGraph: cfg,
-		Visited:          make([]bool, n),
-		Parent:           make([]uint, n),
-		PreOrder:         make([]uint, n),
-		PostOrder:        make([]uint, n),
-		NextPreTime:      0,
-		NextPostTime:     0,
+		Graph:        g,
+		Visited:      make([]bool, n),
+		Parent:       make([]uint, n),
+		PreOrder:     make([]uint, n),
+		PostOrder:    make([]uint, n),
+		NextPreTime:  0,
+		NextPostTime: 0,
 	}
 }
 
@@ -36,7 +36,7 @@ func (g *dfsBuilder) dfs(node uint, from uint) {
 	g.PreOrder[node] = g.NextPreTime
 	g.NextPreTime++
 
-	for _, next := range g.BasicBlocks[node].ForwardEdges {
+	for _, next := range g.Nodes[node].ForwardEdges {
 		g.dfs(next, node)
 	}
 
