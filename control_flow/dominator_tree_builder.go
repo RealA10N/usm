@@ -69,7 +69,7 @@ func reversePermutation(p []uint) []uint {
 	return q
 }
 
-// "Step 3" of the Lengauer-Tarjan algorithm, as it is described in the original
+// "Step 2" of the Lengauer-Tarjan algorithm, as it is described in the original
 // paper.
 //
 // Implementation is mainly based on the description of Knakkegaard's Thesis,
@@ -101,6 +101,7 @@ func (b *dominatorTreeBuilder) linkToDfsParent(preoCurrent uint) uint {
 	return preoDfsParent
 }
 
+// "Step 3" of the Lengauer-Tarjan algorithm.
 func (b *dominatorTreeBuilder) consumeSemiDominatorsBucket(preoParent uint) {
 	for _, v := range b.SemiDomBuckets[preoParent] {
 		u := b.Eval(v)
@@ -120,8 +121,38 @@ func (b *dominatorTreeBuilder) consumeSemiDominatorsBucket(preoParent uint) {
 	b.SemiDomBuckets[preoParent] = []uint{}
 }
 
-func (b *dominatorTreeBuilder) LengauerTarjan() []uint {
+// "Step 4" of the Lengauer-Tarjan algorithm.
+func (b *dominatorTreeBuilder) explicitlyDefineImmediateDominators() {
 	n := b.Size()
+	for preoCurrent := uint(1); preoCurrent < n; preoCurrent++ {
+		if b.ImmDom[preoCurrent] != b.SemiDom[preoCurrent] {
+			b.ImmDom[preoCurrent] = b.ImmDom[b.ImmDom[preoCurrent]]
+		}
+	}
+}
+
+// Converts the current internal representation of the builder into an outfacing
+// DominatorTree type.
+func (b *dominatorTreeBuilder) toDominatorTree() DominatorTree {
+	n := b.Size()
+
+	// Convert the internal immediate dominator mapping which uses preorder
+	// addressing, to the original vertex indices.
+	origImmDom := make([]uint, n)
+	for i := uint(0); i < n; i++ {
+		origImmDom[i] = b.PreorderToOriginal[b.ImmDom[b.OriginalToPreorder[i]]]
+	}
+
+	return DominatorTree{
+		ImmDom: origImmDom,
+	}
+}
+
+func (b *dominatorTreeBuilder) LengauerTarjan() DominatorTree {
+	n := b.Size()
+
+	// "Step 1" of the algorithm has been already computed "on the fly" when
+	// we created the 'dominatorTreeBuilder' instance.
 
 	for preoCurrent := uint(n - 1); preoCurrent > 0; preoCurrent-- {
 		// "Step 2": Compute the semidominators of all vertices. Carry out the
@@ -145,16 +176,11 @@ func (b *dominatorTreeBuilder) LengauerTarjan() []uint {
 		b.consumeSemiDominatorsBucket(preoParent)
 	}
 
-	for preoCurrent := uint(1); preoCurrent < n; preoCurrent++ {
-		if b.ImmDom[preoCurrent] != b.SemiDom[preoCurrent] {
-			b.ImmDom[preoCurrent] = b.ImmDom[b.ImmDom[preoCurrent]]
-		}
-	}
+	// "Step 4": Explicitly define the immediate dominator of each vertex.
+	b.explicitlyDefineImmediateDominators()
 
-	origImmDom := make([]uint, n)
-	for i := uint(0); i < n; i++ {
-		origImmDom[i] = b.PreorderToOriginal[b.ImmDom[b.OriginalToPreorder[i]]]
-	}
+	// b.ImmDom now contains the immediate dominators of each vertex,
+	// stored as a map from and to preorder indices.
 
-	return origImmDom
+	return b.toDominatorTree()
 }
