@@ -52,8 +52,8 @@ func newDominatorTreeBuilder(cfg *ControlFlowGraph) dominatorTreeBuilder {
 		LinkEvalForest:     NewLinkEvalForest(n),
 		ImmDom:             make([]uint, n),
 		SemiDomBuckets:     make([][]uint, n),
-		OriginalToPreorder: dfsResult.Preorder,
-		PreorderToOriginal: reversePermutation(dfsResult.Preorder),
+		OriginalToPreorder: dfsResult.PreOrder,
+		PreorderToOriginal: reversePermutation(dfsResult.PreOrder),
 		DfsParent:          dfsResult.Parent,
 	}
 

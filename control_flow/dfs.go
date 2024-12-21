@@ -2,15 +2,23 @@ package control_flow
 
 type dfsBuilder struct {
 	*ControlFlowGraph
-	Visited  []bool
-	Preorder []uint
-	Parent   []uint
-	NextTime uint
+
+	Visited []bool
+	Parent  []uint
+
+	PreOrder  []uint
+	PostOrder []uint
+
+	NextPreTime  uint
+	NextPostTime uint
 }
 
 type DfsResult struct {
-	// Preorder[v] is the index of v in the DFS pre-order traversal.
-	Preorder []uint
+	// PreOrder[v] is the index of v in the DFS pre-order traversal.
+	PreOrder []uint
+
+	// PostOrder[v] is the index of v in the DFS post-order traversal.
+	PostOrder []uint
 
 	// Parent[v] is the parent of v in the DFS spanning tree.
 	// The parent of the root of the tree is itself.
@@ -18,13 +26,15 @@ type DfsResult struct {
 }
 
 func newDfsBuilder(cfg *ControlFlowGraph) dfsBuilder {
-	size := cfg.Size()
+	n := cfg.Size()
 	return dfsBuilder{
 		ControlFlowGraph: cfg,
-		Visited:          make([]bool, size),
-		Preorder:         make([]uint, size),
-		Parent:           make([]uint, size),
-		NextTime:         0,
+		Visited:          make([]bool, n),
+		Parent:           make([]uint, n),
+		PreOrder:         make([]uint, n),
+		PostOrder:        make([]uint, n),
+		NextPreTime:      0,
+		NextPostTime:     0,
 	}
 }
 
@@ -35,17 +45,21 @@ func (g *dfsBuilder) dfs(node uint, from uint) {
 
 	g.Visited[node] = true
 	g.Parent[node] = from
-	g.Preorder[node] = g.NextTime
-	g.NextTime++
+	g.PreOrder[node] = g.NextPreTime
+	g.NextPreTime++
 
 	for _, next := range g.BasicBlocks[node].ForwardEdges {
 		g.dfs(next, node)
 	}
+
+	g.PostOrder[node] = g.NextPostTime
+	g.NextPostTime++
 }
 
 func (g *dfsBuilder) toDfsResult() DfsResult {
 	return DfsResult{
-		Preorder: g.Preorder,
-		Parent:   g.Parent,
+		PreOrder:  g.PreOrder,
+		PostOrder: g.PostOrder,
+		Parent:    g.Parent,
 	}
 }
