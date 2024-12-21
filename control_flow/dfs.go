@@ -11,3 +11,13 @@ type Dfs struct {
 	// The parent of the root of the tree is itself.
 	Parent []uint
 }
+
+func (d *Dfs) IsAncestor(ancestor uint, descendant uint) bool {
+	return d.PreOrder[ancestor] <= d.PreOrder[descendant] &&
+		d.PostOrder[ancestor] >= d.PostOrder[descendant]
+}
+
+func (d *Dfs) IsStrictAncestor(ancestor uint, descendant uint) bool {
+	return d.PreOrder[ancestor] < d.PreOrder[descendant] &&
+		d.PostOrder[ancestor] > d.PostOrder[descendant]
+}
