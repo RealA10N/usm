@@ -42,7 +42,7 @@ func NewLinkEvalForest(n uint) LinkEvalForest {
 	return f
 }
 
-// MARK: Public Methods
+// MARK: Public
 
 // Eval(v) returns v if and only if it is the root in a tree of the forest.
 // Otherwise, it returns a node u in the path from v to the root of the tree
@@ -91,7 +91,7 @@ func (b *LinkEvalForest) Link(child uint, parent uint) {
 	b.Parent[child] = parent
 }
 
-// MARK: Private Methods
+// MARK: Private
 
 // Returns true iff v is the root of the tree it is in.
 func (f *LinkEvalForest) isRoot(v uint) bool {
