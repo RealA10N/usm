@@ -31,6 +31,9 @@ func (g *ControlFlowGraph) Dfs(root uint) Dfs {
 }
 
 func (g *ControlFlowGraph) DominatorTree() DominatorTree {
-	builder := newDominatorTreeBuilder(g)
-	return builder.LengauerTarjan()
+	lengauerTarjan := newLengauerTarjanContext(g)
+	immDom := lengauerTarjan.LengauerTarjan()
+	return DominatorTree{
+		ImmDom: immDom,
+	}
 }
