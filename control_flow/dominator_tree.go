@@ -4,7 +4,7 @@
 
 package control_flow
 
-type DominatorTree[InstT SupportsControlFlow] struct {
+type DominatorTree struct {
 	ControlFlowGraph ControlFlowGraph
 
 	// ImmDom[node] is the immediate dominator of the node `node`.
@@ -20,17 +20,17 @@ type DominatorTree[InstT SupportsControlFlow] struct {
 	OutTime []uint
 }
 
-func (t *DominatorTree[InstT]) IsDominatorOf(dominator uint, dominated uint) bool {
+func (t *DominatorTree) IsDominatorOf(dominator uint, dominated uint) bool {
 	return (t.InTime[dominator] <= t.InTime[dominated] &&
 		t.OutTime[dominator] >= t.OutTime[dominated])
 }
 
-func (t *DominatorTree[InstT]) IsStrictDominatorOf(dominator uint, dominated uint) bool {
+func (t *DominatorTree) IsStrictDominatorOf(dominator uint, dominated uint) bool {
 	return (t.InTime[dominator] < t.InTime[dominated] &&
 		t.OutTime[dominator] > t.OutTime[dominated])
 }
 
-func (t *DominatorTree[InstT]) Dominators(node uint) []uint {
+func (t *DominatorTree) Dominators(node uint) []uint {
 	dominators := []uint{}
 	for ; node != CfgEntryBlock; node = t.ImmDom[node] {
 		dominators = append(dominators, node)
@@ -38,7 +38,7 @@ func (t *DominatorTree[InstT]) Dominators(node uint) []uint {
 	return dominators
 }
 
-func (t *DominatorTree[InstT]) StrictDominators(node uint) []uint {
+func (t *DominatorTree) StrictDominators(node uint) []uint {
 	dominators := []uint{}
 
 	// It is OK to not check here if node == entryNode since we assume that
