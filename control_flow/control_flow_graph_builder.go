@@ -65,8 +65,9 @@ func (b *controlFlowGraphBuilder) exploreBasicBlock(current uint) {
 
 	blockNumber := uint(len(b.BasicBlocks))
 	b.BasicBlocks = append(b.BasicBlocks, ControlFlowBasicBlock{
-		NodeIndices:  []uint{},
-		ForwardEdges: []uint{},
+		NodeIndices:   []uint{},
+		ForwardEdges:  []uint{},
+		BackwardEdges: []uint{},
 	})
 
 	// traverse the current basic block while we can.
@@ -86,6 +87,10 @@ func (b *controlFlowGraphBuilder) exploreBasicBlock(current uint) {
 		b.BasicBlocks[blockNumber].ForwardEdges = append(
 			b.BasicBlocks[blockNumber].ForwardEdges,
 			nextBlock,
+		)
+		b.BasicBlocks[nextBlock].BackwardEdges = append(
+			b.BasicBlocks[nextBlock].BackwardEdges,
+			blockNumber,
 		)
 	}
 }
