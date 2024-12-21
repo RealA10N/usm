@@ -18,7 +18,7 @@ func TestLineDfs(t *testing.T) {
 		},
 	}
 
-	preorder := cfg.PreOrderDfs()
+	preorder := cfg.Dfs(0).Preorder
 	assert.Len(t, preorder, len(cfg.BasicBlocks))
 	assert.EqualValues(t, []uint{0, 1, 2}, preorder)
 }
@@ -40,7 +40,7 @@ func TestBinaryTree(t *testing.T) {
 		},
 	}
 
-	preorder := cfg.PreOrderDfs()
+	preorder := cfg.Dfs(0).Preorder
 	assert.Len(t, preorder, len(cfg.BasicBlocks))
 	//                    index: 0  1  2  3  4  5  6
 	assert.EqualValues(t, []uint{0, 1, 4, 2, 3, 5, 6}, preorder)
@@ -63,7 +63,7 @@ func TestSpecialEdges(t *testing.T) {
 		},
 	}
 
-	preorder := cfg.PreOrderDfs()
+	preorder := cfg.Dfs(0).Preorder
 	assert.Len(t, preorder, len(cfg.BasicBlocks))
 	//                    index: 0  1  2  3  4  5  6
 	assert.EqualValues(t, []uint{0, 1, 4, 2, 3, 5, 6}, preorder)

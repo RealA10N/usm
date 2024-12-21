@@ -24,14 +24,8 @@ func (g *ControlFlowGraph) Size() uint {
 }
 
 // Returns the list of instruction indices in their pre-order traversal order.
-func (g *ControlFlowGraph) PreOrderDfs() []uint {
-	builder := DfsBuilder{
-		ControlFlowGraph: g,
-		Visited:          make([]bool, len(g.BasicBlocks)),
-		Order:            make([]uint, len(g.BasicBlocks)),
-		NextTime:         0,
-	}
-
-	builder.preOrderDfs(0)
-	return builder.Order
+func (g *ControlFlowGraph) Dfs(root uint) DfsResult {
+	builder := newDfsBuilder(g)
+	builder.dfs(root, root)
+	return builder.toDfsResult()
 }
