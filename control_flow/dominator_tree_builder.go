@@ -15,3 +15,34 @@
 // https://pfalcon.github.io/ssabook/latest/book-full.pdf
 
 package control_flow
+
+type dominatorTreeBuilder struct {
+	ControlFlowGraph ControlFlowGraph
+	LinkEvalForest   LinkEvalForest
+
+	OriginalToPreorder []uint
+	PreorderToOriginal []uint
+}
+
+func reversePermutation(p []uint) []uint {
+	n := len(p)
+	q := make([]uint, n)
+	for i, v := range p {
+		q[v] = uint(i)
+	}
+	return q
+}
+
+func newDominatorTreeBuilder(cfg ControlFlowGraph) dominatorTreeBuilder {
+	n := cfg.Size()
+
+	builder := dominatorTreeBuilder{
+		ControlFlowGraph: cfg,
+		LinkEvalForest:   NewLinkEvalForest(n),
+	}
+
+	builder.OriginalToPreorder = cfg.PreOrderDfs()
+	builder.PreorderToOriginal = reversePermutation(builder.OriginalToPreorder)
+
+	return builder
+}

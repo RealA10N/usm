@@ -18,6 +18,10 @@ type ControlFlowGraph struct {
 	BasicBlocks []ControlFlowBasicBlock
 }
 
+func (g *ControlFlowGraph) Size() uint {
+	return uint(len(g.BasicBlocks))
+}
+
 // Returns the list of instruction indices in their pre-order traversal order.
 func (g *ControlFlowGraph) PreOrderDfs() []uint {
 	builder := DfsBuilder{
