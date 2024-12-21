@@ -32,8 +32,9 @@ func (t *DominatorTree) IsStrictDominatorOf(dominator uint, dominated uint) bool
 
 func (t *DominatorTree) Dominators(node uint) []uint {
 	dominators := []uint{}
-	for ; node != CfgEntryBlock; node = t.ImmDom[node] {
+	for node != CfgEntryBlock {
 		dominators = append(dominators, node)
+		node = t.ImmDom[node]
 	}
 	return dominators
 }
@@ -45,8 +46,9 @@ func (t *DominatorTree) StrictDominators(node uint) []uint {
 	// ImmDom[entryNode] = entryNode.
 	node = t.ImmDom[node]
 
-	for ; node != CfgEntryBlock; node = t.ImmDom[node] {
+	for node != CfgEntryBlock {
 		dominators = append(dominators, node)
+		node = t.ImmDom[node]
 	}
 	return dominators
 }
