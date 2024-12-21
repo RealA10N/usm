@@ -157,3 +157,35 @@ func TestSsaBookDominatorTreeExample(t *testing.T) {
 	expectedImmDom := []uint{0, 0, 1, 2, 1, 4, 0}
 	assert.EqualValues(t, expectedImmDom, dominatorTree.ImmDom)
 }
+
+func TestDjGraphPaperDominatorTreeExample(t *testing.T) {
+	// Example taken from Sreedhar's & Gao's paper that first introduced
+	// DJ-Graphs (figure 1): https://doi.org/10.1145/199448.199464
+
+	cfg := control_flow.ControlFlowGraph{
+		BasicBlocks: []control_flow.ControlFlowBasicBlock{
+			{ForwardEdges: []uint{1, 16}, BackwardEdges: []uint{}},        // 0 (START)
+			{ForwardEdges: []uint{2, 3, 4}, BackwardEdges: []uint{0}},     // 1
+			{ForwardEdges: []uint{4, 7}, BackwardEdges: []uint{1}},        // 2
+			{ForwardEdges: []uint{9}, BackwardEdges: []uint{1, 13}},       // 3
+			{ForwardEdges: []uint{5}, BackwardEdges: []uint{1, 2}},        // 4
+			{ForwardEdges: []uint{6}, BackwardEdges: []uint{4}},           // 5
+			{ForwardEdges: []uint{2, 8}, BackwardEdges: []uint{5}},        // 6
+			{ForwardEdges: []uint{8}, BackwardEdges: []uint{2, 8}},        // 7
+			{ForwardEdges: []uint{7, 15}, BackwardEdges: []uint{6, 7}},    // 8
+			{ForwardEdges: []uint{10, 11}, BackwardEdges: []uint{3}},      // 9
+			{ForwardEdges: []uint{12}, BackwardEdges: []uint{9}},          // 10
+			{ForwardEdges: []uint{12}, BackwardEdges: []uint{9}},          // 11
+			{ForwardEdges: []uint{13}, BackwardEdges: []uint{10, 11, 14}}, // 12
+			{ForwardEdges: []uint{3, 14, 15}, BackwardEdges: []uint{12}},  // 13
+			{ForwardEdges: []uint{12}, BackwardEdges: []uint{13}},         // 14
+			{ForwardEdges: []uint{16}, BackwardEdges: []uint{8, 13}},      // 15
+			{ForwardEdges: []uint{}, BackwardEdges: []uint{0, 15}},        // 16 (END)
+		},
+	}
+
+	dominatorTree := cfg.DominatorTree()
+	//                       0  1  2  3  4  5  6  7  8  9 10 11 12  13  14 15 16
+	expectedImmDom := []uint{0, 0, 1, 1, 1, 4, 5, 1, 1, 3, 9, 9, 9, 12, 13, 1, 0}
+	assert.EqualValues(t, expectedImmDom, dominatorTree.ImmDom)
+}
