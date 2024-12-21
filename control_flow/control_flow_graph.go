@@ -24,10 +24,10 @@ func (g *ControlFlowGraph) Size() uint {
 }
 
 // Returns the list of instruction indices in their pre-order traversal order.
-func (g *ControlFlowGraph) Dfs(root uint) DfsResult {
+func (g *ControlFlowGraph) Dfs(root uint) Dfs {
 	builder := newDfsBuilder(g)
 	builder.dfs(root, root)
-	return builder.toDfsResult()
+	return builder.toDfs()
 }
 
 func (g *ControlFlowGraph) DominatorTree() DominatorTree {
