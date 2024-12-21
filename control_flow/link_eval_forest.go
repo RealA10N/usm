@@ -87,8 +87,8 @@ func (f *LinkEvalForest) Eval(v uint) uint {
 	return minValue
 }
 
-func (b *LinkEvalForest) Link(parent uint, value uint) {
-	b.Parent[value] = parent
+func (b *LinkEvalForest) Link(child uint, parent uint) {
+	b.Parent[child] = parent
 }
 
 // MARK: Private Methods

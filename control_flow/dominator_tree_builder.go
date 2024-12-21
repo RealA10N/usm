@@ -17,8 +17,8 @@
 package control_flow
 
 type dominatorTreeBuilder struct {
-	ControlFlowGraph ControlFlowGraph
-	LinkEvalForest   LinkEvalForest
+	ControlFlowGraph
+	LinkEvalForest
 
 	OriginalToPreorder []uint
 	PreorderToOriginal []uint
@@ -41,8 +41,39 @@ func newDominatorTreeBuilder(cfg ControlFlowGraph) dominatorTreeBuilder {
 		LinkEvalForest:   NewLinkEvalForest(n),
 	}
 
-	builder.OriginalToPreorder = cfg.PreOrderDfs()
+	// The original control flow graph nodes are numbered from 0 to n-1.
+	// In addition, the semi-dominator algorithm and the link-eval forest
+	// requires the nodes to be numbered in a preorder traversal, from 0 to n-1.
+	// Thus, we use those two representations interchangeably.
+	// We refer to the original node numbers with the "orig" prefix and to the
+	// dfs preorder numbers with the "preo" prefix.
+	//
+	// I admit, this is a bit confusing.
+
+	dfsResult := cfg.Dfs(CfgEntryBlock)
+	builder.OriginalToPreorder = dfsResult.Preorder
 	builder.PreorderToOriginal = reversePermutation(builder.OriginalToPreorder)
+
+	for preoCurrent := uint(n - 1); preoCurrent > 0; preoCurrent-- {
+		origCurrent := builder.PreorderToOriginal[preoCurrent]
+		currentBlock := cfg.BasicBlocks[origCurrent]
+
+		for _, origPredecessor := range currentBlock.BackwardEdges {
+			preoPredecessor := builder.OriginalToPreorder[origPredecessor]
+
+			candidate := builder.LinkEvalForest.Eval(preoPredecessor)
+			candidateSemidom := builder.SemiDom[candidate]
+
+			mySemidom := builder.SemiDom[preoCurrent]
+			if candidateSemidom < mySemidom {
+				builder.SemiDom[preoCurrent] = candidateSemidom
+			}
+		}
+
+		origDfsParent := dfsResult.Parent[origCurrent]
+		preoDfsParent := builder.OriginalToPreorder[origDfsParent]
+		builder.Link(preoCurrent, preoDfsParent)
+	}
 
 	return builder
 }
