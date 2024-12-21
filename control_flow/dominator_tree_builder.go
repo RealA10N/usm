@@ -17,8 +17,12 @@
 package control_flow
 
 type dominatorTreeBuilder struct {
-	ControlFlowGraph
+	*ControlFlowGraph
 	LinkEvalForest
+
+	// ImmDom[preo] is the immediate dominator (index in preorder) of the
+	// node 'preo', after it has been computed.
+	ImmDom []uint
 
 	// The original control flow graph nodes are numbered from 0 to n-1.
 	// In addition, the semi-dominator algorithm and the link-eval forest
@@ -33,6 +37,22 @@ type dominatorTreeBuilder struct {
 
 	// DfsParent[preo] is the parent of preo in the DFS spanning tree.
 	DfsParent []uint
+}
+
+func newDominatorTreeBuilder(cfg *ControlFlowGraph) dominatorTreeBuilder {
+	n := cfg.Size()
+	dfsResult := cfg.Dfs(CfgEntryBlock)
+
+	builder := dominatorTreeBuilder{
+		ControlFlowGraph:   cfg,
+		LinkEvalForest:     NewLinkEvalForest(n),
+		ImmDom:             make([]uint, n),
+		OriginalToPreorder: dfsResult.Preorder,
+		PreorderToOriginal: reversePermutation(dfsResult.Preorder),
+		DfsParent:          dfsResult.Parent,
+	}
+
+	return builder
 }
 
 func reversePermutation(p []uint) []uint {
@@ -68,22 +88,6 @@ func (b *dominatorTreeBuilder) calculateSemidominator(preoCurrent uint) uint {
 	b.Link(preoCurrent, preoDfsParent)
 
 	return b.SemiDom[preoCurrent]
-}
-
-func newDominatorTreeBuilder(cfg ControlFlowGraph) dominatorTreeBuilder {
-	n := cfg.Size()
-
-	builder := dominatorTreeBuilder{
-		ControlFlowGraph: cfg,
-		LinkEvalForest:   NewLinkEvalForest(n),
-	}
-
-	dfsResult := cfg.Dfs(CfgEntryBlock)
-	builder.OriginalToPreorder = dfsResult.Preorder
-	builder.PreorderToOriginal = reversePermutation(builder.OriginalToPreorder)
-	builder.DfsParent = dfsResult.Parent
-
-	return builder
 }
 
 func (b *dominatorTreeBuilder) Build() []uint {

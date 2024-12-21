@@ -5,8 +5,6 @@
 package control_flow
 
 type DominatorTree struct {
-	ControlFlowGraph ControlFlowGraph
-
 	// ImmDom[node] is the immediate dominator of the node `node`.
 	// It is assumed that ImmDom[entryNode] = entryNode.
 	ImmDom []uint
@@ -18,16 +16,6 @@ type DominatorTree struct {
 	// InTime[node] is the index of the node in a post-order traversal of the
 	// DFS tree. It is assumed to be a number in [0, n).
 	OutTime []uint
-}
-
-func NewDominatorTree(cfg ControlFlowGraph) DominatorTree {
-	builder := newDominatorTreeBuilder(cfg)
-	immDom := builder.Build()
-
-	return DominatorTree{
-		ControlFlowGraph: cfg,
-		ImmDom:           immDom,
-	}
 }
 
 func (t *DominatorTree) IsDominatorOf(dominator uint, dominated uint) bool {

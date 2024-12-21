@@ -30,7 +30,7 @@ func TestIfElseDominatorTreeBuilder(t *testing.T) {
 		},
 	}
 
-	dominatorTree := control_flow.NewDominatorTree(cfg)
+	dominatorTree := cfg.DominatorTree()
 	expectedImmDom := []uint{0, 0, 0, 0}
 	assert.EqualValues(t, expectedImmDom, dominatorTree.ImmDom)
 }
@@ -65,7 +65,7 @@ func TestKnakkegaardsDominatorTreeExample(t *testing.T) {
 		},
 	}
 
-	dominatorTree := control_flow.NewDominatorTree(cfg)
+	dominatorTree := cfg.DominatorTree()
 	expectedImmDom := []uint{0, 0, 0, 0, 2, 2}
 	assert.EqualValues(t, expectedImmDom, dominatorTree.ImmDom)
 }
@@ -106,7 +106,7 @@ func TestTarjansDominatorTreeExample(t *testing.T) {
 		},
 	}
 
-	dominatorTree := control_flow.NewDominatorTree(cfg)
+	dominatorTree := cfg.DominatorTree()
 	//                       R  A  B  C  D  E  F  G  H  I  J  K  L
 	expectedImmDom := []uint{R, R, R, R, R, R, C, C, R, R, G, R, D}
 	assert.EqualValues(t, expectedImmDom, dominatorTree.ImmDom)

@@ -29,3 +29,12 @@ func (g *ControlFlowGraph) Dfs(root uint) DfsResult {
 	builder.dfs(root, root)
 	return builder.toDfsResult()
 }
+
+func (g *ControlFlowGraph) DominatorTree() DominatorTree {
+	builder := newDominatorTreeBuilder(g)
+	immDom := builder.Build()
+
+	return DominatorTree{
+		ImmDom: immDom,
+	}
+}
