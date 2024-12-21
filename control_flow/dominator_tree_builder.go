@@ -118,5 +118,9 @@ func (b *dominatorTreeBuilder) Build() []uint {
 		}
 	}
 
+	for i := uint(0); i < n; i++ {
+		ImmDom[i] = b.PreorderToOriginal[ImmDom[i]]
+	}
+
 	return ImmDom
 }
