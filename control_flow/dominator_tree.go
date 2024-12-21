@@ -20,6 +20,16 @@ type DominatorTree struct {
 	OutTime []uint
 }
 
+func NewDominatorTree(cfg ControlFlowGraph) DominatorTree {
+	builder := newDominatorTreeBuilder(cfg)
+	immDom := builder.Build()
+
+	return DominatorTree{
+		ControlFlowGraph: cfg,
+		ImmDom:           immDom,
+	}
+}
+
 func (t *DominatorTree) IsDominatorOf(dominator uint, dominated uint) bool {
 	return (t.InTime[dominator] <= t.InTime[dominated] &&
 		t.OutTime[dominator] >= t.OutTime[dominated])

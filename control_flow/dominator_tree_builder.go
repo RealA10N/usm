@@ -70,7 +70,7 @@ func (b *dominatorTreeBuilder) calculateSemidominator(preoCurrent uint) uint {
 	return b.SemiDom[preoCurrent]
 }
 
-func NewDominatorTreeBuilder(cfg ControlFlowGraph) dominatorTreeBuilder {
+func newDominatorTreeBuilder(cfg ControlFlowGraph) dominatorTreeBuilder {
 	n := cfg.Size()
 
 	builder := dominatorTreeBuilder{
@@ -86,10 +86,37 @@ func NewDominatorTreeBuilder(cfg ControlFlowGraph) dominatorTreeBuilder {
 	return builder
 }
 
-func (b *dominatorTreeBuilder) Build() {
+func (b *dominatorTreeBuilder) Build() []uint {
 	n := b.Size()
+	preoBuckets := make([][]uint, n)
+	for i := uint(0); i < n; i++ {
+		preoBuckets[i] = []uint{}
+	}
+
+	ImmDom := make([]uint, n)
 
 	for preoCurrent := uint(n - 1); preoCurrent > 0; preoCurrent-- {
-		b.calculateSemidominator(preoCurrent)
+		semiDominator := b.calculateSemidominator(preoCurrent)
+		preoBuckets[semiDominator] = append(preoBuckets[semiDominator], preoCurrent)
+
+		origParent := b.DfsParent[b.PreorderToOriginal[preoCurrent]]
+		preoParent := b.OriginalToPreorder[origParent]
+
+		for _, v := range preoBuckets[preoParent] {
+			u := b.Eval(v)
+			if b.SemiDom[u] < b.SemiDom[v] {
+				ImmDom[v] = u
+			} else {
+				ImmDom[v] = b.SemiDom[v]
+			}
+		}
 	}
+
+	for preoCurrent := uint(1); preoCurrent < n; preoCurrent++ {
+		if ImmDom[preoCurrent] != b.SemiDom[preoCurrent] {
+			ImmDom[preoCurrent] = ImmDom[ImmDom[preoCurrent]]
+		}
+	}
+
+	return ImmDom
 }
