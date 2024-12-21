@@ -19,7 +19,9 @@ package control_flow
 type LinkEvalForest struct {
 	// SemiDom[v] is the semidominator of node v in the forest.
 	// It is to be set by the user of the data structure.
+	// Initially, SemiDom[v] = v for all v.
 	SemiDom []uint
+
 	// Parent[v] is the direct parent of node v in the forest.
 	// If v is the root of the tree it is in, Parent[v] == v.
 	// The data structure is initialized with Parent[v] = v for all v.
@@ -34,6 +36,7 @@ func NewLinkEvalForest(n uint) LinkEvalForest {
 
 	for i := uint(0); i < n; i++ {
 		f.Parent[i] = i
+		f.SemiDom[i] = i
 	}
 
 	return f
