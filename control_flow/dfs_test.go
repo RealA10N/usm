@@ -10,7 +10,7 @@ import (
 func TestLineDfs(t *testing.T) {
 	// 0 -> 1 -> 2
 
-	cfg := control_flow.ControlFlowGraph[*TestInstruction]{
+	cfg := control_flow.ControlFlowGraph{
 		BasicBlocks: []control_flow.ControlFlowBasicBlock{
 			{ForwardEdges: []uint{1}},
 			{ForwardEdges: []uint{2}},
@@ -28,7 +28,7 @@ func TestBinaryTree(t *testing.T) {
 	//  1   2
 	// 3 4 5 6
 
-	cfg := control_flow.ControlFlowGraph[*TestInstruction]{
+	cfg := control_flow.ControlFlowGraph{
 		BasicBlocks: []control_flow.ControlFlowBasicBlock{
 			{ForwardEdges: []uint{1, 2}}, // 0
 			{ForwardEdges: []uint{3, 4}}, // 1
@@ -51,7 +51,7 @@ func TestSpecialEdges(t *testing.T) {
 	//  1   2    a back edge 4 -> 0
 	// 3 4 5 6   and a forward edge 0 -> 6
 
-	cfg := control_flow.ControlFlowGraph[*TestInstruction]{
+	cfg := control_flow.ControlFlowGraph{
 		BasicBlocks: []control_flow.ControlFlowBasicBlock{
 			{ForwardEdges: []uint{1, 2, 6}}, // 0
 			{ForwardEdges: []uint{3, 4}},    // 1
