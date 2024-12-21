@@ -32,7 +32,7 @@ func TestSingleBlock(t *testing.T) {
 
 	graph := control_flow.NewControlFlowGraph(instructions)
 	assert.Len(t, graph.BasicBlocks, 1)
-	assert.Equal(t, []uint{0, 1, 2}, graph.BasicBlocks[0].InstructionIndices)
+	assert.Equal(t, []uint{0, 1, 2}, graph.BasicBlocks[0].NodeIndices)
 	assert.Empty(t, graph.BasicBlocks[0].ForwardEdges)
 }
 
@@ -50,13 +50,13 @@ func TestSimpleLoop(t *testing.T) {
 	assert.Len(t, graph.BasicBlocks, 2)
 
 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-		InstructionIndices: []uint{0},
-		ForwardEdges:       []uint{1},
+		NodeIndices:  []uint{0},
+		ForwardEdges: []uint{1},
 	}, graph.BasicBlocks[0])
 
 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-		InstructionIndices: []uint{1, 2},
-		ForwardEdges:       []uint{1},
+		NodeIndices:  []uint{1, 2},
+		ForwardEdges: []uint{1},
 	}, graph.BasicBlocks[1])
 }
 
@@ -71,8 +71,8 @@ func TestLoopToEntry(t *testing.T) {
 	assert.Len(t, graph.BasicBlocks, 1)
 
 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-		InstructionIndices: []uint{0, 1, 2},
-		ForwardEdges:       []uint{0},
+		NodeIndices:  []uint{0, 1, 2},
+		ForwardEdges: []uint{0},
 	}, graph.BasicBlocks[0])
 }
 
@@ -93,13 +93,13 @@ func TestLoopAndJumpOverLoop(t *testing.T) {
 	assert.Len(t, graph.BasicBlocks, 2)
 
 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-		InstructionIndices: []uint{0, 3},
-		ForwardEdges:       []uint{},
+		NodeIndices:  []uint{0, 3},
+		ForwardEdges: []uint{},
 	}, graph.BasicBlocks[0])
 
 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-		InstructionIndices: []uint{1, 2},
-		ForwardEdges:       []uint{1},
+		NodeIndices:  []uint{1, 2},
+		ForwardEdges: []uint{1},
 	}, graph.BasicBlocks[1])
 }
 
@@ -124,23 +124,23 @@ func TestIfElse(t *testing.T) {
 	// assume the order of the basic blocks in the graph. This is not ideal.
 
 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-		InstructionIndices: []uint{0},
-		ForwardEdges:       []uint{1, 3},
+		NodeIndices:  []uint{0},
+		ForwardEdges: []uint{1, 3},
 	}, graph.BasicBlocks[0])
 
 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-		InstructionIndices: []uint{1},
-		ForwardEdges:       []uint{2},
+		NodeIndices:  []uint{1},
+		ForwardEdges: []uint{2},
 	}, graph.BasicBlocks[1])
 
 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-		InstructionIndices: []uint{3},
-		ForwardEdges:       []uint{},
+		NodeIndices:  []uint{3},
+		ForwardEdges: []uint{},
 	}, graph.BasicBlocks[2])
 
 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-		InstructionIndices: []uint{2},
-		ForwardEdges:       []uint{2},
+		NodeIndices:  []uint{2},
+		ForwardEdges: []uint{2},
 	}, graph.BasicBlocks[3])
 
 }

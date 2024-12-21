@@ -7,8 +7,8 @@ type SupportsControlFlow interface {
 }
 
 type ControlFlowBasicBlock struct {
-	InstructionIndices []uint
-	ForwardEdges       []uint
+	NodeIndices  []uint
+	ForwardEdges []uint
 }
 
 // BasicBlocks[CfgEntryBlock] is the implicit entry block.
