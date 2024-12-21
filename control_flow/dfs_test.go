@@ -18,9 +18,10 @@ func TestLineDfs(t *testing.T) {
 		},
 	}
 
-	result := cfg.Dfs(0)
-	assert.EqualValues(t, []uint{0, 1, 2}, result.PreOrder)
-	assert.EqualValues(t, []uint{0, 0, 1}, result.Parent)
+	dfs := cfg.Dfs(0)
+	assert.EqualValues(t, []uint{0, 1, 2}, dfs.PreOrder)
+	assert.EqualValues(t, []uint{2, 1, 0}, dfs.PostOrder)
+	assert.EqualValues(t, []uint{0, 0, 1}, dfs.Parent)
 }
 
 func TestBinaryTree(t *testing.T) {
@@ -40,10 +41,11 @@ func TestBinaryTree(t *testing.T) {
 		},
 	}
 
-	result := cfg.Dfs(0)
+	dfs := cfg.Dfs(0)
 	//                    index: 0  1  2  3  4  5  6
-	assert.EqualValues(t, []uint{0, 1, 4, 2, 3, 5, 6}, result.PreOrder)
-	assert.EqualValues(t, []uint{0, 0, 0, 1, 1, 2, 2}, result.Parent)
+	assert.EqualValues(t, []uint{0, 1, 4, 2, 3, 5, 6}, dfs.PreOrder)
+	assert.EqualValues(t, []uint{6, 2, 5, 0, 1, 3, 4}, dfs.PostOrder)
+	assert.EqualValues(t, []uint{0, 0, 0, 1, 1, 2, 2}, dfs.Parent)
 }
 
 func TestSpecialEdges(t *testing.T) {
@@ -66,5 +68,6 @@ func TestSpecialEdges(t *testing.T) {
 	result := cfg.Dfs(0)
 	//                    index: 0  1  2  3  4  5  6
 	assert.EqualValues(t, []uint{0, 1, 4, 2, 3, 5, 6}, result.PreOrder)
+	assert.EqualValues(t, []uint{6, 2, 5, 0, 1, 3, 4}, result.PostOrder)
 	assert.EqualValues(t, []uint{0, 0, 0, 1, 1, 2, 2}, result.Parent)
 }
