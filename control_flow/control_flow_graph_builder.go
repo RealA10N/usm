@@ -1,15 +1,5 @@
 package control_flow
 
-func backwardEdgesFromForwardEdges(forwardEdges [][]uint) [][]uint {
-	backwardEdges := make([][]uint, len(forwardEdges))
-	for from := range forwardEdges {
-		for _, to := range forwardEdges[from] {
-			backwardEdges[to] = append(backwardEdges[to], uint(from))
-		}
-	}
-	return backwardEdges
-}
-
 type controlFlowGraphBuilder struct {
 	// The original graph
 	*Graph
