@@ -68,17 +68,6 @@ func (b *controlFlowGraphBuilder) getNextInstruction(instruction uint) uint {
 	return b.Graph.Nodes[instruction].ForwardEdges[0]
 }
 
-func (b *controlFlowGraphBuilder) linkBasicBlocks(from uint, to uint) {
-	b.ControlFlowGraph.Nodes[from].ForwardEdges = append(
-		b.ControlFlowGraph.Nodes[from].ForwardEdges,
-		to,
-	)
-	b.ControlFlowGraph.Nodes[to].BackwardEdges = append(
-		b.ControlFlowGraph.Nodes[to].BackwardEdges,
-		from,
-	)
-}
-
 func (b *controlFlowGraphBuilder) exploreBasicBlock(current uint) {
 	// A new basic blocks begins if the current instruction (first instruction
 	// in the in the block), is:
@@ -114,7 +103,7 @@ func (b *controlFlowGraphBuilder) exploreBasicBlock(current uint) {
 	for _, next := range b.Graph.Nodes[current].ForwardEdges {
 		b.exploreBasicBlock(next)
 		nextBlock := b.ControlFlowGraph.NodeToBasicBlock[next]
-		b.linkBasicBlocks(block, nextBlock)
+		b.ControlFlowGraph.AddEdge(block, nextBlock)
 	}
 }
 

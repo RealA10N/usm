@@ -28,10 +28,21 @@ func NewGraph(forwardEdges [][]uint) Graph {
 	return Graph{Nodes: nodes}
 }
 
+// MARK: Operations
+
+func (g *Graph) AddEdge(from, to uint) {
+	g.Nodes[from].ForwardEdges = append(g.Nodes[from].ForwardEdges, to)
+	g.Nodes[to].BackwardEdges = append(g.Nodes[to].BackwardEdges, from)
+}
+
+// MARK: Queries
+
 // Returns the number of nodes in the graph.
 func (g *Graph) Size() uint {
 	return uint(len(g.Nodes))
 }
+
+// MARK: Algorithms
 
 // Returns the 'Dfs' type that contains information about the graph that have
 // been collected in a linear-time depth-first traversal of the graph from
