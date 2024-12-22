@@ -14,10 +14,11 @@ func newDfsBuilder(g *Graph) dfsBuilder {
 	return dfsBuilder{
 		Graph: g,
 		Dfs: Dfs{
-			PreOrder:  make([]uint, n),
-			PostOrder: make([]uint, n),
-			Parent:    make([]uint, n),
-			Depth:     make([]uint, n),
+			PreOrder:    make([]uint, n),
+			PostOrder:   make([]uint, n),
+			Parent:      make([]uint, n),
+			Depth:       make([]uint, n),
+			SubtreeSize: make([]uint, n),
 		},
 		Visited:      make([]bool, n),
 		NextPreTime:  0,
@@ -25,25 +26,32 @@ func newDfsBuilder(g *Graph) dfsBuilder {
 	}
 }
 
-func (g *dfsBuilder) dfs(node, from, depth uint) {
+func (g *dfsBuilder) dfs(node, from, depth uint) bool {
 	if g.Visited[node] {
-		return
+		return false
 	}
 
 	g.Visited[node] = true
-	g.Depth[node] = depth
 	g.Parent[node] = from
+	g.Depth[node] = depth
+	g.SubtreeSize[node] = 1
+
 	g.PreOrder[node] = g.NextPreTime
 	g.NextPreTime++
 
 	for _, next := range g.Nodes[node].ForwardEdges {
-		g.dfs(next, node, depth+1)
+		if g.dfs(next, node, depth+1) {
+			g.SubtreeSize[node] += g.SubtreeSize[next]
+		}
 	}
 
 	g.PostOrder[node] = g.NextPostTime
 	g.NextPostTime++
+
+	return true
 }
 
 func (g *dfsBuilder) toDfs() Dfs {
+	g.Dfs.PreOrderReversed = reversePermutation(g.Dfs.PreOrder)
 	return g.Dfs
 }
