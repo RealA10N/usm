@@ -42,27 +42,26 @@ type lengauerTarjanContext struct {
 	// Thus, we use those two representations interchangeably.
 	// We refer to the original node numbers with the "orig" prefix and to the
 	// dfs preorder numbers with the "preo" prefix.
+	// The Original -> Preorder mapping is stored in Dfs.Preorder.
+	// The Preorder -> Original mapping is stored in Dfs.PreorderReversed.
 	//
 	// I admit, this is a bit confusing.
-	OriginalToPreorder []uint
-	PreorderToOriginal []uint
-
-	// DfsParent[preo] is the parent of preo in the DFS spanning tree.
-	DfsParent []uint
+	Dfs
 }
 
 func newLengauerTarjanContext(g *Graph, entry uint) lengauerTarjanContext {
 	n := g.Size()
-	dfsResult := g.Dfs(entry)
+
+	// "Step 1" of the Lengauer-Tarjan algorithm: compute and store the DFS
+	// tree, and especially the preorder traversal.
+	dfs := g.Dfs(entry)
 
 	builder := lengauerTarjanContext{
-		Graph:              g,
-		LinkEvalForest:     NewLinkEvalForest(n),
-		ImmDom:             make([]uint, n),
-		SemiDomBuckets:     make([][]uint, n),
-		OriginalToPreorder: dfsResult.PreOrder,
-		PreorderToOriginal: reversePermutation(dfsResult.PreOrder),
-		DfsParent:          dfsResult.Parent,
+		Graph:          g,
+		LinkEvalForest: NewLinkEvalForest(n),
+		ImmDom:         make([]uint, n),
+		SemiDomBuckets: make([][]uint, n),
+		Dfs:            dfs,
 	}
 
 	return builder
@@ -74,11 +73,11 @@ func newLengauerTarjanContext(g *Graph, entry uint) lengauerTarjanContext {
 // Implementation is mainly based on the description of Knakkegaard's Thesis,
 // section 3.3.
 func (c *lengauerTarjanContext) calculateSemidominator(preoCurrent uint) uint {
-	origCurrent := c.PreorderToOriginal[preoCurrent]
+	origCurrent := c.PreOrderReversed[preoCurrent]
 	currentBlock := c.Nodes[origCurrent]
 
 	for _, origPredecessor := range currentBlock.BackwardEdges {
-		preoPredecessor := c.OriginalToPreorder[origPredecessor]
+		preoPredecessor := c.PreOrder[origPredecessor]
 
 		candidate := c.LinkEvalForest.Eval(preoPredecessor)
 		candidateSemidom := c.SemiDom[candidate]
@@ -93,9 +92,9 @@ func (c *lengauerTarjanContext) calculateSemidominator(preoCurrent uint) uint {
 }
 
 func (c *lengauerTarjanContext) linkToDfsParent(preoCurrent uint) uint {
-	origCurrent := c.PreorderToOriginal[preoCurrent]
-	origDfsParent := c.DfsParent[origCurrent]
-	preoDfsParent := c.OriginalToPreorder[origDfsParent]
+	origCurrent := c.PreOrderReversed[preoCurrent]
+	origDfsParent := c.Dfs.Parent[origCurrent]
+	preoDfsParent := c.PreOrder[origDfsParent]
 	c.Link(preoCurrent, preoDfsParent)
 	return preoDfsParent
 }
@@ -139,7 +138,7 @@ func (c *lengauerTarjanContext) getOriginalImmediateDominators() []uint {
 	// addressing, to the original vertex indices.
 	origImmDom := make([]uint, n)
 	for i := uint(0); i < n; i++ {
-		origImmDom[i] = c.PreorderToOriginal[c.ImmDom[c.OriginalToPreorder[i]]]
+		origImmDom[i] = c.PreOrderReversed[c.ImmDom[c.PreOrder[i]]]
 	}
 
 	return origImmDom
