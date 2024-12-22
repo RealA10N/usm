@@ -1,5 +1,7 @@
 package control_flow
 
+const Unreachable = ^uint(0)
+
 type ControlFlowGraph struct {
 	Graph
 
@@ -9,5 +11,7 @@ type ControlFlowGraph struct {
 
 	// NodeToBasicBlock[i] contains the index of the basic block that the i-th
 	// node in the original graph belongs to.
+	// NodeToBasicBlock[i] = Unreachable if the original node i is not included
+	// in the control flow graph, i.e., it is unreachable from the entry node.
 	NodeToBasicBlock []uint
 }

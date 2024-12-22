@@ -13,21 +13,18 @@ import (
 // empty slice). This is not ideal, and should be refactored to be more robust.
 
 func TestBuildSingleton(t *testing.T) {
-	g := control_flow.NewGraph(1, [][]uint{
-		{},
-	})
+	g := control_flow.NewGraph(1, [][]uint{{}})
 	cfg := g.ControlFlowGraph(0)
+
 	assert.EqualValues(t, 1, cfg.Graph.Size())
 	assert.Empty(t, cfg.Nodes[0].ForwardEdges)
 	assert.Empty(t, cfg.Nodes[0].BackwardEdges)
 }
 
 func TestBuildSelfLoop(t *testing.T) {
-	g := control_flow.NewGraph(1, [][]uint{
-		{0},
-	})
-
+	g := control_flow.NewGraph(1, [][]uint{{0}})
 	cfg := g.ControlFlowGraph(0)
+
 	assert.EqualValues(t, 1, cfg.Graph.Size())
 	assert.EqualValues(t, []uint{0}, cfg.Nodes[0].ForwardEdges)
 	assert.EqualValues(t, []uint{0}, cfg.Nodes[0].BackwardEdges)
@@ -40,11 +37,7 @@ func TestSingleBlock(t *testing.T) {
 	// control flow graph:
 	// 0 (single node, no edges)
 
-	g := control_flow.NewGraph(3, [][]uint{
-		{1},
-		{2},
-		{},
-	})
+	g := control_flow.NewGraph(3, [][]uint{{1}, {2}, {}})
 
 	cfg := g.ControlFlowGraph(0)
 	assert.EqualValues(t, 1, cfg.Size())
@@ -63,11 +56,7 @@ func TestSimpleLoop(t *testing.T) {
 	// 0 -> 1-+
 	//      ^-+
 
-	g := control_flow.NewGraph(3, [][]uint{
-		{1},
-		{2},
-		{1},
-	})
+	g := control_flow.NewGraph(3, [][]uint{{1}, {2}, {1}})
 
 	cfg := g.ControlFlowGraph(0)
 	assert.EqualValues(t, 2, cfg.Size())
@@ -85,65 +74,55 @@ func TestSimpleLoop(t *testing.T) {
 	}, cfg.Nodes[1])
 }
 
-// func TestLoopToEntry(t *testing.T) {
-// 	// input graph:
-// 	// 0 -> 1 -> 2
-// 	// ^---------+
-// 	//
-// 	// control flow graph:
-// 	// 0-+  (single node, self loop)
-// 	// ^-+
+func TestLoopToEntry(t *testing.T) {
+	// input graph:
+	// 0 -> 1 -> 2
+	// ^---------+
+	//
+	// control flow graph:
+	// 0-+  (single node, self loop)
+	// ^-+
 
-// 	instructions := []control_flow.SupportsControlFlow{
-// 		&TestInstruction{NextInstructionIndices: []uint{1}},
-// 		&TestInstruction{NextInstructionIndices: []uint{2}},
-// 		&TestInstruction{NextInstructionIndices: []uint{0}},
-// 	}
+	g := control_flow.NewGraph(3, [][]uint{{1}, {2}, {0}})
 
-// 	graph := control_flow.NewControlFlowGraph(instructions)
-// 	assert.Len(t, graph.BasicBlocks, 1)
+	cfg := g.ControlFlowGraph(0)
+	assert.EqualValues(t, cfg.Size(), 1)
+	assert.EqualValues(t, [][]uint{{0, 1, 2}}, cfg.BasicBlockToNodes)
+	assert.EqualValues(t, []uint{0, 0, 0}, cfg.NodeToBasicBlock)
 
-// 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-// 		NodeIndices:   []uint{0, 1, 2},
-// 		ForwardEdges:  []uint{0},
-// 		BackwardEdges: []uint{0},
-// 	}, graph.BasicBlocks[0])
-// }
+	assert.EqualValues(t, control_flow.Node{
+		ForwardEdges:  []uint{0},
+		BackwardEdges: []uint{0},
+	}, cfg.Nodes[0])
+}
 
-// func TestLoopAndJumpOverLoop(t *testing.T) {
-// 	// input graph:
-// 	// 0 1 2 3
-// 	// +-----^ (jump over loop)
-// 	//   +-^   (loop)
-// 	//   ^-+
-// 	//
-// 	// control flow graph:
-// 	// 0    (two separate components, first component is a singleton, no edges)
-// 	// 1-+ (second component, single node, self loop)
-// 	// ^-+
+func TestLoopAndJumpOverLoop(t *testing.T) {
+	// input graph:
+	// 0 1 2 3
+	// +-----^ (jump over loop)
+	//   +-^   (loop)
+	//   ^-+
+	//
+	// control flow graph:
+	// 0 (singleton with no edges)
 
-// 	instructions := []control_flow.SupportsControlFlow{
-// 		&TestInstruction{NextInstructionIndices: []uint{3}}, // 0
-// 		&TestInstruction{NextInstructionIndices: []uint{2}}, // 1
-// 		&TestInstruction{NextInstructionIndices: []uint{1}}, // 2
-// 		&TestInstruction{NextInstructionIndices: []uint{}},  // 3
-// 	}
+	g := control_flow.NewGraph(4, [][]uint{{3}, {2}, {1}, {}})
+	cfg := g.ControlFlowGraph(0)
 
-// 	graph := control_flow.NewControlFlowGraph(instructions)
-// 	assert.Len(t, graph.BasicBlocks, 2)
+	assert.EqualValues(t, cfg.Size(), 1)
+	assert.EqualValues(t, [][]uint{{0, 3}}, cfg.BasicBlockToNodes)
+	assert.EqualValues(t, []uint{
+		0,
+		control_flow.Unreachable,
+		control_flow.Unreachable,
+		0,
+	}, cfg.NodeToBasicBlock)
 
-// 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-// 		NodeIndices:   []uint{0, 3},
-// 		ForwardEdges:  []uint{},
-// 		BackwardEdges: []uint{},
-// 	}, graph.BasicBlocks[0])
-
-// 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-// 		NodeIndices:   []uint{1, 2},
-// 		ForwardEdges:  []uint{1},
-// 		BackwardEdges: []uint{1},
-// 	}, graph.BasicBlocks[1])
-// }
+	assert.EqualValues(t, control_flow.Node{
+		ForwardEdges:  nil,
+		BackwardEdges: nil,
+	}, cfg.Nodes[0])
+}
 
 // func TestIfElse(t *testing.T) {
 // 	// input graph:

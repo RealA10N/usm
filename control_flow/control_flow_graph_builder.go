@@ -118,13 +118,21 @@ func (b *controlFlowGraphBuilder) exploreBasicBlock(current uint) {
 	}
 }
 
+func newNodeToBasicBlock(size uint) []uint {
+	nodeToBasicBlock := make([]uint, size)
+	for i := uint(0); i < size; i++ {
+		nodeToBasicBlock[i] = Unreachable
+	}
+	return nodeToBasicBlock
+}
+
 func newControlFlowGraphBuilder(g *Graph) controlFlowGraphBuilder {
 	return controlFlowGraphBuilder{
 		Graph: g,
 		ControlFlowGraph: ControlFlowGraph{
 			Graph:             NewEmptyGraph(),
 			BasicBlockToNodes: make([][]uint, 0),
-			NodeToBasicBlock:  make([]uint, len(g.Nodes)),
+			NodeToBasicBlock:  newNodeToBasicBlock(g.Size()),
 		},
 		Visited: make([]bool, len(g.Nodes)),
 	}
