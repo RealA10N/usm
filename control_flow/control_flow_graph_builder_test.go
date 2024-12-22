@@ -13,7 +13,7 @@ import (
 // empty slice). This is not ideal, and should be refactored to be more robust.
 
 func TestBuildSingleton(t *testing.T) {
-	g := control_flow.NewGraph(1, [][]uint{{}})
+	g := control_flow.NewGraph([][]uint{{}})
 	cfg := g.ControlFlowGraph(0)
 
 	assert.EqualValues(t, 1, cfg.Graph.Size())
@@ -22,7 +22,7 @@ func TestBuildSingleton(t *testing.T) {
 }
 
 func TestBuildSelfLoop(t *testing.T) {
-	g := control_flow.NewGraph(1, [][]uint{{0}})
+	g := control_flow.NewGraph([][]uint{{0}})
 	cfg := g.ControlFlowGraph(0)
 
 	assert.EqualValues(t, 1, cfg.Graph.Size())
@@ -37,7 +37,7 @@ func TestSingleBlock(t *testing.T) {
 	// control flow graph:
 	// 0 (single node, no edges)
 
-	g := control_flow.NewGraph(3, [][]uint{{1}, {2}, {}})
+	g := control_flow.NewGraph([][]uint{{1}, {2}, {}})
 
 	cfg := g.ControlFlowGraph(0)
 	assert.EqualValues(t, 1, cfg.Size())
@@ -56,7 +56,7 @@ func TestSimpleLoop(t *testing.T) {
 	// 0 -> 1-+
 	//      ^-+
 
-	g := control_flow.NewGraph(3, [][]uint{{1}, {2}, {1}})
+	g := control_flow.NewGraph([][]uint{{1}, {2}, {1}})
 
 	cfg := g.ControlFlowGraph(0)
 	assert.EqualValues(t, 2, cfg.Size())
@@ -83,7 +83,7 @@ func TestLoopToEntry(t *testing.T) {
 	// 0-+  (single node, self loop)
 	// ^-+
 
-	g := control_flow.NewGraph(3, [][]uint{{1}, {2}, {0}})
+	g := control_flow.NewGraph([][]uint{{1}, {2}, {0}})
 
 	cfg := g.ControlFlowGraph(0)
 	assert.EqualValues(t, cfg.Size(), 1)
@@ -106,7 +106,7 @@ func TestLoopAndJumpOverLoop(t *testing.T) {
 	// control flow graph:
 	// 0 (singleton with no edges)
 
-	g := control_flow.NewGraph(4, [][]uint{{3}, {2}, {1}, {}})
+	g := control_flow.NewGraph([][]uint{{3}, {2}, {1}, {}})
 	cfg := g.ControlFlowGraph(0)
 
 	assert.EqualValues(t, cfg.Size(), 1)
@@ -139,7 +139,7 @@ func TestIfElse(t *testing.T) {
 	//  +--v--+
 	//     2
 
-	g := control_flow.NewGraph(4, [][]uint{{1, 2}, {3}, {3}, {}})
+	g := control_flow.NewGraph([][]uint{{1, 2}, {3}, {3}, {}})
 
 	cfg := g.ControlFlowGraph(0)
 	assert.EqualValues(t, 4, cfg.Size())

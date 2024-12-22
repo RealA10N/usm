@@ -10,7 +10,7 @@ import (
 func TestLineDfs(t *testing.T) {
 	// 0 -> 1 -> 2
 
-	g := control_flow.NewGraph(3, [][]uint{{1}, {2}, {}})
+	g := control_flow.NewGraph([][]uint{{1}, {2}, {}})
 	dfs := g.Dfs(0)
 
 	assert.EqualValues(t, []uint{0, 1, 2}, dfs.PreOrder)
@@ -24,7 +24,7 @@ func TestBinaryTree(t *testing.T) {
 	//  1   2
 	// 3 4 5 6
 
-	g := control_flow.NewGraph(7, [][]uint{{1, 2}, {3, 4}, {5, 6}, {}, {}, {}, {}})
+	g := control_flow.NewGraph([][]uint{{1, 2}, {3, 4}, {5, 6}, {}, {}, {}, {}})
 	dfs := g.Dfs(0)
 
 	//                    index: 0  1  2  3  4  5  6
@@ -39,7 +39,7 @@ func TestSpecialEdges(t *testing.T) {
 	//  1   2    a back edge 4 -> 0
 	// 3 4 5 6   and a forward edge 0 -> 6
 
-	g := control_flow.NewGraph(7, [][]uint{
+	g := control_flow.NewGraph([][]uint{
 		{1, 2, 6}, {3, 4}, {5, 6}, {}, {0}, {1}, {},
 	})
 	dfs := g.Dfs(0)

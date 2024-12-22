@@ -15,7 +15,8 @@ func NewEmptyGraph() Graph {
 	}
 }
 
-func NewGraph(n uint, forwardEdges [][]uint) Graph {
+func NewGraph(forwardEdges [][]uint) Graph {
+	n := uint(len(forwardEdges))
 	nodes := make([]Node, n)
 	for from, edges := range forwardEdges {
 		nodes[from].ForwardEdges = edges

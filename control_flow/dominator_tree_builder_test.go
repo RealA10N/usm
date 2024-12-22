@@ -166,27 +166,25 @@ func TestDjGraphPaperDominatorTreeExample(t *testing.T) {
 	// Example taken from Sreedhar's & Gao's paper that first introduced
 	// DJ-Graphs (figure 1): https://doi.org/10.1145/199448.199464
 
-	cfg := control_flow.NewGraph(17,
-		[][]uint{
-			{1, 16},     // 0 (START)
-			{2, 3, 4},   // 1
-			{4, 7},      // 2
-			{9},         // 3
-			{5},         // 4
-			{6},         // 5
-			{2, 8},      // 6
-			{8},         // 7
-			{7, 15},     // 8
-			{10, 11},    // 9
-			{12},        // 10
-			{12},        // 11
-			{13},        // 12
-			{3, 14, 15}, // 13
-			{12},        // 14
-			{16},        // 15
-			{},          // 16 (END)
-		},
-	)
+	cfg := control_flow.NewGraph([][]uint{
+		{1, 16},     // 0 (START)
+		{2, 3, 4},   // 1
+		{4, 7},      // 2
+		{9},         // 3
+		{5},         // 4
+		{6},         // 5
+		{2, 8},      // 6
+		{8},         // 7
+		{7, 15},     // 8
+		{10, 11},    // 9
+		{12},        // 10
+		{12},        // 11
+		{13},        // 12
+		{3, 14, 15}, // 13
+		{12},        // 14
+		{16},        // 15
+		{},          // 16 (END)
+	})
 
 	entryNode := uint(0)
 	dominatorTree := cfg.DominatorTree(entryNode)
