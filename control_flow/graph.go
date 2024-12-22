@@ -9,6 +9,12 @@ type Graph struct {
 	Nodes []Node
 }
 
+func NewEmptyGraph() Graph {
+	return Graph{
+		Nodes: []Node{},
+	}
+}
+
 // Returns the number of nodes in the graph.
 func (g *Graph) Size() uint {
 	return uint(len(g.Nodes))
