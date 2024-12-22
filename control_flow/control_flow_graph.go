@@ -1,9 +1,5 @@
 package control_flow
 
-// In the control flow graph construction, we ensure that the entry basic block
-// is always at index 0.
-const controlFlowGraphEntryBasicBlock = 0
-
 type ControlFlowGraph struct {
 	Graph
 
