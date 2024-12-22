@@ -4,6 +4,13 @@
 
 package control_flow
 
+import (
+	"slices"
+	"sort"
+
+	"golang.org/x/exp/constraints"
+)
+
 type DominatorJoinGraph struct {
 	DominatorTree
 	JoinGraph Graph
@@ -24,4 +31,25 @@ func newJoinGraph(g *Graph, d *DominatorTree) Graph {
 	}
 
 	return joinGraph
+}
+
+func removeDuplicates[T constraints.Integer](slice []T) []T {
+	sort.Slice(slice, func(i, j int) bool { return slice[i] < slice[j] })
+	return slices.Compact(slice)
+}
+
+// MARK: Queries
+
+// Computes the dominator frontier of the provided node in linear time.
+func (g *DominatorJoinGraph) DominatorFrontier(node uint) []uint {
+	frontier := []uint{}
+	for _, subtreeNode := range g.Subtree(node) {
+		for _, joinNode := range g.JoinGraph.Nodes[subtreeNode].ForwardEdges {
+			if g.IsDeeper(node, joinNode) {
+				frontier = append(frontier, joinNode)
+			}
+		}
+	}
+
+	return removeDuplicates(frontier)
 }
