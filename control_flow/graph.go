@@ -72,3 +72,12 @@ func (g *Graph) ControlFlowGraph(entry uint) ControlFlowGraph {
 	builder.exploreBasicBlock(entry)
 	return builder.ControlFlowGraph
 }
+
+func (g *Graph) DominatorJoinGraph(entry uint) DominatorJoinGraph {
+	dominatorTree := g.DominatorTree(entry)
+	joinGraph := newJoinGraph(g, &dominatorTree)
+	return DominatorJoinGraph{
+		DominatorTree: dominatorTree,
+		JoinGraph:     joinGraph,
+	}
+}
