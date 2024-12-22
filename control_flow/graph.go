@@ -67,6 +67,10 @@ func (g *Graph) Equal(gt *Graph) bool {
 		// that keeping the insertion of nodes O(1) is better.
 		// Also, a comparison of whole graphs is not used as much in code, and
 		// mainly used in testing.
+		// Also, we we DO sort edges in place, and thus sorting them again
+		// in a subsequent graph comparison cost only O(|E|), assuming that
+		// the sorting algorithm performs in linear time given a sorted input,
+		// (which is true for any state-of-the-art sorting algorithm).
 		slices.Sort(g.Nodes[u].ForwardEdges)
 		slices.Sort(gt.Nodes[u].ForwardEdges)
 		if !slices.Equal(g.Nodes[u].ForwardEdges, gt.Nodes[u].ForwardEdges) {
