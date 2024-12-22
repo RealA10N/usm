@@ -1,4 +1,4 @@
-package control_flow
+package graph
 
 func reversePermutation(p []uint) []uint {
 	n := len(p)

@@ -1,4 +1,4 @@
-package control_flow
+package graph
 
 import (
 	"slices"

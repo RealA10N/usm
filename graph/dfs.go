@@ -1,4 +1,4 @@
-package control_flow
+package graph
 
 type Dfs struct {
 	// PreOrder[v] is the index of v in the DFS pre-order traversal.

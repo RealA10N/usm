@@ -2,7 +2,7 @@
 // data structure, first introduced in the paper by Sreedhar & Gao:
 // https://doi.org/10.1145/199448.199464
 
-package control_flow
+package graph
 
 import (
 	"slices"

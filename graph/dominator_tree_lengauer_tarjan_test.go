@@ -1,9 +1,9 @@
-package control_flow_test
+package graph_test
 
 import (
 	"testing"
 
-	"alon.kr/x/usm/control_flow"
+	"alon.kr/x/usm/graph"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,7 +20,7 @@ func TestIfElseDominatorTreeBuilder(t *testing.T) {
 	//    / | \
 	//   1  2  3
 
-	cfg := control_flow.NewGraph([][]uint{{1, 2}, {3}, {3}, {}})
+	cfg := graph.NewGraph([][]uint{{1, 2}, {3}, {3}, {}})
 	dominatorTree := cfg.DominatorTree(0)
 
 	expectedImmDom := []uint{0, 0, 0, 0}

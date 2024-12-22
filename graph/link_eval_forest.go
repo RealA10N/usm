@@ -13,7 +13,7 @@
 // The original paper (Tarjan) on the data structure is:
 // https://doi.org/10.1145/322154.322161
 
-package control_flow
+package graph
 
 // Nodes are assumed to be numbered [0, n), where n is the number of nodes.
 type LinkEvalForest struct {

@@ -1,9 +1,9 @@
-package control_flow_test
+package graph_test
 
 import (
 	"testing"
 
-	"alon.kr/x/usm/control_flow"
+	"alon.kr/x/usm/graph"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +13,7 @@ import (
 // empty slice). This is not ideal, and should be refactored to be more robust.
 
 func TestBuildSingleton(t *testing.T) {
-	g := control_flow.NewGraph([][]uint{{}})
+	g := graph.NewGraph([][]uint{{}})
 	cfg := g.ControlFlowGraph(0)
 
 	assert.EqualValues(t, 1, cfg.Graph.Size())
@@ -22,7 +22,7 @@ func TestBuildSingleton(t *testing.T) {
 }
 
 func TestBuildSelfLoop(t *testing.T) {
-	g := control_flow.NewGraph([][]uint{{0}})
+	g := graph.NewGraph([][]uint{{0}})
 	cfg := g.ControlFlowGraph(0)
 
 	assert.EqualValues(t, 1, cfg.Graph.Size())
@@ -37,7 +37,7 @@ func TestSingleBlock(t *testing.T) {
 	// control flow graph:
 	// 0 (single node, no edges)
 
-	g := control_flow.NewGraph([][]uint{{1}, {2}, {}})
+	g := graph.NewGraph([][]uint{{1}, {2}, {}})
 
 	cfg := g.ControlFlowGraph(0)
 	assert.EqualValues(t, 1, cfg.Size())
@@ -56,19 +56,19 @@ func TestSimpleLoop(t *testing.T) {
 	// 0 -> 1-+
 	//      ^-+
 
-	g := control_flow.NewGraph([][]uint{{1}, {2}, {1}})
+	g := graph.NewGraph([][]uint{{1}, {2}, {1}})
 
 	cfg := g.ControlFlowGraph(0)
 	assert.EqualValues(t, 2, cfg.Size())
 	assert.EqualValues(t, [][]uint{{0}, {1, 2}}, cfg.BasicBlockToNodes)
 	assert.EqualValues(t, []uint{0, 1, 1}, cfg.NodeToBasicBlock)
 
-	assert.EqualExportedValues(t, control_flow.Node{
+	assert.EqualExportedValues(t, graph.Node{
 		ForwardEdges:  []uint{1},
 		BackwardEdges: nil,
 	}, cfg.Nodes[0])
 
-	assert.EqualValues(t, control_flow.Node{
+	assert.EqualValues(t, graph.Node{
 		ForwardEdges:  []uint{1},
 		BackwardEdges: []uint{1, 0},
 	}, cfg.Nodes[1])
@@ -83,14 +83,14 @@ func TestLoopToEntry(t *testing.T) {
 	// 0-+  (single node, self loop)
 	// ^-+
 
-	g := control_flow.NewGraph([][]uint{{1}, {2}, {0}})
+	g := graph.NewGraph([][]uint{{1}, {2}, {0}})
 
 	cfg := g.ControlFlowGraph(0)
 	assert.EqualValues(t, cfg.Size(), 1)
 	assert.EqualValues(t, [][]uint{{0, 1, 2}}, cfg.BasicBlockToNodes)
 	assert.EqualValues(t, []uint{0, 0, 0}, cfg.NodeToBasicBlock)
 
-	assert.EqualValues(t, control_flow.Node{
+	assert.EqualValues(t, graph.Node{
 		ForwardEdges:  []uint{0},
 		BackwardEdges: []uint{0},
 	}, cfg.Nodes[0])
@@ -106,19 +106,19 @@ func TestLoopAndJumpOverLoop(t *testing.T) {
 	// control flow graph:
 	// 0 (singleton with no edges)
 
-	g := control_flow.NewGraph([][]uint{{3}, {2}, {1}, {}})
+	g := graph.NewGraph([][]uint{{3}, {2}, {1}, {}})
 	cfg := g.ControlFlowGraph(0)
 
 	assert.EqualValues(t, cfg.Size(), 1)
 	assert.EqualValues(t, [][]uint{{0, 3}}, cfg.BasicBlockToNodes)
 	assert.EqualValues(t, []uint{
 		0,
-		control_flow.Unreachable,
-		control_flow.Unreachable,
+		graph.Unreachable,
+		graph.Unreachable,
 		0,
 	}, cfg.NodeToBasicBlock)
 
-	assert.EqualValues(t, control_flow.Node{
+	assert.EqualValues(t, graph.Node{
 		ForwardEdges:  nil,
 		BackwardEdges: nil,
 	}, cfg.Nodes[0])
@@ -139,29 +139,29 @@ func TestIfElse(t *testing.T) {
 	//  +--v--+
 	//     2
 
-	g := control_flow.NewGraph([][]uint{{1, 2}, {3}, {3}, {}})
+	g := graph.NewGraph([][]uint{{1, 2}, {3}, {3}, {}})
 
 	cfg := g.ControlFlowGraph(0)
 	assert.EqualValues(t, 4, cfg.Size())
 	assert.EqualValues(t, [][]uint{{0}, {1}, {3}, {2}}, cfg.BasicBlockToNodes)
 	assert.EqualValues(t, []uint{0, 1, 3, 2}, cfg.NodeToBasicBlock)
 
-	assert.EqualValues(t, control_flow.Node{
+	assert.EqualValues(t, graph.Node{
 		ForwardEdges:  []uint{1, 3},
 		BackwardEdges: nil,
 	}, cfg.Nodes[0])
 
-	assert.EqualValues(t, control_flow.Node{
+	assert.EqualValues(t, graph.Node{
 		ForwardEdges:  []uint{2},
 		BackwardEdges: []uint{0},
 	}, cfg.Nodes[1])
 
-	assert.EqualValues(t, control_flow.Node{
+	assert.EqualValues(t, graph.Node{
 		ForwardEdges:  nil,
 		BackwardEdges: []uint{1, 3},
 	}, cfg.Nodes[2])
 
-	assert.EqualValues(t, control_flow.Node{
+	assert.EqualValues(t, graph.Node{
 		ForwardEdges:  []uint{2},
 		BackwardEdges: []uint{0},
 	}, cfg.Nodes[3])

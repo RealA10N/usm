@@ -18,7 +18,7 @@
 // dominator trees:
 // https://doi.org/10.1145/22145.22166
 
-package control_flow
+package graph
 
 // A set of variables that the algorithm uses in it's runtime.
 // For code readability and performance, instead of defining them as local

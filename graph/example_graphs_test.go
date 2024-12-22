@@ -1,14 +1,14 @@
-package control_flow_test
+package graph_test
 
 import (
-	"alon.kr/x/usm/control_flow"
+	"alon.kr/x/usm/graph"
 )
 
-func KnakkegaardGraphExample() control_flow.Graph {
+func KnakkegaardGraphExample() graph.Graph {
 	// Example taken from Knakkegaard Thesis, section 2.6, page 14:
 	// https://users-cs.au.dk/gerth/advising/thesis/henrik-knakkegaard-christensen.pdf
 
-	return control_flow.NewGraph([][]uint{
+	return graph.NewGraph([][]uint{
 		{1, 2}, // 0
 		{3},    // 1
 		{4, 5}, // 2
@@ -18,7 +18,7 @@ func KnakkegaardGraphExample() control_flow.Graph {
 	})
 }
 
-func LengauerTarjanGraphExample() control_flow.Graph {
+func LengauerTarjanGraphExample() graph.Graph {
 	// Example taken from Lengauers's & Tarjan's paper, figures 1 & 2.
 	// https://doi.org/10.1145/357062.357071
 
@@ -36,7 +36,7 @@ func LengauerTarjanGraphExample() control_flow.Graph {
 	K := uint(11)
 	L := uint(12)
 
-	return control_flow.NewGraph([][]uint{
+	return graph.NewGraph([][]uint{
 		{A, B, C}, // R
 		{D},       // A
 		{A, D, E}, // B
@@ -53,11 +53,11 @@ func LengauerTarjanGraphExample() control_flow.Graph {
 	})
 }
 
-func SSABookGraphExample() control_flow.Graph {
+func SSABookGraphExample() graph.Graph {
 	// Example taken from the SSA Book, figure 3.3(a) & 3.3(b).
 	// https://pfalcon.github.io/ssabook/latest/book-full.pdf
 
-	return control_flow.NewGraph([][]uint{
+	return graph.NewGraph([][]uint{
 		{1, 6}, // 0
 		{2, 4}, // 1
 		{3},    // 2
@@ -68,11 +68,11 @@ func SSABookGraphExample() control_flow.Graph {
 	})
 }
 
-func SreedharGaoGraphExample() control_flow.Graph {
+func SreedharGaoGraphExample() graph.Graph {
 	// Example taken from Sreedhar's & Gao's paper that first introduced
 	// DJ-Graphs (figure 1): https://doi.org/10.1145/199448.199464
 
-	return control_flow.NewGraph([][]uint{
+	return graph.NewGraph([][]uint{
 		{1, 16},     // 0 (START)
 		{2, 3, 4},   // 1
 		{4, 7},      // 2

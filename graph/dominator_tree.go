@@ -2,7 +2,7 @@
 // The construction of the data structure is implemented in
 // `dominator_tree_builder.go`.
 
-package control_flow
+package graph
 
 type DominatorTree struct {
 	Dfs

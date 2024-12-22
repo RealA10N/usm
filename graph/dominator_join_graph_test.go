@@ -1,9 +1,9 @@
-package control_flow_test
+package graph_test
 
 import (
 	"testing"
 
-	"alon.kr/x/usm/control_flow"
+	"alon.kr/x/usm/graph"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,7 +15,7 @@ func TestSreedharGaoDJGraphExample(t *testing.T) {
 	cfg := SreedharGaoGraphExample()
 	dj := cfg.DominatorJoinGraph(0)
 
-	expectedJoinGraph := control_flow.NewGraph([][]uint{
+	expectedJoinGraph := graph.NewGraph([][]uint{
 		{},      // 0 (START)
 		{},      // 1
 		{4, 7},  // 2
