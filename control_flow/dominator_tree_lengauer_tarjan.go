@@ -68,15 +68,6 @@ func newLengauerTarjanContext(g *Graph, entry uint) lengauerTarjanContext {
 	return builder
 }
 
-func reversePermutation(p []uint) []uint {
-	n := len(p)
-	q := make([]uint, n)
-	for i, v := range p {
-		q[v] = uint(i)
-	}
-	return q
-}
-
 // "Step 2" of the Lengauer-Tarjan algorithm, as it is described in the original
 // paper.
 //
