@@ -15,6 +15,18 @@ func NewEmptyGraph() Graph {
 	}
 }
 
+func NewGraph(n uint, forwardEdges [][]uint) Graph {
+	nodes := make([]Node, n)
+	for from, edges := range forwardEdges {
+		nodes[from].ForwardEdges = edges
+		for _, to := range edges {
+			nodes[to].BackwardEdges = append(nodes[to].BackwardEdges, uint(from))
+		}
+	}
+
+	return Graph{Nodes: nodes}
+}
+
 // Returns the number of nodes in the graph.
 func (g *Graph) Size() uint {
 	return uint(len(g.Nodes))
