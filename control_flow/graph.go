@@ -14,9 +14,7 @@ type Graph struct {
 }
 
 func NewEmptyGraph(size uint) Graph {
-	return Graph{
-		Nodes: make([]Node, size),
-	}
+	return Graph{Nodes: make([]Node, size)}
 }
 
 func NewGraph(forwardEdges [][]uint) Graph {
@@ -30,6 +28,23 @@ func NewGraph(forwardEdges [][]uint) Graph {
 	}
 
 	return Graph{Nodes: nodes}
+}
+
+// Converts a parent array that implicitly represents a rooted tree (by
+// representing back edges only), into a full explicit graph representation,
+// with explicit front edges.
+//
+// Assumes that the root is identified by the only node v for which
+// parent[v] = v.
+func NewGraphFromRootedTree(parents []uint) Graph {
+	n := uint(len(parents))
+	g := Graph{Nodes: make([]Node, n)}
+	for u := uint(0); u < n; u++ {
+		if parents[u] != u {
+			g.AddEdge(parents[u], u)
+		}
+	}
+	return g
 }
 
 // MARK: Operations
@@ -88,10 +103,17 @@ func (g *Graph) Dfs(root uint) Dfs {
 // https://doi.org/10.1145/357062.357071
 func (g *Graph) DominatorTree(entry uint) DominatorTree {
 	lengauerTarjan := newLengauerTarjanContext(g, entry)
-	immDom := lengauerTarjan.LengauerTarjan()
+	immediateDominators := lengauerTarjan.LengauerTarjan()
+
+	// We do not need to store the explicit full graph representation of
+	// the dominator tree, however we do need to perform a DFS traversal on
+	// the dominator tree for efficient queries, and thus we do need to
+	// create a (temporary) explicit representation of the tree.
+	dominatorTreeGraph := NewGraphFromRootedTree(immediateDominators)
+
 	return DominatorTree{
-		ImmDom: immDom,
-		Dfs:    lengauerTarjan.Dfs,
+		ImmDom: immediateDominators,
+		Dfs:    dominatorTreeGraph.Dfs(entry),
 	}
 }
 
