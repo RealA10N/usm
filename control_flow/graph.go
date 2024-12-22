@@ -9,9 +9,9 @@ type Graph struct {
 	Nodes []Node
 }
 
-func NewEmptyGraph() Graph {
+func NewEmptyGraph(size uint) Graph {
 	return Graph{
-		Nodes: []Node{},
+		Nodes: make([]Node, size),
 	}
 }
 

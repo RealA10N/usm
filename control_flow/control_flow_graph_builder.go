@@ -130,7 +130,7 @@ func newControlFlowGraphBuilder(g *Graph) controlFlowGraphBuilder {
 	return controlFlowGraphBuilder{
 		Graph: g,
 		ControlFlowGraph: ControlFlowGraph{
-			Graph:             NewEmptyGraph(),
+			Graph:             NewEmptyGraph(0),
 			BasicBlockToNodes: make([][]uint, 0),
 			NodeToBasicBlock:  newNodeToBasicBlock(g.Size()),
 		},
