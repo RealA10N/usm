@@ -64,6 +64,7 @@ func (g *Graph) DominatorTree(entry uint) DominatorTree {
 	immDom := lengauerTarjan.LengauerTarjan()
 	return DominatorTree{
 		ImmDom: immDom,
+		Dfs:    lengauerTarjan.Dfs,
 	}
 }
 
