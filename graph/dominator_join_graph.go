@@ -4,13 +4,6 @@
 
 package graph
 
-import (
-	"slices"
-	"sort"
-
-	"golang.org/x/exp/constraints"
-)
-
 type DominatorJoinGraph struct {
 	DominatorTree
 	JoinGraph Graph
