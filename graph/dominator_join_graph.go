@@ -33,13 +33,6 @@ func newJoinGraph(g *Graph, d *DominatorTree) Graph {
 	return joinGraph
 }
 
-func removeDuplicates[T constraints.Integer](slice []T) []T {
-	sort.Slice(slice, func(i, j int) bool { return slice[i] < slice[j] })
-	return slices.Compact(slice)
-}
-
-// MARK: Queries
-
 // Computes the dominator frontier of the provided node in linear time.
 //
 // Note if your purpose is to compute the dominator frontier of a set of multiple
@@ -48,13 +41,19 @@ func removeDuplicates[T constraints.Integer](slice []T) []T {
 // For more information, see https://doi.org/10.1145/199448.199464
 func (g *DominatorJoinGraph) DominatorFrontier(node uint) []uint {
 	frontier := []uint{}
+
+	// TODO: Although the algorithm is linear anyways, perhaps in practice,
+	// creating an array in the size of the graph can be expensive?
+	visited := make([]bool, g.JoinGraph.Size())
+
 	for _, subtreeNode := range g.Subtree(node) {
 		for _, joinNode := range g.JoinGraph.Nodes[subtreeNode].ForwardEdges {
-			if g.IsDeeper(node, joinNode) {
+			if !visited[joinNode] && g.IsDeeper(node, joinNode) {
+				visited[joinNode] = true
 				frontier = append(frontier, joinNode)
 			}
 		}
 	}
 
-	return removeDuplicates(frontier)
+	return frontier
 }
