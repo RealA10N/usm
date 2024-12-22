@@ -43,5 +43,10 @@ func TestSreedharGaoDominatorFrontierExample(t *testing.T) {
 	// & Gao about the DJ-Graph data structure:
 	// https://doi.org/10.1145/199448.199464
 
-	// TODO: implement.
+	cfg := SreedharGaoGraphExample()
+	dj := cfg.DominatorJoinGraph(0)
+
+	assert.EqualValues(t, []uint{3, 15}, dj.DominatorFrontier(3))
+	assert.EqualValues(t, []uint{3, 15}, dj.DominatorFrontier(9))
+	assert.EqualValues(t, []uint{3, 12, 15}, dj.DominatorFrontier(12))
 }
