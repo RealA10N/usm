@@ -50,3 +50,41 @@ func (g *DominatorJoinGraph) DominatorFrontier(node uint) []uint {
 
 	return frontier
 }
+
+func (g *DominatorJoinGraph) IteratedDominatorFrontier(nodes []uint) []uint {
+	n := g.JoinGraph.Size()
+	frontier := []uint{}
+	isNodeInFrontier := make([]bool, n)
+	isProcessedSubtree := make([]bool, n)
+	piggyBank := newPiggyBank(&g.Dfs, nodes)
+
+	for depth := piggyBank.MaxDepth(); depth != ^uint(0); depth-- {
+		for !piggyBank.IsEmptyAtDepth(depth) {
+			node := piggyBank.Pop(depth)
+
+			subtreeCurrentIndex := g.PreOrder[node]
+			subtreeEndIndex := g.PreOrder[node] + g.SubtreeSize[node]
+			for subtreeCurrentIndex < subtreeEndIndex {
+				subtreeNode := g.PreOrderReversed[subtreeCurrentIndex]
+
+				if isProcessedSubtree[subtreeNode] {
+					subtreeCurrentIndex += g.SubtreeSize[subtreeNode]
+					continue
+				}
+
+				isProcessedSubtree[subtreeNode] = true
+
+				for _, joinNode := range g.JoinGraph.Nodes[subtreeNode].ForwardEdges {
+					if !isNodeInFrontier[joinNode] && g.IsDeeper(node, joinNode) {
+						isNodeInFrontier[joinNode] = true
+						frontier = append(frontier, joinNode)
+					}
+				}
+
+				subtreeCurrentIndex++
+			}
+		}
+	}
+
+	return frontier
+}
