@@ -7,6 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO: the following tests relay on the current implementation and
+// assume the order of the basic blocks in the graph, and the exact representation
+// and implementation details (for example, comparison to nil slice and not
+// empty slice). This is not ideal, and should be refactored to be more robust.
+
 func TestBuildSingleton(t *testing.T) {
 	g := control_flow.NewGraph(1, [][]uint{
 		{},
@@ -164,9 +169,6 @@ func TestSimpleLoop(t *testing.T) {
 
 // 	graph := control_flow.NewControlFlowGraph(instructions)
 // 	assert.Len(t, graph.BasicBlocks, 4)
-
-// 	// TODO: the following asserts relay on the current implementation and
-// 	// assume the order of the basic blocks in the graph. This is not ideal.
 
 // 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
 // 		NodeIndices:   []uint{0},
