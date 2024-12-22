@@ -2,13 +2,9 @@ package control_flow
 
 type dfsBuilder struct {
 	*Graph
+	Dfs
 
-	Visited []bool
-	Parent  []uint
-
-	PreOrder  []uint
-	PostOrder []uint
-
+	Visited      []bool
 	NextPreTime  uint
 	NextPostTime uint
 }
@@ -16,28 +12,32 @@ type dfsBuilder struct {
 func newDfsBuilder(g *Graph) dfsBuilder {
 	n := g.Size()
 	return dfsBuilder{
-		Graph:        g,
+		Graph: g,
+		Dfs: Dfs{
+			PreOrder:  make([]uint, n),
+			PostOrder: make([]uint, n),
+			Parent:    make([]uint, n),
+			Depth:     make([]uint, n),
+		},
 		Visited:      make([]bool, n),
-		Parent:       make([]uint, n),
-		PreOrder:     make([]uint, n),
-		PostOrder:    make([]uint, n),
 		NextPreTime:  0,
 		NextPostTime: 0,
 	}
 }
 
-func (g *dfsBuilder) dfs(node uint, from uint) {
+func (g *dfsBuilder) dfs(node, from, depth uint) {
 	if g.Visited[node] {
 		return
 	}
 
 	g.Visited[node] = true
+	g.Depth[node] = depth
 	g.Parent[node] = from
 	g.PreOrder[node] = g.NextPreTime
 	g.NextPreTime++
 
 	for _, next := range g.Nodes[node].ForwardEdges {
-		g.dfs(next, node)
+		g.dfs(next, node, depth+1)
 	}
 
 	g.PostOrder[node] = g.NextPostTime
@@ -45,9 +45,5 @@ func (g *dfsBuilder) dfs(node uint, from uint) {
 }
 
 func (g *dfsBuilder) toDfs() Dfs {
-	return Dfs{
-		PreOrder:  g.PreOrder,
-		PostOrder: g.PostOrder,
-		Parent:    g.Parent,
-	}
+	return g.Dfs
 }

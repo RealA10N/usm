@@ -37,7 +37,7 @@ func (g *Graph) Size() uint {
 // the provided node as the initial location.
 func (g *Graph) Dfs(root uint) Dfs {
 	builder := newDfsBuilder(g)
-	builder.dfs(root, root)
+	builder.dfs(root, root, 0)
 	return builder.toDfs()
 }
 

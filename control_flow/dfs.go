@@ -10,6 +10,9 @@ type Dfs struct {
 	// Parent[v] is the parent of v in the DFS spanning tree.
 	// The parent of the root of the tree is itself.
 	Parent []uint
+
+	// Depth[v] is the depth of v in the DFS spanning tree.
+	Depth []uint
 }
 
 func (d *Dfs) IsAncestor(ancestor uint, descendant uint) bool {
