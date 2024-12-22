@@ -13,6 +13,10 @@
 //
 // I've also used the "Static Single Assignment Book" extensively:
 // https://pfalcon.github.io/ssabook/latest/book-full.pdf
+//
+// TODO: It seems like there is a linear time construction algorithm for
+// dominator trees:
+// https://doi.org/10.1145/22145.22166
 
 package control_flow
 
