@@ -124,53 +124,45 @@ func TestLoopAndJumpOverLoop(t *testing.T) {
 	}, cfg.Nodes[0])
 }
 
-// func TestIfElse(t *testing.T) {
-// 	// input graph:
-// 	// 0 1 2 3
-// 	// +-^     if
-// 	// +---^   else
-// 	//   +---^ continue
-// 	//     +-^ continue
-// 	//
-// 	// control flow graph:
-// 	//     0
-// 	//  v--+--v
-// 	//  1     3
-// 	//  +--v--+
-// 	//     2
+func TestIfElse(t *testing.T) {
+	// input graph:
+	// 0 1 2 3
+	// +-^     if
+	// +---^   else
+	//   +---^ continue
+	//     +-^ continue
+	//
+	// control flow graph:
+	//     0
+	//  v--+--v
+	//  1     3
+	//  +--v--+
+	//     2
 
-// 	instructions := []control_flow.SupportsControlFlow{
-// 		&TestInstruction{NextInstructionIndices: []uint{1, 2}}, // 0
-// 		&TestInstruction{NextInstructionIndices: []uint{3}},    // 1
-// 		&TestInstruction{NextInstructionIndices: []uint{3}},    // 2
-// 		&TestInstruction{NextInstructionIndices: []uint{}},     // 3
-// 	}
+	g := control_flow.NewGraph(4, [][]uint{{1, 2}, {3}, {3}, {}})
 
-// 	graph := control_flow.NewControlFlowGraph(instructions)
-// 	assert.Len(t, graph.BasicBlocks, 4)
+	cfg := g.ControlFlowGraph(0)
+	assert.EqualValues(t, 4, cfg.Size())
+	assert.EqualValues(t, [][]uint{{0}, {1}, {3}, {2}}, cfg.BasicBlockToNodes)
+	assert.EqualValues(t, []uint{0, 1, 3, 2}, cfg.NodeToBasicBlock)
 
-// 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-// 		NodeIndices:   []uint{0},
-// 		ForwardEdges:  []uint{1, 3},
-// 		BackwardEdges: []uint{},
-// 	}, graph.BasicBlocks[0])
+	assert.EqualValues(t, control_flow.Node{
+		ForwardEdges:  []uint{1, 3},
+		BackwardEdges: nil,
+	}, cfg.Nodes[0])
 
-// 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-// 		NodeIndices:   []uint{1},
-// 		ForwardEdges:  []uint{2},
-// 		BackwardEdges: []uint{0},
-// 	}, graph.BasicBlocks[1])
+	assert.EqualValues(t, control_flow.Node{
+		ForwardEdges:  []uint{2},
+		BackwardEdges: []uint{0},
+	}, cfg.Nodes[1])
 
-// 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-// 		NodeIndices:   []uint{3},
-// 		ForwardEdges:  []uint{},
-// 		BackwardEdges: []uint{1, 3},
-// 	}, graph.BasicBlocks[2])
+	assert.EqualValues(t, control_flow.Node{
+		ForwardEdges:  nil,
+		BackwardEdges: []uint{1, 3},
+	}, cfg.Nodes[2])
 
-// 	assert.EqualValues(t, control_flow.ControlFlowBasicBlock{
-// 		NodeIndices:   []uint{2},
-// 		ForwardEdges:  []uint{2},
-// 		BackwardEdges: []uint{0},
-// 	}, graph.BasicBlocks[3])
-
-// }
+	assert.EqualValues(t, control_flow.Node{
+		ForwardEdges:  []uint{2},
+		BackwardEdges: []uint{0},
+	}, cfg.Nodes[3])
+}
