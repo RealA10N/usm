@@ -1,15 +1,5 @@
 package control_flow
 
-func getInstructionsForwardEdges[InstT SupportsControlFlow](
-	instructions []InstT,
-) [][]uint {
-	forwardEdges := make([][]uint, len(instructions))
-	for i, inst := range instructions {
-		forwardEdges[i] = inst.PossibleNextInstructionIndices()
-	}
-	return forwardEdges
-}
-
 func backwardEdgesFromForwardEdges(forwardEdges [][]uint) [][]uint {
 	backwardEdges := make([][]uint, len(forwardEdges))
 	for from := range forwardEdges {
@@ -21,20 +11,44 @@ func backwardEdgesFromForwardEdges(forwardEdges [][]uint) [][]uint {
 }
 
 type controlFlowGraphBuilder struct {
-	ForwardEdges            [][]uint
-	BackwardEdges           [][]uint
-	BasicBlocks             []ControlFlowBasicBlock
-	Visited                 []bool
-	InstructionToBasicBlock []uint
+	// The original graph
+	*Graph
+
+	// The new control flow graph that we are building.
+	ControlFlowGraph
+
+	// Visited[v] is true if v in (the original graph) it has already been
+	// processed by the DFS construction algorithm. Initialized to false for all
+	// vertices.
+	Visited []bool
 }
 
+func (b *controlFlowGraphBuilder) hasExactlyOneForwardEdge(instruction uint) bool {
+	return len(b.Graph.Nodes[instruction].ForwardEdges) == 1
+}
+
+func (b *controlFlowGraphBuilder) hasExactlyOneBackwardEdge(instruction uint) bool {
+	return len(b.Graph.Nodes[instruction].BackwardEdges) == 1
+}
+
+// Checks if the provided instruction node can be "merged" with the next
+// instruction node in the original graph, into a single basic block.
+//
+// Essentially, it checks that the instruction has only one forward edge, and
+// that the next instruction has only one backwards edge, and that we have not
+// yet visited the next instruction (to avoid infinite loops while processing
+// unreachable cycles).
 func (b *controlFlowGraphBuilder) isLastInstructionInBasicBlock(instruction uint) bool {
-	if len(b.ForwardEdges[instruction]) != 1 {
+	if !b.hasExactlyOneForwardEdge(instruction) {
 		return true
 	}
 
-	next := b.ForwardEdges[instruction][0]
-	if len(b.BackwardEdges[next]) != 1 || b.Visited[next] {
+	next := b.Graph.Nodes[instruction].ForwardEdges[0]
+	if b.Visited[next] {
+		return true
+	}
+
+	if !b.hasExactlyOneBackwardEdge(next) {
 		return true
 	}
 
@@ -42,60 +56,40 @@ func (b *controlFlowGraphBuilder) isLastInstructionInBasicBlock(instruction uint
 }
 
 func (b *controlFlowGraphBuilder) addInstructionToBasicBlock(
-	instruction uint,
-	blockNumber uint,
+	node uint,
+	block uint,
 ) {
-	b.Visited[instruction] = true
-	b.InstructionToBasicBlock[instruction] = blockNumber
-	b.BasicBlocks[blockNumber].NodeIndices = append(
-		b.BasicBlocks[blockNumber].NodeIndices,
-		instruction,
+	b.Visited[node] = true
+	b.ControlFlowGraph.NodeToBasicBlock[node] = block
+	b.ControlFlowGraph.BasicBlockToNodes[block] = append(
+		b.ControlFlowGraph.BasicBlockToNodes[block],
+		node,
+	)
+}
+
+func (b *controlFlowGraphBuilder) createNewBasicBlock() uint {
+	block := b.ControlFlowGraph.Size()
+	b.ControlFlowGraph.BasicBlockToNodes = append(b.ControlFlowGraph.BasicBlockToNodes, nil)
+	b.ControlFlowGraph.Nodes = append(b.ControlFlowGraph.Nodes, Node{})
+	return block
+}
+
+func (b *controlFlowGraphBuilder) getNextInstruction(instruction uint) uint {
+	return b.Graph.Nodes[instruction].ForwardEdges[0]
+}
+
+func (b *controlFlowGraphBuilder) linkBasicBlocks(from uint, to uint) {
+	b.ControlFlowGraph.Nodes[from].ForwardEdges = append(
+		b.ControlFlowGraph.Nodes[from].ForwardEdges,
+		to,
+	)
+	b.ControlFlowGraph.Nodes[to].BackwardEdges = append(
+		b.ControlFlowGraph.Nodes[to].BackwardEdges,
+		from,
 	)
 }
 
 func (b *controlFlowGraphBuilder) exploreBasicBlock(current uint) {
-	if b.Visited[current] {
-		return // already visited and processed in the past.
-	}
-
-	// current is the first instruction in a new basic block.
-	// we now explore the basic block by just following forward edges,
-	// until we reach an instruction that has more than 1 outgoing edge
-	// or incoming edges (or zero?).
-
-	blockNumber := uint(len(b.BasicBlocks))
-	b.BasicBlocks = append(b.BasicBlocks, ControlFlowBasicBlock{
-		NodeIndices:   []uint{},
-		ForwardEdges:  []uint{},
-		BackwardEdges: []uint{},
-	})
-
-	// traverse the current basic block while we can.
-
-	for !b.isLastInstructionInBasicBlock(current) {
-		b.addInstructionToBasicBlock(current, blockNumber)
-		current = b.ForwardEdges[current][0]
-	}
-
-	// finish traversal: update last instruction in the basic block.
-	b.addInstructionToBasicBlock(current, blockNumber)
-
-	// explore following basic blocks recursively.
-	for _, next := range b.ForwardEdges[current] {
-		b.exploreBasicBlock(next)
-		nextBlock := b.InstructionToBasicBlock[next]
-		b.BasicBlocks[blockNumber].ForwardEdges = append(
-			b.BasicBlocks[blockNumber].ForwardEdges,
-			nextBlock,
-		)
-		b.BasicBlocks[nextBlock].BackwardEdges = append(
-			b.BasicBlocks[nextBlock].BackwardEdges,
-			blockNumber,
-		)
-	}
-}
-
-func NewControlFlowGraph(nodes []SupportsControlFlow) ControlFlowGraph {
 	// A new basic blocks begins if the current instruction (first instruction
 	// in the in the block), is:
 	// (1) The first instruction in the function.
@@ -105,28 +99,43 @@ func NewControlFlowGraph(nodes []SupportsControlFlow) ControlFlowGraph {
 	// if the current instruction (last instruction in the block), is:
 	// (1) The last instruction in the function.
 	// (2) Has more than 1 outgoing edge from the instruction.
-	//
-	// The SupportsCFG interface gives as an easy API for forward (outgoing)
-	// edges only. The easiest (and probably not the fastest!) implementation
-	// is to first iterate over all instructions, and compute all backward
-	// edges. Then, perform a DFS using the rules above to create basic blocks.
 
-	forwardEdges := getInstructionsForwardEdges(nodes)
-	backwardEdges := backwardEdgesFromForwardEdges(forwardEdges)
-
-	builder := controlFlowGraphBuilder{
-		ForwardEdges:            forwardEdges,
-		BackwardEdges:           backwardEdges,
-		BasicBlocks:             make([]ControlFlowBasicBlock, 0),
-		Visited:                 make([]bool, len(nodes)),
-		InstructionToBasicBlock: make([]uint, len(nodes)),
+	if b.Visited[current] {
+		return // already visited and processed in the past.
 	}
 
-	for i := range nodes {
-		builder.exploreBasicBlock(uint(i))
+	// current is the first instruction in a new basic block.
+	// we now explore the basic block by just following forward edges,
+	// until we reach an instruction that has more than 1 outgoing edge
+	// or incoming edges (or zero?).
+
+	block := b.createNewBasicBlock()
+
+	// traverse the current basic block while we can.
+	for !b.isLastInstructionInBasicBlock(current) {
+		b.addInstructionToBasicBlock(current, block)
+		current = b.getNextInstruction(current)
 	}
 
-	return ControlFlowGraph{
-		BasicBlocks: builder.BasicBlocks,
+	// finish traversal: update last instruction in the basic block.
+	b.addInstructionToBasicBlock(current, block)
+
+	// explore following basic blocks recursively.
+	for _, next := range b.Graph.Nodes[current].ForwardEdges {
+		b.exploreBasicBlock(next)
+		nextBlock := b.ControlFlowGraph.NodeToBasicBlock[next]
+		b.linkBasicBlocks(block, nextBlock)
+	}
+}
+
+func newControlFlowGraphBuilder(g *Graph) controlFlowGraphBuilder {
+	return controlFlowGraphBuilder{
+		Graph: g,
+		ControlFlowGraph: ControlFlowGraph{
+			Graph:             NewEmptyGraph(),
+			BasicBlockToNodes: make([][]uint, 0),
+			NodeToBasicBlock:  make([]uint, len(g.Nodes)),
+		},
+		Visited: make([]bool, len(g.Nodes)),
 	}
 }

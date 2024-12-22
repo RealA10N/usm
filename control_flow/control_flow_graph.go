@@ -1,24 +1,17 @@
 package control_flow
 
-type SupportsControlFlow interface {
-	// Returns a list of all instruction indices in the function that execution
-	// could arrive to after the execution of this instruction.
-	PossibleNextInstructionIndices() []uint
-}
-
-type ControlFlowBasicBlock struct {
-	NodeIndices   []uint
-	ForwardEdges  []uint
-	BackwardEdges []uint
-}
-
-// BasicBlocks[CfgEntryBlock] is the implicit entry block.
-const CfgEntryBlock = 0
+// In the control flow graph construction, we ensure that the entry basic block
+// is always at index 0.
+const controlFlowGraphEntryBasicBlock = 0
 
 type ControlFlowGraph struct {
-	BasicBlocks []ControlFlowBasicBlock
-}
+	Graph
 
-func (g *ControlFlowGraph) Size() uint {
-	return uint(len(g.BasicBlocks))
+	// BasicBlockToNodes[i] contains the set of nodes in the original graph that
+	// the i-th basic block contains.
+	BasicBlockToNodes [][]uint
+
+	// NodeToBasicBlock[i] contains the index of the basic block that the i-th
+	// node in the original graph belongs to.
+	NodeToBasicBlock []uint
 }

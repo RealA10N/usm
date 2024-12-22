@@ -47,9 +47,9 @@ type lengauerTarjanContext struct {
 	DfsParent []uint
 }
 
-func newLengauerTarjanContext(g *Graph) lengauerTarjanContext {
+func newLengauerTarjanContext(g *Graph, entry uint) lengauerTarjanContext {
 	n := g.Size()
-	dfsResult := g.Dfs(CfgEntryBlock)
+	dfsResult := g.Dfs(entry)
 
 	builder := lengauerTarjanContext{
 		Graph:              g,

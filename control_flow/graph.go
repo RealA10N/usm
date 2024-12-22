@@ -47,10 +47,16 @@ func (g *Graph) Dfs(root uint) Dfs {
 //
 // Construction of the data structure is based on the Lengauer-Tarjan algorithm:
 // https://doi.org/10.1145/357062.357071
-func (g *Graph) DominatorTree() DominatorTree {
-	lengauerTarjan := newLengauerTarjanContext(g)
+func (g *Graph) DominatorTree(entry uint) DominatorTree {
+	lengauerTarjan := newLengauerTarjanContext(g, entry)
 	immDom := lengauerTarjan.LengauerTarjan()
 	return DominatorTree{
 		ImmDom: immDom,
 	}
+}
+
+func (g *Graph) ControlFlowGraph(entry uint) ControlFlowGraph {
+	builder := newControlFlowGraphBuilder(g)
+	builder.exploreBasicBlock(entry)
+	return builder.ControlFlowGraph
 }
