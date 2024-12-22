@@ -24,3 +24,11 @@ func (d *Dfs) IsStrictAncestor(ancestor uint, descendant uint) bool {
 	return d.PreOrder[ancestor] < d.PreOrder[descendant] &&
 		d.PostOrder[ancestor] > d.PostOrder[descendant]
 }
+
+func (d *Dfs) IsDeeper(deeper uint, shallower uint) bool {
+	return d.Depth[deeper] >= d.Depth[shallower]
+}
+
+func (d *Dfs) IsStrictlyDeeper(deeper uint, shallower uint) bool {
+	return d.Depth[deeper] > d.Depth[shallower]
+}
