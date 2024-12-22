@@ -1,5 +1,9 @@
 package control_flow
 
+import (
+	"slices"
+)
+
 type Node struct {
 	ForwardEdges  []uint
 	BackwardEdges []uint
@@ -33,6 +37,29 @@ func NewGraph(forwardEdges [][]uint) Graph {
 func (g *Graph) AddEdge(from, to uint) {
 	g.Nodes[from].ForwardEdges = append(g.Nodes[from].ForwardEdges, to)
 	g.Nodes[to].BackwardEdges = append(g.Nodes[to].BackwardEdges, from)
+}
+
+func (g *Graph) Equal(gt *Graph) bool {
+	n := g.Size()
+	if n != gt.Size() {
+		return false
+	}
+
+	for u := uint(0); u < n; u++ {
+		// Edges are not guaranteed to be sorted.
+		// We do take a performance hit here, since we need to sort every edge
+		// slice before we compare for equality. However the decision was made
+		// that keeping the insertion of nodes O(1) is better.
+		// Also, a comparison of whole graphs is not used as much in code, and
+		// mainly used in testing.
+		slices.Sort(g.Nodes[u].ForwardEdges)
+		slices.Sort(gt.Nodes[u].ForwardEdges)
+		if !slices.Equal(g.Nodes[u].ForwardEdges, gt.Nodes[u].ForwardEdges) {
+			return false
+		}
+	}
+
+	return true
 }
 
 // MARK: Queries
