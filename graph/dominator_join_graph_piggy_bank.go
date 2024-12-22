@@ -15,11 +15,6 @@ type piggyBank struct {
 	// have been yet to be processed. You can think of it as a stack of next
 	// to process nodes in each level.
 	DepthToNodes [][]uint
-
-	// A counter that keeps track of the total number of nodes currently stored
-	// in the piggy bank. Exists to allow the IsEmpty query in constant time,
-	// which is used as a heuristic optimization (sometimes).
-	NodeCount uint
 }
 
 func getMaxDepth(depth []uint, nodes []uint) uint {
@@ -38,7 +33,6 @@ func newPiggyBank(dfs *Dfs, nodes []uint) piggyBank {
 	piggyBank := piggyBank{
 		Depth:        dfs.Depth,
 		DepthToNodes: make([][]uint, maxDepth+1),
-		NodeCount:    0,
 	}
 
 	for _, node := range nodes {
@@ -48,32 +42,29 @@ func newPiggyBank(dfs *Dfs, nodes []uint) piggyBank {
 	return piggyBank
 }
 
+// Its OK to NOT use a pointer receiver here, as we are not modifying the
+// piggyBank struct itself, but rather the underlying slices in all methods.
+
 // MARK: Queries
 
-func (pb *piggyBank) IsEmpty() bool {
-	return pb.NodeCount == 0
-}
-
-func (pb *piggyBank) IsEmptyAtDepth(depth uint) bool {
+func (pb piggyBank) IsEmptyAtDepth(depth uint) bool {
 	return len(pb.DepthToNodes[depth]) == 0
 }
 
-func (pb *piggyBank) MaxDepth() uint {
+func (pb piggyBank) MaxDepth() uint {
 	return uint(len(pb.DepthToNodes) - 1)
 }
 
 // MARK: Operations
 
-func (pb *piggyBank) Push(node uint) {
+func (pb piggyBank) Push(node uint) {
 	depth := pb.Depth[node]
 	pb.DepthToNodes[depth] = append(pb.DepthToNodes[depth], node)
-	pb.NodeCount++
 }
 
-func (pb *piggyBank) Pop(depth uint) uint {
+func (pb piggyBank) Pop(depth uint) uint {
 	len := len(pb.DepthToNodes[depth])
 	node := pb.DepthToNodes[depth][len-1]
 	pb.DepthToNodes[depth] = pb.DepthToNodes[depth][:len-1]
-	pb.NodeCount--
 	return node
 }
