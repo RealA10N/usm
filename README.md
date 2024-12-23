@@ -19,6 +19,7 @@ One Universal assembly language to rule them all.
   - [LLVM](#llvm)
   - [QBE](#qbe)
   - [MIR](#mir)
+  - [MLIR](#mlir)
 
 <!-- mdformat-toc end -->
 
@@ -346,6 +347,28 @@ used to implement JITs.
 
 It looks mature and decent in terms of generated code, and speed.
 
+### MLIR<a name="mlir"></a>
+
+The [Multi-Level Intermediate Representation] (MLIR) Project is probably the
+most similar project to USM out there.
+
+It is a compilation framework that defines a generic syntax, but does not define
+types or the instruction set ("dialects"), similar to USM. You can then define
+optimizations and transformations between dialects.
+
+However, MLIR also has "non-goals" which do not align with USM:
+
+> We do not try to support low level machine code generation algorithms (like
+> register allocation and instruction scheduling). They are a better fit for
+> lower level optimizers (such as LLVM). Also, we do not intend MLIR to be a
+> source language that end-users would themselves write kernels in (analogous to
+> CUDA C++).
+
+USM's goal it to do provide support for low level machine compilation,
+algorithms and optimizations. USM is also designed to resemble machine-specific
+assembly syntax, and end users (that are familiar with assembly programming)
+should be able to write USM code directly with no additional effort.
+
 [^1]: A unicode whitespace character is one that has the ["WSpace=Y" property].
     For reference, see [Go's unicode.IsSpace standard function].
 
@@ -355,6 +378,7 @@ It looks mature and decent in terms of generated code, and speed.
 [go's unicode.isspace standard function]: https://pkg.go.dev/unicode#IsSpace
 [llvm]: https://github.com/llvm/llvm-project
 [mir]: https://github.com/vnmakarov/mir
+[multi-level intermediate representation]: https://mlir.llvm.org/
 [pre-commit.ci status]: https://results.pre-commit.ci/badge/github/RealA10N/usm/main.svg
 [qbe]: https://c9x.me/compile/
 [resources for amateur compiler writers]: https://c9x.me/compile/bib/
