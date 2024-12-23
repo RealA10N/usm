@@ -6,13 +6,13 @@ import (
 )
 
 type FunctionInfo[InstT BaseInstruction] struct {
-	Instructions []InstT
+	Instructions []*InstructionInfo[InstT]
 	Parameters   []*RegisterInfo
 	// TODO: add targets
 }
 
 type FunctionGenerator[InstT BaseInstruction] struct {
-	InstructionGenerator     FunctionContextGenerator[InstT, parse.InstructionNode, InstT]
+	InstructionGenerator     FunctionContextGenerator[InstT, parse.InstructionNode, *InstructionInfo[InstT]]
 	ParameterGenerator       FunctionContextGenerator[InstT, parse.ParameterNode, *RegisterInfo]
 	LabelDefinitionGenerator LabelContextGenerator[InstT, parse.LabelNode, LabelInfo]
 }
@@ -77,8 +77,8 @@ func (g *FunctionGenerator[InstT]) collectLabelDefinitions(
 func (g *FunctionGenerator[InstT]) generateFunctionBody(
 	ctx *FunctionGenerationContext[InstT],
 	instNodes []parse.InstructionNode,
-) ([]InstT, core.ResultList) {
-	instructions := make([]InstT, 0, len(instNodes))
+) ([]*InstructionInfo[InstT], core.ResultList) {
+	instructions := make([]*InstructionInfo[InstT], 0, len(instNodes))
 
 	for _, instNode := range instNodes {
 		inst, results := g.InstructionGenerator.Generate(ctx, instNode)

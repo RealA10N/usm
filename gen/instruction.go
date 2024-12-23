@@ -38,6 +38,18 @@ type InstructionDefinition[InstT BaseInstruction] interface {
 	) ([]ReferencedTypeInfo, core.ResultList)
 }
 
+type InstructionInfo[InstT BaseInstruction] struct {
+	// The actual instruction instance, which is part of the instruction set,
+	// and not part of this package.
+	Instruction InstT
+
+	// The targets of the instruction.
+	Targets []*RegisterArgumentInfo
+
+	// The arguments of the instruction.
+	Arguments []ArgumentInfo
+}
+
 // MARK: Manager
 
 type InstructionManager[InstT BaseInstruction] interface {
@@ -52,8 +64,16 @@ type InstructionGenerator[InstT BaseInstruction] struct {
 	TargetGenerator   FunctionContextGenerator[InstT, parse.TargetNode, partialRegisterInfo]
 }
 
-func NewInstructionGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.InstructionNode, InstT] {
-	return FunctionContextGenerator[InstT, parse.InstructionNode, InstT](
+func NewInstructionGenerator[InstT BaseInstruction]() FunctionContextGenerator[
+	InstT,
+	parse.InstructionNode,
+	*InstructionInfo[InstT],
+] {
+	return FunctionContextGenerator[
+		InstT,
+		parse.InstructionNode,
+		*InstructionInfo[InstT],
+	](
 		&InstructionGenerator[InstT]{
 			ArgumentGenerator: NewArgumentGenerator[InstT](),
 			TargetGenerator:   NewTargetGenerator[InstT](),
@@ -215,7 +235,7 @@ func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
 func (g *InstructionGenerator[InstT]) Generate(
 	ctx *FunctionGenerationContext[InstT],
 	node parse.InstructionNode,
-) (inst InstT, results core.ResultList) {
+) (info *InstructionInfo[InstT], results core.ResultList) {
 	// We start generating the instruction, by getting the definition interface,
 	// and processing the targets and arguments. We accumulate the results,
 	// since those processes do not effect each other.
@@ -248,5 +268,16 @@ func (g *InstructionGenerator[InstT]) Generate(
 		return
 	}
 
-	return instDef.BuildInstruction(targets, arguments)
+	instruction, results := instDef.BuildInstruction(targets, arguments)
+	if !results.IsEmpty() {
+		return
+	}
+
+	info = &InstructionInfo[InstT]{
+		Instruction: instruction,
+		Targets:     targets,
+		Arguments:   arguments,
+	}
+
+	return info, core.ResultList{}
 }

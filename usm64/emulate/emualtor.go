@@ -14,7 +14,7 @@ func (Emulator) Emulate(
 
 	for ctx.NextInstructionIndex < uint64(len(function.Instructions)) {
 		nextInstruction := function.Instructions[ctx.NextInstructionIndex]
-		err := nextInstruction.Emulate(&ctx)
+		err := nextInstruction.Instruction.Emulate(&ctx)
 		if err != nil {
 			return err
 		}
