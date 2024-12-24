@@ -8,25 +8,6 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-// MARK: Info
-
-type ImmediateInfo struct {
-	Type        ReferencedTypeInfo
-	Value       *big.Int // TODO: Add floating types
-	declaration core.UnmanagedSourceView
-	// TODO: more complex and complete representation of immediate structs.
-}
-
-func (i *ImmediateInfo) GetType() *ReferencedTypeInfo {
-	return &i.Type
-}
-
-func (i *ImmediateInfo) Declaration() core.UnmanagedSourceView {
-	return i.declaration
-}
-
-// MARK: Generator
-
 type ImmediateArgumentGenerator[InstT BaseInstruction] struct {
 	ReferencedTypeGenerator FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo]
 }
