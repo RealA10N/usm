@@ -61,7 +61,7 @@ type InstructionManager[InstT BaseInstruction] interface {
 
 type InstructionGenerator[InstT BaseInstruction] struct {
 	ArgumentGenerator FunctionContextGenerator[InstT, parse.ArgumentNode, ArgumentInfo]
-	TargetGenerator   FunctionContextGenerator[InstT, parse.TargetNode, partialRegisterInfo]
+	TargetGenerator   FunctionContextGenerator[InstT, parse.TargetNode, registerPartialInfo]
 }
 
 func NewInstructionGenerator[InstT BaseInstruction]() FunctionContextGenerator[
@@ -103,8 +103,8 @@ func (g *InstructionGenerator[InstT]) generateArguments(
 func (g *InstructionGenerator[InstT]) generatePartialTargetsInfo(
 	ctx *FunctionGenerationContext[InstT],
 	node parse.InstructionNode,
-) ([]partialRegisterInfo, core.ResultList) {
-	targets := make([]partialRegisterInfo, len(node.Targets))
+) ([]registerPartialInfo, core.ResultList) {
+	targets := make([]registerPartialInfo, len(node.Targets))
 	results := core.ResultList{}
 
 	// Different targets should not effect one another.
@@ -119,7 +119,7 @@ func (g *InstructionGenerator[InstT]) generatePartialTargetsInfo(
 	return targets, results
 }
 
-func partialTargetsToTypes(targets []partialRegisterInfo) []*ReferencedTypeInfo {
+func partialTargetsToTypes(targets []registerPartialInfo) []*ReferencedTypeInfo {
 	types := make([]*ReferencedTypeInfo, len(targets))
 	for i, target := range targets {
 		types[i] = target.Type
