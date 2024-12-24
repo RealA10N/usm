@@ -6,8 +6,6 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-// MARK: Generator
-
 type TargetGenerator[InstT BaseInstruction] struct {
 	ReferencedTypeGenerator FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo]
 }

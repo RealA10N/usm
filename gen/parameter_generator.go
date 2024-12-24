@@ -18,7 +18,7 @@ func NewParameterGenerator[InstT BaseInstruction]() FunctionContextGenerator[Ins
 	)
 }
 
-func NewRegisterAlreadyDefinedResult(
+func newRegisterAlreadyDefinedResult(
 	NewDeclaration core.UnmanagedSourceView,
 	FirstDeclaration core.UnmanagedSourceView,
 ) core.ResultList {
@@ -54,7 +54,7 @@ func (g *ParameterGenerator[InstT]) Generate(
 	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	if registerInfo != nil {
-		registerResults := NewRegisterAlreadyDefinedResult(
+		registerResults := newRegisterAlreadyDefinedResult(
 			node.View(),
 			registerInfo.Declaration,
 		)
