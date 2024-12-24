@@ -61,12 +61,14 @@ type InstructionMap map[string]gen.InstructionDefinition[Instruction]
 
 func (m *InstructionMap) GetInstructionDefinition(
 	name string,
+	node parse.InstructionNode,
 ) (gen.InstructionDefinition[Instruction], core.ResultList) {
 	instDef, ok := (*m)[name]
 	if !ok {
 		return nil, list.FromSingle(core.Result{{
-			Type:    core.ErrorResult,
-			Message: "undefined instruction",
+			Type:     core.ErrorResult,
+			Message:  "undefined instruction",
+			Location: &node.Operator,
 		}})
 	}
 	return instDef, core.ResultList{}

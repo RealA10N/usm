@@ -6,6 +6,7 @@ import (
 	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
+	"alon.kr/x/usm/parse"
 	usm64core "alon.kr/x/usm/usm64/core"
 	usm64isa "alon.kr/x/usm/usm64/isa"
 )
@@ -15,14 +16,15 @@ type InstructionMap map[string]gen.InstructionDefinition[usm64core.Instruction]
 
 func (m *InstructionMap) GetInstructionDefinition(
 	name string,
+	node parse.InstructionNode,
 ) (gen.InstructionDefinition[usm64core.Instruction], core.ResultList) {
 	key := strings.ToLower(name)
 	instDef, ok := (*m)[key]
 	if !ok {
 		return nil, list.FromSingle(core.Result{{
-			Type:    core.ErrorResult,
-			Message: "Undefined instruction",
-			// TODO: add location
+			Type:     core.ErrorResult,
+			Message:  "Undefined instruction",
+			Location: &node.Operator,
 		}})
 	}
 	return instDef, core.ResultList{}

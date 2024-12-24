@@ -188,7 +188,7 @@ func (g *InstructionGenerator[InstT]) Generate(
 	// since those processes do not effect each other.
 
 	instName := viewToSourceString(ctx.FileGenerationContext, node.Operator)
-	instDef, results := ctx.Instructions.GetInstructionDefinition(instName)
+	instDef, results := ctx.Instructions.GetInstructionDefinition(instName, node)
 
 	arguments, curResults := g.generateArguments(ctx, node)
 	results.Extend(&curResults)
