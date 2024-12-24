@@ -5,10 +5,6 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-type FileInfo[InstT BaseInstruction] struct {
-	Functions []*FunctionInfo[InstT]
-}
-
 type FileGenerator[InstT BaseInstruction] struct {
 	NamedTypeGenerator FileContextGenerator[InstT, parse.TypeDeclarationNode, *NamedTypeInfo]
 	FunctionGenerator  FileContextGenerator[InstT, parse.FunctionNode, *FunctionInfo[InstT]]
