@@ -5,8 +5,8 @@ import (
 	usm64core "alon.kr/x/usm/usm64/core"
 )
 
-func NewManagerCreators() gen.ManagerCreators {
-	return gen.ManagerCreators{
+func NewManagerCreators() gen.ManagerCreators[usm64core.Instruction] {
+	return gen.ManagerCreators[usm64core.Instruction]{
 		RegisterManagerCreator: NewRegisterManager,
 		LabelManagerCreator:    NewLabelManager,
 		TypeManagerCreator:     NewTypeManager,

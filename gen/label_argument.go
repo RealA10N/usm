@@ -8,16 +8,16 @@ import (
 
 // MARK: Info
 
-type LabelArgumentInfo struct {
-	Label       LabelInfo
+type LabelArgumentInfo[InstT BaseInstruction] struct {
+	Label       *LabelInfo[InstT]
 	declaration core.UnmanagedSourceView
 }
 
-func (i *LabelArgumentInfo) GetType() *ReferencedTypeInfo {
+func (i *LabelArgumentInfo[InstT]) GetType() *ReferencedTypeInfo {
 	return nil // Label argument does not have a type
 }
 
-func (i *LabelArgumentInfo) Declaration() core.UnmanagedSourceView {
+func (i *LabelArgumentInfo[InstT]) Declaration() core.UnmanagedSourceView {
 	return i.declaration
 }
 
@@ -49,8 +49,8 @@ func (g *LabelArgumentGenerator[InstT]) Generate(
 		})
 	}
 
-	argument := &LabelArgumentInfo{
-		Label:       *labelInfo,
+	argument := &LabelArgumentInfo[InstT]{
+		Label:       labelInfo,
 		declaration: node.View(),
 	}
 

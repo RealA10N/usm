@@ -54,7 +54,7 @@ func NewArgument(argument gen.ArgumentInfo) (Argument, core.ResultList) {
 		return NewImmediate(*typedArgument)
 	case *gen.RegisterArgumentInfo:
 		return NewRegister(typedArgument)
-	case *gen.LabelArgumentInfo:
+	case *gen.LabelArgumentInfo[Instruction]:
 		return NewLabel(*typedArgument)
 	default:
 		return nil, list.FromSingle(core.Result{

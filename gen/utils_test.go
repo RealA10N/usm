@@ -50,17 +50,17 @@ func (m *RegisterMap) NewRegister(reg *gen.RegisterInfo) core.Result {
 
 // MARK: LabelMap
 
-type LabelMap map[string]gen.LabelInfo
+type LabelMap map[string]*gen.LabelInfo[Instruction]
 
-func (m *LabelMap) GetLabel(name string) *gen.LabelInfo {
+func (m *LabelMap) GetLabel(name string) *gen.LabelInfo[Instruction] {
 	val, ok := (*m)[name]
 	if !ok {
 		return nil
 	}
-	return &val
+	return val
 }
 
-func (m *LabelMap) NewLabel(label gen.LabelInfo) core.Result {
+func (m *LabelMap) NewLabel(label *gen.LabelInfo[Instruction]) core.Result {
 	(*m)[label.Name] = label
 	return nil
 }
@@ -73,9 +73,9 @@ var testInstructionSet = gen.InstructionManager[Instruction](
 	},
 )
 
-var testManagerCreators = gen.ManagerCreators{
-	LabelManagerCreator: func() gen.LabelManager {
-		return gen.LabelManager(&LabelMap{})
+var testManagerCreators = gen.ManagerCreators[Instruction]{
+	LabelManagerCreator: func() gen.LabelManager[Instruction] {
+		return gen.LabelManager[Instruction](&LabelMap{})
 	},
 	RegisterManagerCreator: func() gen.RegisterManager {
 		return gen.RegisterManager(&RegisterMap{})

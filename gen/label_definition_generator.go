@@ -12,8 +12,8 @@ import (
 // and return an error if a label with the same name already exists.
 type LabelDefinitionGenerator[InstT BaseInstruction] struct{}
 
-func NewLabelDefinitionGenerator[InstT BaseInstruction]() LabelContextGenerator[InstT, parse.LabelNode, LabelInfo] {
-	return LabelContextGenerator[InstT, parse.LabelNode, LabelInfo](
+func NewLabelDefinitionGenerator[InstT BaseInstruction]() LabelContextGenerator[InstT, parse.LabelNode, *LabelInfo[InstT]] {
+	return LabelContextGenerator[InstT, parse.LabelNode, *LabelInfo[InstT]](
 		&LabelDefinitionGenerator[InstT]{},
 	)
 }
@@ -21,13 +21,13 @@ func NewLabelDefinitionGenerator[InstT BaseInstruction]() LabelContextGenerator[
 func (g *LabelDefinitionGenerator[InstT]) Generate(
 	ctx *LabelGenerationContext[InstT],
 	node parse.LabelNode,
-) (LabelInfo, core.ResultList) {
+) (*LabelInfo[InstT], core.ResultList) {
 	name := nodeToSourceString(ctx.FileGenerationContext, node)
 	labelInfo := ctx.Labels.GetLabel(name)
 	declaration := node.View()
 
 	if labelInfo != nil {
-		return LabelInfo{}, list.FromSingle(core.Result{
+		return nil, list.FromSingle(core.Result{
 			{
 				Type:     core.ErrorResult,
 				Message:  "Label already defined",
@@ -41,15 +41,14 @@ func (g *LabelDefinitionGenerator[InstT]) Generate(
 		})
 	}
 
-	newLabelInfo := LabelInfo{
-		Name:             name,
-		InstructionIndex: ctx.CurrentInstructionIndex,
-		Declaration:      declaration,
+	newLabelInfo := &LabelInfo[InstT]{
+		Name:        name,
+		Declaration: declaration,
 	}
 
 	result := ctx.Labels.NewLabel(newLabelInfo)
 	if result != nil {
-		return LabelInfo{}, list.FromSingle(result)
+		return nil, list.FromSingle(result)
 	}
 
 	return newLabelInfo, core.ResultList{}

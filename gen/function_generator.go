@@ -8,7 +8,7 @@ import (
 type FunctionGenerator[InstT BaseInstruction] struct {
 	InstructionGenerator     FunctionContextGenerator[InstT, parse.InstructionNode, *InstructionInfo[InstT]]
 	ParameterGenerator       FunctionContextGenerator[InstT, parse.ParameterNode, *RegisterInfo]
-	LabelDefinitionGenerator LabelContextGenerator[InstT, parse.LabelNode, LabelInfo]
+	LabelDefinitionGenerator LabelContextGenerator[InstT, parse.LabelNode, *LabelInfo[InstT]]
 }
 
 func NewFunctionGenerator[InstT BaseInstruction]() FileContextGenerator[InstT, parse.FunctionNode, *FunctionInfo[InstT]] {

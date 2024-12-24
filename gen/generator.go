@@ -7,9 +7,9 @@ import (
 
 // MARK: Context
 
-type ManagerCreators struct {
+type ManagerCreators[InstT BaseInstruction] struct {
 	RegisterManagerCreator func() RegisterManager
-	LabelManagerCreator    func() LabelManager
+	LabelManagerCreator    func() LabelManager[InstT]
 	TypeManagerCreator     func() TypeManager
 }
 
@@ -19,7 +19,7 @@ type ManagerCreators struct {
 //
 // It mainly contains information about the compilation target.
 type GenerationContext[InstT BaseInstruction] struct {
-	ManagerCreators
+	ManagerCreators[InstT]
 
 	// An instruction (definition) manager, which contains all instruction
 	// definitions that are supported in the current architecture (ISA).
@@ -60,7 +60,7 @@ type FunctionGenerationContext[InstT BaseInstruction] struct {
 	Registers RegisterManager
 
 	// A label manager, which stores and manages all labels defined in a function.
-	Labels LabelManager
+	Labels LabelManager[InstT]
 }
 
 type LabelGenerationContext[InstT BaseInstruction] struct {

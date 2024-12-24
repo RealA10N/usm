@@ -32,4 +32,8 @@ type InstructionDefinition[InstT BaseInstruction] interface {
 		targets []*ReferencedTypeInfo,
 		arguments []*ReferencedTypeInfo,
 	) ([]ReferencedTypeInfo, core.ResultList)
+
+	// PossibleNextSteps(
+	// 	arguments []ArgumentInfo,
+	// ) ([]PossibleNextStep, core.ResultList)
 }
