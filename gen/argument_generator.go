@@ -6,20 +6,6 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-// MARK: Info
-
-type ArgumentInfo interface {
-	// A pointer to the ReferencedTypeInfo instance that corresponds to the
-	// type of the argument. Nil if the argument does not have a type (for
-	// example, a label).
-	GetType() *ReferencedTypeInfo
-
-	// The location where the argument appears in the source code.
-	Declaration() core.UnmanagedSourceView
-}
-
-// MARK: Generator
-
 type ArgumentGenerator[InstT BaseInstruction] struct {
 	RegisterArgumentGenerator  FunctionContextGenerator[InstT, parse.RegisterNode, ArgumentInfo]
 	ImmediateArgumentGenerator FunctionContextGenerator[InstT, parse.ImmediateNode, ArgumentInfo]
