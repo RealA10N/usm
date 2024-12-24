@@ -65,7 +65,7 @@ func (g *TargetGenerator[InstT]) Generate(
 	if registerAlreadyDefined {
 		if explicitType != nil {
 			// ensure explicit type matches the previously declared one.
-			if !explicitType.Equals(registerInfo.Type) {
+			if !explicitType.Equal(registerInfo.Type) {
 				return partialRegisterInfo{}, NewRegisterTypeMismatchResult(
 					node.View(),
 					registerInfo.Declaration,

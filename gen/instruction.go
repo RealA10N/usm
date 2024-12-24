@@ -162,7 +162,7 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 	}
 
 	// register is already defined
-	if !registerInfo.Type.Equals(targetType) {
+	if !registerInfo.Type.Equal(targetType) {
 		// notest: sanity check only
 		return nil, core.Result{{
 			Type:     core.InternalErrorResult,

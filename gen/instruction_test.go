@@ -42,7 +42,7 @@ func (AddInstructionDefinition) InferTargetTypes(
 	}
 
 	// TODO: possible panic?
-	if !arguments[0].Equals(*arguments[1]) {
+	if !arguments[0].Equal(*arguments[1]) {
 		return nil, list.FromSingle(core.Result{{
 			Type:    core.ErrorResult,
 			Message: "expected both arguments to be of the same type",
