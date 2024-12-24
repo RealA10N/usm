@@ -1,8 +1,3 @@
-// Labels are abstracted from the "backend".
-// The "frontend" (gen module) iterates over all local function labels,
-// and provides the labels interface (arguments to instructions) as pointers
-// to other instructions in the same function scope.
-
 package gen
 
 import (
@@ -10,28 +5,6 @@ import (
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/parse"
 )
-
-// MARK: Info
-
-type LabelInfo struct {
-	// The name of the label, as it appears in the source code.
-	Name string
-
-	// The index of the instruction that the label is referencing.
-	InstructionIndex core.UsmUint
-
-	// A view of the label declaration in the source code.
-	Declaration core.UnmanagedSourceView
-}
-
-// MARK: Manager
-
-type LabelManager interface {
-	GetLabel(name string) *LabelInfo
-	NewLabel(info LabelInfo) core.Result
-}
-
-// MARK: Generator
 
 // Generator for label *definition* nodes.
 //
