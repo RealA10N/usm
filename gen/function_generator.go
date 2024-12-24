@@ -5,12 +5,6 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-type FunctionInfo[InstT BaseInstruction] struct {
-	Instructions []*InstructionInfo[InstT]
-	Parameters   []*RegisterInfo
-	// TODO: add targets
-}
-
 type FunctionGenerator[InstT BaseInstruction] struct {
 	InstructionGenerator     FunctionContextGenerator[InstT, parse.InstructionNode, *InstructionInfo[InstT]]
 	ParameterGenerator       FunctionContextGenerator[InstT, parse.ParameterNode, *RegisterInfo]
