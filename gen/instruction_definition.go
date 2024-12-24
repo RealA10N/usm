@@ -2,18 +2,22 @@ package gen
 
 import "alon.kr/x/usm/core"
 
-// TODO: add basic interface methods for instruction.
-type BaseInstruction interface{}
+type BaseInstruction interface {
+	// This method is usd by the USM engine to generate the internal control
+	// flow graph representation.
+	//
+	// Should return a non-empty slice. If the instruction does not have any
+	// consecutive steps in the function (for example, a return statement),
+	// then a special dedicated return step should be returned.
+	PossibleNextSteps() ([]StepInfo, core.ResultList)
+}
 
 // A basic instruction definition. This defines the logic that converts the
 // generic, architecture / instruction set independent instruction AST nodes
 // into a format instruction which is part of a specific instruction set.
 type InstructionDefinition[InstT BaseInstruction] interface {
-	// Build an instruction from the provided targets and arguments.
-	BuildInstruction(
-		targets []*RegisterArgumentInfo,
-		arguments []ArgumentInfo,
-	) (InstT, core.ResultList)
+	// Build an instruction from the provided instruction information.
+	BuildInstruction(info *InstructionInfo) (InstT, core.ResultList)
 
 	// Provided a list a list of types that correspond to argument types,
 	// and a (possibly partial) list of target types, return a complete list
@@ -32,8 +36,4 @@ type InstructionDefinition[InstT BaseInstruction] interface {
 		targets []*ReferencedTypeInfo,
 		arguments []*ReferencedTypeInfo,
 	) ([]ReferencedTypeInfo, core.ResultList)
-
-	// PossibleNextSteps(
-	// 	arguments []ArgumentInfo,
-	// ) ([]PossibleNextStep, core.ResultList)
 }
