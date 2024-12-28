@@ -8,20 +8,20 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-type ImmediateArgumentGenerator[InstT BaseInstruction] struct {
-	ReferencedTypeGenerator FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo]
+type ImmediateArgumentGenerator struct {
+	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewImmediateArgumentGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.ImmediateNode, ArgumentInfo] {
-	return FunctionContextGenerator[InstT, parse.ImmediateNode, ArgumentInfo](
-		&ImmediateArgumentGenerator[InstT]{
-			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
+func NewImmediateArgumentGenerator() FunctionContextGenerator[parse.ImmediateNode, ArgumentInfo] {
+	return FunctionContextGenerator[parse.ImmediateNode, ArgumentInfo](
+		&ImmediateArgumentGenerator{
+			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
 	)
 }
 
-func (g *ImmediateArgumentGenerator[InstT]) Generate(
-	ctx *FunctionGenerationContext[InstT],
+func (g *ImmediateArgumentGenerator) Generate(
+	ctx *FunctionGenerationContext,
 	node parse.ImmediateNode,
 ) (ArgumentInfo, core.ResultList) {
 	typeInfo, results := g.ReferencedTypeGenerator.Generate(

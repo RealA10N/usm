@@ -6,24 +6,24 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-type ArgumentGenerator[InstT BaseInstruction] struct {
-	RegisterArgumentGenerator  FunctionContextGenerator[InstT, parse.RegisterNode, ArgumentInfo]
-	ImmediateArgumentGenerator FunctionContextGenerator[InstT, parse.ImmediateNode, ArgumentInfo]
-	LabelArgumentGenerator     FunctionContextGenerator[InstT, parse.LabelNode, ArgumentInfo]
+type ArgumentGenerator struct {
+	RegisterArgumentGenerator  FunctionContextGenerator[parse.RegisterNode, ArgumentInfo]
+	ImmediateArgumentGenerator FunctionContextGenerator[parse.ImmediateNode, ArgumentInfo]
+	LabelArgumentGenerator     FunctionContextGenerator[parse.LabelNode, ArgumentInfo]
 }
 
-func NewArgumentGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.ArgumentNode, ArgumentInfo] {
-	return FunctionContextGenerator[InstT, parse.ArgumentNode, ArgumentInfo](
-		&ArgumentGenerator[InstT]{
-			RegisterArgumentGenerator:  NewRegisterArgumentGenerator[InstT](),
-			ImmediateArgumentGenerator: NewImmediateArgumentGenerator[InstT](),
-			LabelArgumentGenerator:     NewLabelArgumentGenerator[InstT](),
+func NewArgumentGenerator() FunctionContextGenerator[parse.ArgumentNode, ArgumentInfo] {
+	return FunctionContextGenerator[parse.ArgumentNode, ArgumentInfo](
+		&ArgumentGenerator{
+			RegisterArgumentGenerator:  NewRegisterArgumentGenerator(),
+			ImmediateArgumentGenerator: NewImmediateArgumentGenerator(),
+			LabelArgumentGenerator:     NewLabelArgumentGenerator(),
 		},
 	)
 }
 
-func (g *ArgumentGenerator[InstT]) Generate(
-	ctx *FunctionGenerationContext[InstT],
+func (g *ArgumentGenerator) Generate(
+	ctx *FunctionGenerationContext,
 	node parse.ArgumentNode,
 ) (ArgumentInfo, core.ResultList) {
 	switch typedNode := node.(type) {

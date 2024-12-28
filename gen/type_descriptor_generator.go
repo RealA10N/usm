@@ -6,11 +6,11 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-type DescriptorGenerator[InstT BaseInstruction] struct{}
+type DescriptorGenerator struct{}
 
-func NewDescriptorGenerator[InstT BaseInstruction]() FileContextGenerator[InstT, parse.TypeDecoratorNode, TypeDescriptorInfo] {
-	return FileContextGenerator[InstT, parse.TypeDecoratorNode, TypeDescriptorInfo](
-		&DescriptorGenerator[InstT]{},
+func NewDescriptorGenerator() FileContextGenerator[parse.TypeDecoratorNode, TypeDescriptorInfo] {
+	return FileContextGenerator[parse.TypeDecoratorNode, TypeDescriptorInfo](
+		&DescriptorGenerator{},
 	)
 }
 
@@ -26,8 +26,8 @@ func NewDescriptorGenerator[InstT BaseInstruction]() FileContextGenerator[InstT,
 // Why don't we do this at the `parse` module? because the `parse` module parses
 // the structure of tokens only, and does not look inside the content of the
 // tokens. More specifically, it does not have access to the source context.
-func (g *DescriptorGenerator[InstT]) parseDescriptorAmount(
-	ctx *FileGenerationContext[InstT],
+func (g *DescriptorGenerator) parseDescriptorAmount(
+	ctx *FileGenerationContext,
 	decorator parse.TypeDecoratorNode,
 ) (core.UsmUint, core.ResultList) {
 	if decorator.Len() <= 1 {
@@ -57,7 +57,7 @@ func (g *DescriptorGenerator[InstT]) parseDescriptorAmount(
 	return num, core.ResultList{}
 }
 
-func (g *DescriptorGenerator[InstT]) parsedDescriptorToGenDescriptorType(
+func (g *DescriptorGenerator) parsedDescriptorToGenDescriptorType(
 	node parse.TypeDecoratorNode,
 ) (genType TypeDescriptorType, results core.ResultList) {
 	switch node.Type {
@@ -77,8 +77,8 @@ func (g *DescriptorGenerator[InstT]) parsedDescriptorToGenDescriptorType(
 	}
 }
 
-func (g *DescriptorGenerator[InstT]) Generate(
-	ctx *FileGenerationContext[InstT],
+func (g *DescriptorGenerator) Generate(
+	ctx *FileGenerationContext,
 	node parse.TypeDecoratorNode,
 ) (info TypeDescriptorInfo, results core.ResultList) {
 	typ, results := g.parsedDescriptorToGenDescriptorType(node)

@@ -9,11 +9,11 @@ import (
 // Used to convert parse.RegisterNode instances to *existing* register instances.
 // Returns an error on generation if the provided register node references a
 // register that does not exist.
-type RegisterGenerator[InstT BaseInstruction] struct{}
+type RegisterGenerator struct{}
 
-func NewRegisterGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.RegisterNode, *RegisterInfo] {
-	return FunctionContextGenerator[InstT, parse.RegisterNode, *RegisterInfo](
-		&RegisterGenerator[InstT]{},
+func NewRegisterGenerator() FunctionContextGenerator[parse.RegisterNode, *RegisterInfo] {
+	return FunctionContextGenerator[parse.RegisterNode, *RegisterInfo](
+		&RegisterGenerator{},
 	)
 }
 
@@ -28,8 +28,8 @@ func UndefinedRegisterResult(node parse.RegisterNode) core.ResultList {
 	})
 }
 
-func (g *RegisterGenerator[InstT]) Generate(
-	ctx *FunctionGenerationContext[InstT],
+func (g *RegisterGenerator) Generate(
+	ctx *FunctionGenerationContext,
 	node parse.RegisterNode,
 ) (*RegisterInfo, core.ResultList) {
 	name := nodeToSourceString(ctx.FileGenerationContext, node)

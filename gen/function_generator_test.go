@@ -15,6 +15,7 @@ func TestFunctionGeneration(t *testing.T) {
 		`func $32 @add $32 %a {
 			%b = ADD %a $32 #1
 			%c = ADD %b %a
+			RET
 		}`,
 	)
 	tkns, err := lex.NewTokenizer().Tokenize(src)
@@ -27,13 +28,13 @@ func TestFunctionGeneration(t *testing.T) {
 
 	intType := &gen.NamedTypeInfo{Name: "$32", Size: 4}
 
-	ctx := &gen.FileGenerationContext[Instruction]{
+	ctx := &gen.FileGenerationContext{
 		GenerationContext: &testGenerationContext,
 		SourceContext:     src.Ctx(),
 		Types:             &TypeMap{intType.Name: intType},
 	}
 
-	generator := gen.NewFunctionGenerator[Instruction]()
+	generator := gen.NewFunctionGenerator()
 	_, results := generator.Generate(ctx, node)
 	assert.True(t, results.IsEmpty())
 }

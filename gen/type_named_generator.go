@@ -6,20 +6,20 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-type NamedTypeGenerator[InstT BaseInstruction] struct {
-	ReferencedTypeGenerator FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo]
+type NamedTypeGenerator struct {
+	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewNamedTypeGenerator[InstT BaseInstruction]() FileContextGenerator[InstT, parse.TypeDeclarationNode, *NamedTypeInfo] {
-	return FileContextGenerator[InstT, parse.TypeDeclarationNode, *NamedTypeInfo](
-		&NamedTypeGenerator[InstT]{
-			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
+func NewNamedTypeGenerator() FileContextGenerator[parse.TypeDeclarationNode, *NamedTypeInfo] {
+	return FileContextGenerator[parse.TypeDeclarationNode, *NamedTypeInfo](
+		&NamedTypeGenerator{
+			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
 	)
 }
 
-func (g *NamedTypeGenerator[InstT]) calculateTypeSize(
-	ctx *FileGenerationContext[InstT],
+func (g *NamedTypeGenerator) calculateTypeSize(
+	ctx *FileGenerationContext,
 	node parse.TypeNode,
 	typeInfo ReferencedTypeInfo,
 ) (core.UsmUint, core.ResultList) {
@@ -54,8 +54,8 @@ func (g *NamedTypeGenerator[InstT]) calculateTypeSize(
 	return size, core.ResultList{}
 }
 
-func (g *NamedTypeGenerator[InstT]) Generate(
-	ctx *FileGenerationContext[InstT],
+func (g *NamedTypeGenerator) Generate(
+	ctx *FileGenerationContext,
 	node parse.TypeDeclarationNode,
 ) (*NamedTypeInfo, core.ResultList) {
 	identifier := viewToSourceString(ctx, node.Identifier)

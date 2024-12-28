@@ -1,9 +1,9 @@
 package gen
 
-import "alon.kr/x/list"
+type BasicBlockInfo struct {
+	Labels       []*LabelInfo
+	Instructions []*InstructionInfo
 
-type BasicBlockInfo[InstT BaseInstruction] struct {
-	Instructions list.List[*InstructionInfo[InstT]]
-
-	Labels []*LabelInfo[InstT]
+	ForwardEdges  []*BasicBlockInfo
+	BackwardEdges []*BasicBlockInfo
 }

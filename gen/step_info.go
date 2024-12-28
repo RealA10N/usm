@@ -8,6 +8,6 @@ type ContinueToNextInstruction struct{}
 
 type ReturnFromFunction struct{}
 
-type JumpToLabel[InstT BaseInstruction] struct {
-	Label *LabelInfo[InstT]
+type JumpToLabel struct {
+	Label *LabelInfo
 }

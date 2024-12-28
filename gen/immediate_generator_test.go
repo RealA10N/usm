@@ -25,8 +25,8 @@ func TestImmediateValueArgument(t *testing.T) {
 	intType := &gen.NamedTypeInfo{Name: "$32", Size: 4}
 	types := TypeMap{intType.Name: intType}
 
-	ctx := gen.FunctionGenerationContext[Instruction]{
-		FileGenerationContext: &gen.FileGenerationContext[Instruction]{
+	ctx := gen.FunctionGenerationContext{
+		FileGenerationContext: &gen.FileGenerationContext{
 			GenerationContext: &testGenerationContext,
 			SourceContext:     src.Ctx(),
 			Types:             &types,
@@ -34,7 +34,7 @@ func TestImmediateValueArgument(t *testing.T) {
 		Registers: &RegisterMap{},
 	}
 
-	generator := gen.NewImmediateArgumentGenerator[Instruction]()
+	generator := gen.NewImmediateArgumentGenerator()
 	argument, results := generator.Generate(&ctx, node)
 
 	assert.True(t, results.IsEmpty())

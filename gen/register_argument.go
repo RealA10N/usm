@@ -22,20 +22,20 @@ func (i *RegisterArgumentInfo) Declaration() core.UnmanagedSourceView {
 
 // MARK: Generator
 
-type RegisterArgumentGenerator[InstT BaseInstruction] struct {
-	RegisterGenerator FunctionContextGenerator[InstT, parse.RegisterNode, *RegisterInfo]
+type RegisterArgumentGenerator struct {
+	RegisterGenerator FunctionContextGenerator[parse.RegisterNode, *RegisterInfo]
 }
 
-func NewRegisterArgumentGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.RegisterNode, ArgumentInfo] {
-	return FunctionContextGenerator[InstT, parse.RegisterNode, ArgumentInfo](
-		&RegisterArgumentGenerator[InstT]{
-			RegisterGenerator: NewRegisterGenerator[InstT](),
+func NewRegisterArgumentGenerator() FunctionContextGenerator[parse.RegisterNode, ArgumentInfo] {
+	return FunctionContextGenerator[parse.RegisterNode, ArgumentInfo](
+		&RegisterArgumentGenerator{
+			RegisterGenerator: NewRegisterGenerator(),
 		},
 	)
 }
 
-func (g *RegisterArgumentGenerator[InstT]) Generate(
-	ctx *FunctionGenerationContext[InstT],
+func (g *RegisterArgumentGenerator) Generate(
+	ctx *FunctionGenerationContext,
 	node parse.RegisterNode,
 ) (ArgumentInfo, core.ResultList) {
 	register, results := g.RegisterGenerator.Generate(ctx, node)

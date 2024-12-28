@@ -10,18 +10,21 @@ import (
 //
 // Will create and add the label to the function context,
 // and return an error if a label with the same name already exists.
-type LabelDefinitionGenerator[InstT BaseInstruction] struct{}
+type LabelDefinitionGenerator struct{}
 
-func NewLabelDefinitionGenerator[InstT BaseInstruction]() LabelContextGenerator[InstT, parse.LabelNode, *LabelInfo[InstT]] {
-	return LabelContextGenerator[InstT, parse.LabelNode, *LabelInfo[InstT]](
-		&LabelDefinitionGenerator[InstT]{},
+func NewLabelDefinitionGenerator() LabelContextGenerator[
+	parse.LabelNode,
+	*LabelInfo,
+] {
+	return LabelContextGenerator[parse.LabelNode, *LabelInfo](
+		&LabelDefinitionGenerator{},
 	)
 }
 
-func (g *LabelDefinitionGenerator[InstT]) Generate(
-	ctx *LabelGenerationContext[InstT],
+func (g *LabelDefinitionGenerator) Generate(
+	ctx *LabelGenerationContext,
 	node parse.LabelNode,
-) (*LabelInfo[InstT], core.ResultList) {
+) (*LabelInfo, core.ResultList) {
 	name := nodeToSourceString(ctx.FileGenerationContext, node)
 	labelInfo := ctx.Labels.GetLabel(name)
 	declaration := node.View()
@@ -41,8 +44,9 @@ func (g *LabelDefinitionGenerator[InstT]) Generate(
 		})
 	}
 
-	newLabelInfo := &LabelInfo[InstT]{
+	newLabelInfo := &LabelInfo{
 		Name:        name,
+		BasicBlock:  nil, // Defined later in compilation.
 		Declaration: declaration,
 	}
 

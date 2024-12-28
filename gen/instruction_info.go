@@ -10,7 +10,10 @@ type InstructionInfo struct {
 	Arguments []ArgumentInfo
 
 	// The labels that point directly to this instruction.
-	Labels []*LabelInfo[BaseInstruction]
+	Labels []*LabelInfo
+
+	// The actual instruction information, which is ISA specific.
+	Instruction BaseInstruction
 
 	// The location in which the instruction was defined in the source code.
 	// Can be nil if the instruction was defined internally, for example,

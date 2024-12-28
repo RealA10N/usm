@@ -8,31 +8,31 @@ import (
 
 // MARK: Info
 
-type LabelArgumentInfo[InstT BaseInstruction] struct {
-	Label       *LabelInfo[InstT]
+type LabelArgumentInfo struct {
+	Label       *LabelInfo
 	declaration core.UnmanagedSourceView
 }
 
-func (i *LabelArgumentInfo[InstT]) GetType() *ReferencedTypeInfo {
+func (i *LabelArgumentInfo) GetType() *ReferencedTypeInfo {
 	return nil // Label argument does not have a type
 }
 
-func (i *LabelArgumentInfo[InstT]) Declaration() core.UnmanagedSourceView {
+func (i *LabelArgumentInfo) Declaration() core.UnmanagedSourceView {
 	return i.declaration
 }
 
 // MARK: Generator
 
-type LabelArgumentGenerator[InstT BaseInstruction] struct{}
+type LabelArgumentGenerator struct{}
 
-func NewLabelArgumentGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.LabelNode, ArgumentInfo] {
-	return FunctionContextGenerator[InstT, parse.LabelNode, ArgumentInfo](
-		&LabelArgumentGenerator[InstT]{},
+func NewLabelArgumentGenerator() FunctionContextGenerator[parse.LabelNode, ArgumentInfo] {
+	return FunctionContextGenerator[parse.LabelNode, ArgumentInfo](
+		&LabelArgumentGenerator{},
 	)
 }
 
-func (g *LabelArgumentGenerator[InstT]) Generate(
-	ctx *FunctionGenerationContext[InstT],
+func (g *LabelArgumentGenerator) Generate(
+	ctx *FunctionGenerationContext,
 	node parse.LabelNode,
 ) (ArgumentInfo, core.ResultList) {
 	name := nodeToSourceString(ctx.FileGenerationContext, node)
@@ -49,7 +49,7 @@ func (g *LabelArgumentGenerator[InstT]) Generate(
 		})
 	}
 
-	argument := &LabelArgumentInfo[InstT]{
+	argument := &LabelArgumentInfo{
 		Label:       labelInfo,
 		declaration: node.View(),
 	}

@@ -6,20 +6,20 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-type ReferencedTypeGenerator[InstT BaseInstruction] struct {
-	DescriptorGenerator FileContextGenerator[InstT, parse.TypeDecoratorNode, TypeDescriptorInfo]
+type ReferencedTypeGenerator struct {
+	DescriptorGenerator FileContextGenerator[parse.TypeDecoratorNode, TypeDescriptorInfo]
 }
 
-func NewReferencedTypeGenerator[InstT BaseInstruction]() FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo] {
-	return FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo](
-		&ReferencedTypeGenerator[InstT]{
-			DescriptorGenerator: NewDescriptorGenerator[InstT](),
+func NewReferencedTypeGenerator() FileContextGenerator[parse.TypeNode, ReferencedTypeInfo] {
+	return FileContextGenerator[parse.TypeNode, ReferencedTypeInfo](
+		&ReferencedTypeGenerator{
+			DescriptorGenerator: NewDescriptorGenerator(),
 		},
 	)
 }
 
-func (g *ReferencedTypeGenerator[InstT]) Generate(
-	ctx *FileGenerationContext[InstT],
+func (g *ReferencedTypeGenerator) Generate(
+	ctx *FileGenerationContext,
 	node parse.TypeNode,
 ) (ReferencedTypeInfo, core.ResultList) {
 	baseIdentifier := viewToSourceString(ctx, node.Identifier)

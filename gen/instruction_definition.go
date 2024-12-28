@@ -15,9 +15,9 @@ type BaseInstruction interface {
 // A basic instruction definition. This defines the logic that converts the
 // generic, architecture / instruction set independent instruction AST nodes
 // into a format instruction which is part of a specific instruction set.
-type InstructionDefinition[InstT BaseInstruction] interface {
+type InstructionDefinition interface {
 	// Build an instruction from the provided instruction information.
-	BuildInstruction(info *InstructionInfo) (InstT, core.ResultList)
+	BuildInstruction(info *InstructionInfo) (BaseInstruction, core.ResultList)
 
 	// Provided a list a list of types that correspond to argument types,
 	// and a (possibly partial) list of target types, return a complete list
@@ -32,7 +32,7 @@ type InstructionDefinition[InstT BaseInstruction] interface {
 	// TODO: perhaps we should not pass the bare generation context to the "public"
 	// instruction set definition API, and should wrap it with a limited interface.
 	InferTargetTypes(
-		ctx *FunctionGenerationContext[InstT],
+		ctx *FunctionGenerationContext,
 		targets []*ReferencedTypeInfo,
 		arguments []*ReferencedTypeInfo,
 	) ([]ReferencedTypeInfo, core.ResultList)

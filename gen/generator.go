@@ -7,9 +7,9 @@ import (
 
 // MARK: Context
 
-type ManagerCreators[InstT BaseInstruction] struct {
+type ManagerCreators struct {
 	RegisterManagerCreator func() RegisterManager
-	LabelManagerCreator    func() LabelManager[InstT]
+	LabelManagerCreator    func() LabelManager
 	TypeManagerCreator     func() TypeManager
 }
 
@@ -18,8 +18,8 @@ type ManagerCreators[InstT BaseInstruction] struct {
 // and which are essential across the whole pipeline.
 //
 // It mainly contains information about the compilation target.
-type GenerationContext[InstT BaseInstruction] struct {
-	ManagerCreators[InstT]
+type GenerationContext struct {
+	ManagerCreators
 
 	// An instruction (definition) manager, which contains all instruction
 	// definitions that are supported in the current architecture (ISA).
@@ -27,7 +27,7 @@ type GenerationContext[InstT BaseInstruction] struct {
 	// When processing a new instruction from the source code, the compiler
 	// talks with the instruction manager, retrieves the relevant instruction
 	// definition, and uses it to farther process the instruction.
-	Instructions InstructionManager[InstT]
+	Instructions InstructionManager
 
 	// The size of a pointer type in the current target architecture.
 	//
@@ -36,8 +36,8 @@ type GenerationContext[InstT BaseInstruction] struct {
 	PointerSize core.UsmUint
 }
 
-type FileGenerationContext[InstT BaseInstruction] struct {
-	*GenerationContext[InstT]
+type FileGenerationContext struct {
+	*GenerationContext
 
 	// The source code of the file that we are currently processing.
 	core.SourceContext
@@ -50,8 +50,8 @@ type FileGenerationContext[InstT BaseInstruction] struct {
 	// TODO: add globals, variables, constants.
 }
 
-type FunctionGenerationContext[InstT BaseInstruction] struct {
-	*FileGenerationContext[InstT]
+type FunctionGenerationContext struct {
+	*FileGenerationContext
 
 	// A register manager, which contains all active registers in the function.
 	// The compiler can query register information from the register manager
@@ -60,11 +60,11 @@ type FunctionGenerationContext[InstT BaseInstruction] struct {
 	Registers RegisterManager
 
 	// A label manager, which stores and manages all labels defined in a function.
-	Labels LabelManager[InstT]
+	Labels LabelManager
 }
 
-type LabelGenerationContext[InstT BaseInstruction] struct {
-	*FunctionGenerationContext[InstT]
+type LabelGenerationContext struct {
+	*FunctionGenerationContext
 
 	// The index of the instruction which is currently being iterated upon.
 	//
@@ -76,45 +76,45 @@ type LabelGenerationContext[InstT BaseInstruction] struct {
 
 // MARK: Generator
 
-type Generator[InstT BaseInstruction, NodeT parse.Node, InfoT any] interface {
+type Generator[NodeT parse.Node, InfoT any] interface {
 	Generate(
-		ctx *GenerationContext[InstT],
+		ctx *GenerationContext,
 		node NodeT,
 	) (info InfoT, results core.ResultList)
 }
 
-type FileContextGenerator[InstT BaseInstruction, NodeT parse.Node, InfoT any] interface {
+type FileContextGenerator[NodeT parse.Node, InfoT any] interface {
 	Generate(
-		ctx *FileGenerationContext[InstT],
+		ctx *FileGenerationContext,
 		node NodeT,
 	) (info InfoT, results core.ResultList)
 }
 
-type FunctionContextGenerator[InstT BaseInstruction, NodeT parse.Node, InfoT any] interface {
+type FunctionContextGenerator[NodeT parse.Node, InfoT any] interface {
 	Generate(
-		ctx *FunctionGenerationContext[InstT],
+		ctx *FunctionGenerationContext,
 		node NodeT,
 	) (info InfoT, results core.ResultList)
 }
 
-type LabelContextGenerator[InstT BaseInstruction, NodeT parse.Node, InfoT any] interface {
+type LabelContextGenerator[NodeT parse.Node, InfoT any] interface {
 	Generate(
-		ctx *LabelGenerationContext[InstT],
+		ctx *LabelGenerationContext,
 		node NodeT,
 	) (info InfoT, results core.ResultList)
 }
 
 // MARK: Utils
 
-func viewToSourceString[InstT BaseInstruction](
-	ctx *FileGenerationContext[InstT],
+func viewToSourceString(
+	ctx *FileGenerationContext,
 	view core.UnmanagedSourceView,
 ) string {
 	return string(view.Raw(ctx.SourceContext))
 }
 
-func nodeToSourceString[InstT BaseInstruction](
-	ctx *FileGenerationContext[InstT],
+func nodeToSourceString(
+	ctx *FileGenerationContext,
 	node parse.Node,
 ) string {
 	return viewToSourceString(ctx, node.View())

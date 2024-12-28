@@ -11,19 +11,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type Instruction struct{}
+type AddInstruction struct{}
+
+func (i *AddInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
+	return []gen.StepInfo{gen.ContinueToNextInstruction{}}, core.ResultList{}
+}
 
 type AddInstructionDefinition struct{}
 
 func (AddInstructionDefinition) BuildInstruction(
-	targets []*gen.RegisterArgumentInfo,
-	arguments []gen.ArgumentInfo,
-) (Instruction, core.ResultList) {
-	return Instruction{}, core.ResultList{}
+	info *gen.InstructionInfo,
+) (gen.BaseInstruction, core.ResultList) {
+	return gen.BaseInstruction(&AddInstruction{}), core.ResultList{}
 }
 
 func (AddInstructionDefinition) InferTargetTypes(
-	ctx *gen.FunctionGenerationContext[Instruction],
+	ctx *gen.FunctionGenerationContext,
 	targets []*gen.ReferencedTypeInfo,
 	arguments []*gen.ReferencedTypeInfo,
 ) ([]gen.ReferencedTypeInfo, core.ResultList) {
@@ -57,12 +60,34 @@ func (AddInstructionDefinition) InferTargetTypes(
 	}, core.ResultList{}
 }
 
-type InstructionMap map[string]gen.InstructionDefinition[Instruction]
+type RetInstruction struct{}
+
+func (i *RetInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
+	return []gen.StepInfo{gen.ReturnFromFunction{}}, core.ResultList{}
+}
+
+type RetInstructionDefinition struct{}
+
+func (RetInstructionDefinition) BuildInstruction(
+	info *gen.InstructionInfo,
+) (gen.BaseInstruction, core.ResultList) {
+	return gen.BaseInstruction(&RetInstruction{}), core.ResultList{}
+}
+
+func (RetInstructionDefinition) InferTargetTypes(
+	ctx *gen.FunctionGenerationContext,
+	targets []*gen.ReferencedTypeInfo,
+	arguments []*gen.ReferencedTypeInfo,
+) ([]gen.ReferencedTypeInfo, core.ResultList) {
+	return []gen.ReferencedTypeInfo{}, core.ResultList{}
+}
+
+type InstructionMap map[string]gen.InstructionDefinition
 
 func (m *InstructionMap) GetInstructionDefinition(
 	name string,
 	node parse.InstructionNode,
-) (gen.InstructionDefinition[Instruction], core.ResultList) {
+) (gen.InstructionDefinition, core.ResultList) {
 	instDef, ok := (*m)[name]
 	if !ok {
 		return nil, list.FromSingle(core.Result{{
@@ -96,8 +121,8 @@ func TestInstructionCreateTarget(t *testing.T) {
 		"%b": &gen.RegisterInfo{Name: "%b", Type: intTypeRef},
 	}
 
-	ctx := &gen.FunctionGenerationContext[Instruction]{
-		FileGenerationContext: &gen.FileGenerationContext[Instruction]{
+	ctx := &gen.FunctionGenerationContext{
+		FileGenerationContext: &gen.FileGenerationContext{
 			GenerationContext: &testGenerationContext,
 			SourceContext:     src.Ctx(),
 			Types:             &types,
@@ -105,7 +130,7 @@ func TestInstructionCreateTarget(t *testing.T) {
 		Registers: &registers,
 	}
 
-	generator := gen.NewInstructionGenerator[Instruction]()
+	generator := gen.NewInstructionGenerator()
 	_, results := generator.Generate(ctx, node)
 	assert.True(t, results.IsEmpty())
 

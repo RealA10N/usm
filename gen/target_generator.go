@@ -6,14 +6,14 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-type TargetGenerator[InstT BaseInstruction] struct {
-	ReferencedTypeGenerator FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo]
+type TargetGenerator struct {
+	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewTargetGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.TargetNode, registerPartialInfo] {
-	return FunctionContextGenerator[InstT, parse.TargetNode, registerPartialInfo](
-		&TargetGenerator[InstT]{
-			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
+func NewTargetGenerator() FunctionContextGenerator[parse.TargetNode, registerPartialInfo] {
+	return FunctionContextGenerator[parse.TargetNode, registerPartialInfo](
+		&TargetGenerator{
+			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
 	)
 }
@@ -36,8 +36,8 @@ func NewRegisterTypeMismatchResult(
 	})
 }
 
-func (g *TargetGenerator[InstT]) Generate(
-	ctx *FunctionGenerationContext[InstT],
+func (g *TargetGenerator) Generate(
+	ctx *FunctionGenerationContext,
 	node parse.TargetNode,
 ) (registerPartialInfo, core.ResultList) {
 	var explicitType *ReferencedTypeInfo

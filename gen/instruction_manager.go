@@ -5,7 +5,7 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-type InstructionManager[InstT BaseInstruction] interface {
+type InstructionManager interface {
 	// Get the instruction definition that corresponds to the provided name.
 	//
 	// Instruction node is for extra context, if needed, especially for
@@ -13,5 +13,5 @@ type InstructionManager[InstT BaseInstruction] interface {
 	GetInstructionDefinition(
 		name string,
 		node parse.InstructionNode,
-	) (InstructionDefinition[InstT], core.ResultList)
+	) (InstructionDefinition, core.ResultList)
 }

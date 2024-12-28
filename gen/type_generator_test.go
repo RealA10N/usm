@@ -31,13 +31,13 @@ func TestTypeAliasDeclaration(t *testing.T) {
 		},
 	}
 
-	ctx := gen.FileGenerationContext[Instruction]{
+	ctx := gen.FileGenerationContext{
 		GenerationContext: &testGenerationContext,
 		SourceContext:     view.Ctx(),
 		Types:             &typeManager,
 	}
 
-	generator := gen.NewNamedTypeGenerator[Instruction]()
+	generator := gen.NewNamedTypeGenerator()
 	typeInfo, results := generator.Generate(&ctx, typeDeclarationNode)
 
 	assert.True(t, results.IsEmpty())
@@ -74,13 +74,13 @@ func TestPointerTypeDeclaration(t *testing.T) {
 		},
 	}
 
-	ctx := gen.FileGenerationContext[Instruction]{
+	ctx := gen.FileGenerationContext{
 		GenerationContext: &testGenerationContext,
 		SourceContext:     view.Ctx(),
 		Types:             &typeManager,
 	}
 
-	generator := gen.NewNamedTypeGenerator[Instruction]()
+	generator := gen.NewNamedTypeGenerator()
 	typeInfo, results := generator.Generate(&ctx, typeDeclarationNode)
 
 	assert.True(t, results.IsEmpty())
@@ -117,13 +117,13 @@ func TestRepeatTypeDeclaration(t *testing.T) {
 		},
 	}
 
-	ctx := gen.FileGenerationContext[Instruction]{
+	ctx := gen.FileGenerationContext{
 		GenerationContext: &testGenerationContext,
 		SourceContext:     view.Ctx(),
 		Types:             &typeManager,
 	}
 
-	generator := gen.NewNamedTypeGenerator[Instruction]()
+	generator := gen.NewNamedTypeGenerator()
 	typeInfo, results := generator.Generate(&ctx, typeDeclarationNode)
 
 	assert.True(t, results.IsEmpty())
@@ -159,13 +159,13 @@ func TestAlreadyDefinedTypeDeclaration(t *testing.T) {
 		},
 	}
 
-	genCtx := gen.FileGenerationContext[Instruction]{
+	genCtx := gen.FileGenerationContext{
 		GenerationContext: &testGenerationContext,
 		SourceContext:     view.Ctx(),
 		Types:             &typeManager,
 	}
 
-	generator := gen.NewNamedTypeGenerator[Instruction]()
+	generator := gen.NewNamedTypeGenerator()
 	_, results := generator.Generate(&genCtx, node)
 
 	assert.Len(t, results.ToSlice(), 1)
@@ -227,13 +227,13 @@ func TestRepeatTypeTooLarge(t *testing.T) {
 		},
 	}
 
-	ctx := &gen.FileGenerationContext[Instruction]{
+	ctx := &gen.FileGenerationContext{
 		GenerationContext: &testGenerationContext,
 		SourceContext:     v.Ctx(),
 		Types:             &typeManager,
 	}
 
-	generator := gen.NewNamedTypeGenerator[Instruction]()
+	generator := gen.NewNamedTypeGenerator()
 	_, results := generator.Generate(ctx, node)
 	assert.False(t, results.IsEmpty())
 }
