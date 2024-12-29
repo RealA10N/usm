@@ -48,5 +48,6 @@ func (g *RegisterArgumentGenerator) Generate(
 		declaration: node.View(),
 	}
 
+	register.AddUsage(ctx.InstructionInfo)
 	return &argument, core.ResultList{}
 }
