@@ -12,3 +12,7 @@ type LabelInfo struct {
 	// A view of the label declaration in the source code.
 	Declaration core.UnmanagedSourceView
 }
+
+func (l *LabelInfo) LinkToBasicBlock(basicBlock *BasicBlockInfo) {
+	l.BasicBlock = basicBlock
+}

@@ -165,24 +165,10 @@ func (g *FunctionGenerator) generateFunctionBasicBlocks(
 	// references to other blocks.
 	for i := uint(0); i < blocksCount; i++ {
 		blockInstructionIndices := cfg.BasicBlockToNodes[i]
-		firstInstructionIndex := blockInstructionIndices[0]
-		firstInstructionInfo := instructions[firstInstructionIndex]
-		blockLabels := firstInstructionInfo.Labels
+		blocks[i] = NewEmptyBasicBlockInfo()
 
-		blockInstructions := make([]*InstructionInfo, 0, len(blockInstructionIndices))
 		for _, instructionIndex := range blockInstructionIndices {
-			blockInstructions = append(blockInstructions, instructions[instructionIndex])
-		}
-
-		blocks[i] = &BasicBlockInfo{
-			Labels:        blockLabels,
-			Instructions:  blockInstructions,
-			ForwardEdges:  make([]*BasicBlockInfo, 0, len(cfg.Nodes[i].ForwardEdges)),
-			BackwardEdges: make([]*BasicBlockInfo, 0, len(cfg.Nodes[i].BackwardEdges)),
-		}
-
-		for _, label := range blockLabels {
-			label.BasicBlock = blocks[i]
+			blocks[i].AppendInstruction(instructions[instructionIndex])
 		}
 	}
 

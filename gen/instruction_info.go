@@ -3,6 +3,8 @@ package gen
 import "alon.kr/x/usm/core"
 
 type InstructionInfo struct {
+	*BasicBlockInfo
+
 	// The targets of the instruction.
 	Targets []*RegisterArgumentInfo
 
@@ -25,10 +27,18 @@ func NewEmptyInstructionInfo(
 	declaration *core.UnmanagedSourceView,
 ) *InstructionInfo {
 	return &InstructionInfo{
-		Targets:     []*RegisterArgumentInfo{},
-		Arguments:   []ArgumentInfo{},
-		Labels:      []*LabelInfo{},
-		Instruction: nil,
-		Declaration: declaration,
+		BasicBlockInfo: nil,
+		Targets:        []*RegisterArgumentInfo{},
+		Arguments:      []ArgumentInfo{},
+		Labels:         []*LabelInfo{},
+		Instruction:    nil,
+		Declaration:    declaration,
+	}
+}
+
+func (i *InstructionInfo) LinkToBasicBlock(basicBlock *BasicBlockInfo) {
+	i.BasicBlockInfo = basicBlock
+	for _, label := range i.Labels {
+		label.LinkToBasicBlock(basicBlock)
 	}
 }

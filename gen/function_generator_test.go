@@ -35,6 +35,9 @@ func TestFunctionGeneration(t *testing.T) {
 	}
 
 	generator := gen.NewFunctionGenerator()
-	_, results := generator.Generate(ctx, node)
+	function, results := generator.Generate(ctx, node)
 	assert.True(t, results.IsEmpty())
+
+	assert.NotNil(t, function.EntryBlock)
+	assert.Nil(t, function.EntryBlock.NextBlock)
 }
