@@ -182,10 +182,20 @@ func (g *FunctionGenerator) generateFunctionBasicBlocks(
 		for _, j := range node.BackwardEdges {
 			blocks[i].BackwardEdges = append(blocks[i].BackwardEdges, blocks[j])
 		}
+	}
 
-		if i != blocksCount-1 {
-			blocks[i].NextBlock = blocks[i+1]
+	// finally, fill in the NextBlock field.
+	// We do it this way, to guarantee that the order of the blocks in the
+	// `NextBlock` list matches the order of them in the source code.
+	for i := uint(0); i < blocksCount; i++ {
+		lastBlockInstructionIndex := cfg.BasicBlockToNodes[i][len(cfg.BasicBlockToNodes[i])-1]
+		firstNextBlockInstructionIndex := lastBlockInstructionIndex + 1
+		if firstNextBlockInstructionIndex >= uint(len(instructions)) {
+			continue // This is the last block in the function.
 		}
+
+		nextBlockIndex := cfg.NodeToBasicBlock[firstNextBlockInstructionIndex]
+		blocks[i].NextBlock = blocks[nextBlockIndex]
 	}
 
 	return blocks, core.ResultList{}

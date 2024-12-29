@@ -101,6 +101,15 @@ func TestIfElseFunctionGeneration(t *testing.T) {
 	}
 
 	generator := gen.NewFunctionGenerator()
-	_, results := generator.Generate(ctx, node)
+	function, results := generator.Generate(ctx, node)
 	assert.True(t, results.IsEmpty())
+
+	entryBlock := function.EntryBlock
+	nonzeroBlock := entryBlock.NextBlock
+	zeroBlock := nonzeroBlock.NextBlock
+	endBlock := zeroBlock.NextBlock
+
+	assert.Nil(t, endBlock.NextBlock)
+
+	assert.ElementsMatch(t, entryBlock.ForwardEdges, []*gen.BasicBlockInfo{nonzeroBlock, zeroBlock})
 }
