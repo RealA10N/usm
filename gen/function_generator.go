@@ -50,23 +50,26 @@ func (g *FunctionGenerator) createParameterRegisters(
 func (g *FunctionGenerator) collectLabelDefinitions(
 	ctx *FunctionGenerationContext,
 	instructions []parse.InstructionNode,
-) (results core.ResultList) {
+) (map[*LabelInfo]uint, core.ResultList) {
+	results := core.ResultList{}
+	labelToInstructionIndex := make(map[*LabelInfo]uint)
 
 	labelCtx := LabelGenerationContext{
 		FunctionGenerationContext: ctx,
 		CurrentInstructionIndex:   0,
 	}
 
-	for _, instruction := range instructions {
+	for i, instruction := range instructions {
 		for _, label := range instruction.Labels {
-			_, curResults := g.LabelDefinitionGenerator.Generate(&labelCtx, label)
+			info, curResults := g.LabelDefinitionGenerator.Generate(&labelCtx, label)
+			labelToInstructionIndex[info] = uint(i)
 			results.Extend(&curResults)
 		}
 
 		labelCtx.CurrentInstructionIndex++
 	}
 
-	return results
+	return labelToInstructionIndex, results
 }
 
 func (g *FunctionGenerator) generateFunctionBody(
@@ -93,6 +96,7 @@ func (g *FunctionGenerator) generateFunctionBody(
 
 func (g *FunctionGenerator) generateInstructionsGraph(
 	instructions []*InstructionInfo,
+	labelToInstructionIndex map[*LabelInfo]uint,
 ) (graph.Graph, core.ResultList) {
 	instructionCount := uint(len(instructions))
 	instructionsGraph := graph.NewEmptyGraph(instructionCount)
@@ -107,8 +111,7 @@ func (g *FunctionGenerator) generateInstructionsGraph(
 		}
 
 		for _, nextStep := range possibleNextSteps {
-			switch nextStep.(type) {
-			// switch typedNextStep := nextStep.(type) {
+			switch typedNextStep := nextStep.(type) {
 			case ContinueToNextInstruction:
 				if i+1 >= instructionCount {
 					results.Append(core.Result{
@@ -127,10 +130,8 @@ func (g *FunctionGenerator) generateInstructionsGraph(
 				instructionsGraph.AddEdge(i, i+1)
 
 			case JumpToLabel:
-				// TODO: be consistent with integer types.
-				// TODO: implement this.
-				// j := uint(typedNextStep.Label.InstructionIndex)
-				// instructionsGraph.AddEdge(i)
+				j := labelToInstructionIndex[typedNextStep.Label]
+				instructionsGraph.AddEdge(i, j)
 
 			case ReturnFromFunction:
 				// Don't add an edge.
@@ -179,6 +180,10 @@ func (g *FunctionGenerator) generateFunctionBasicBlocks(
 			ForwardEdges:  make([]*BasicBlockInfo, 0, len(cfg.Nodes[i].ForwardEdges)),
 			BackwardEdges: make([]*BasicBlockInfo, 0, len(cfg.Nodes[i].BackwardEdges)),
 		}
+
+		for _, label := range blockLabels {
+			label.BasicBlock = blocks[i]
+		}
 	}
 
 	// now fill in the missing edges fields.
@@ -190,6 +195,10 @@ func (g *FunctionGenerator) generateFunctionBasicBlocks(
 
 		for _, j := range node.BackwardEdges {
 			blocks[i].BackwardEdges = append(blocks[i].BackwardEdges, blocks[j])
+		}
+
+		if i != blocksCount-1 {
+			blocks[i].NextBlock = blocks[i+1]
 		}
 	}
 
@@ -206,7 +215,7 @@ func (g *FunctionGenerator) Generate(
 	parameters, paramResults := g.createParameterRegisters(funcCtx, node.Signature.Parameters)
 	results.Extend(&paramResults)
 
-	labelResults := g.collectLabelDefinitions(funcCtx, node.Instructions.Nodes)
+	labelToInstructionIndex, labelResults := g.collectLabelDefinitions(funcCtx, node.Instructions.Nodes)
 	results.Extend(&labelResults)
 
 	if !results.IsEmpty() {
@@ -218,7 +227,7 @@ func (g *FunctionGenerator) Generate(
 		return nil, results
 	}
 
-	graph, results := g.generateInstructionsGraph(instructions)
+	graph, results := g.generateInstructionsGraph(instructions, labelToInstructionIndex)
 	if !results.IsEmpty() {
 		return nil, results
 	}

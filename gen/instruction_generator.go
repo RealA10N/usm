@@ -64,6 +64,29 @@ func (g *InstructionGenerator) generatePartialTargetsInfo(
 	return targets, results
 }
 
+func (g *InstructionGenerator) generateLabels(
+	ctx *FunctionGenerationContext,
+	node parse.InstructionNode,
+) ([]*LabelInfo, core.ResultList) {
+	labels := make([]*LabelInfo, 0, len(node.Labels))
+	for _, node := range node.Labels {
+		name := nodeToSourceString(ctx.FileGenerationContext, node)
+		label := ctx.Labels.GetLabel(name)
+		if label == nil {
+			v := node.View()
+			return nil, list.FromSingle(core.Result{{
+				Type:     core.ErrorResult,
+				Message:  "Label does not exist",
+				Location: &v,
+			}})
+		}
+
+		labels = append(labels, label)
+	}
+
+	return labels, core.ResultList{}
+}
+
 func partialTargetsToTypes(targets []registerPartialInfo) []*ReferencedTypeInfo {
 	types := make([]*ReferencedTypeInfo, len(targets))
 	for i, target := range targets {
@@ -194,6 +217,8 @@ func (g *InstructionGenerator) Generate(
 	partialTargets, curResults := g.generatePartialTargetsInfo(ctx, node)
 	results.Extend(&curResults)
 
+	labels, curResults := g.generateLabels(ctx, node)
+
 	// Now it's time to check if we have any errors so far.
 	if !results.IsEmpty() {
 		return nil, results
@@ -218,6 +243,7 @@ func (g *InstructionGenerator) Generate(
 		Instruction: nil, // will after BuildInstruction is called.
 		Targets:     targets,
 		Arguments:   arguments,
+		Labels:      labels,
 		Declaration: &v,
 	}
 
