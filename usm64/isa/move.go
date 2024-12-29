@@ -9,35 +9,31 @@ import (
 // Currently, supporting only a single argument + target.
 // TODO: support n arguments and target pairs.
 type MoveInstruction struct {
-	Target usm64core.Register
-	Value  usm64core.ValuedArgument
+	nonBranchingInstruction
 }
 
 func (i *MoveInstruction) Emulate(
 	ctx *usm64core.EmulationContext,
-) usm64core.EmulationError {
-	ctx.Registers[i.Target.Name] = i.Value.Value(ctx)
-	ctx.IncrementInstructionPointer()
-	return nil
+) core.ResultList {
+	value, results := ctx.ArgumentToValue(i.Arguments[0])
+	if !results.IsEmpty() {
+		return results
+	}
+
+	targetName := i.Targets[0].Register.Name
+	ctx.Registers[targetName] = value
+	return ctx.ContinueToNextInstruction()
 }
 
 func NewMoveInstruction(
-	targets []usm64core.Register,
-	arguments []usm64core.Argument,
-) (usm64core.Instruction, core.ResultList) {
-	results := core.ResultList{}
-
-	value, valueResults := usm64core.ArgumentToValuedArgument(arguments[0])
-	results.Extend(&valueResults)
-
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
-	return &MoveInstruction{Target: targets[0], Value: value}, core.ResultList{}
+	info *gen.InstructionInfo,
+) (gen.BaseInstruction, core.ResultList) {
+	return gen.BaseInstruction(&MoveInstruction{
+		nonBranchingInstruction: newNonBranchingInstruction(info),
+	}), core.ResultList{}
 }
 
-func NewMoveInstructionDefinition() gen.InstructionDefinition[usm64core.Instruction] {
+func NewMoveInstructionDefinition() gen.InstructionDefinition {
 	return &FixedInstructionDefinition{
 		Targets:   1,
 		Arguments: 1,

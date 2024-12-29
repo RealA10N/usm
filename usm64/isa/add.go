@@ -1,48 +1,53 @@
 package usm64isa
 
 import (
+	"math/bits"
+
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 	usm64core "alon.kr/x/usm/usm64/core"
 )
 
 type AddInstruction struct {
-	Target        usm64core.Register
-	First, Second usm64core.ValuedArgument
+	nonBranchingInstruction
 }
 
 func (i *AddInstruction) Emulate(
 	ctx *usm64core.EmulationContext,
-) usm64core.EmulationError {
-	ctx.Registers[i.Target.Name] = i.First.Value(ctx) + i.Second.Value(ctx)
-	ctx.IncrementInstructionPointer()
-	return nil
+) core.ResultList {
+	results := core.ResultList{}
+
+	first, firstResults := ctx.ArgumentToValue(i.Arguments[0])
+	results.Extend(&firstResults)
+
+	second, secondResults := ctx.ArgumentToValue(i.Arguments[1])
+	results.Extend(&secondResults)
+
+	if !results.IsEmpty() {
+		return results
+	}
+
+	targetName := i.Targets[0].Register.Name
+	sum, _ := bits.Add64(first, second, 0)
+	ctx.Registers[targetName] = sum
+	return ctx.ContinueToNextInstruction()
 }
 
 func NewAddInstruction(
-	targets []usm64core.Register,
-	arguments []usm64core.Argument,
-) (usm64core.Instruction, core.ResultList) {
+	info *gen.InstructionInfo,
+) (gen.BaseInstruction, core.ResultList) {
 	results := core.ResultList{}
-
-	first, firstResults := usm64core.ArgumentToValuedArgument(arguments[0])
-	results.Extend(&firstResults)
-
-	second, secondResults := usm64core.ArgumentToValuedArgument(arguments[1])
-	results.Extend(&secondResults)
 
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
-	return &AddInstruction{
-		Target: targets[0],
-		First:  first,
-		Second: second,
-	}, core.ResultList{}
+	return gen.BaseInstruction(&AddInstruction{
+		nonBranchingInstruction: newNonBranchingInstruction(info),
+	}), core.ResultList{}
 }
 
-func NewAddInstructionDefinition() gen.InstructionDefinition[usm64core.Instruction] {
+func NewAddInstructionDefinition() gen.InstructionDefinition {
 	return &FixedInstructionDefinition{
 		Targets:   1,
 		Arguments: 2,

@@ -11,9 +11,10 @@ type Label struct {
 	declaration      core.UnmanagedSourceView
 }
 
-func NewLabel(arg gen.LabelArgumentInfo[Instruction]) (Label, core.ResultList) {
+func NewLabel(arg gen.LabelArgumentInfo) (Label, core.ResultList) {
 	return Label{
-		Name:        arg.Label.Name,
+		Name: arg.Label.Name,
+
 		declaration: arg.Declaration(),
 	}, core.ResultList{}
 }

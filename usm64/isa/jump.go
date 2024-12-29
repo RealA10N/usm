@@ -7,29 +7,28 @@ import (
 )
 
 type JumpInstruction struct {
-	Label usm64core.Label
+	baseInstruction
+}
+
+func (i *JumpInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
+	label := i.InstructionInfo.Arguments[0].(*gen.LabelArgumentInfo).Label
+	return []gen.StepInfo{gen.JumpToLabel{Label: label}}, core.ResultList{}
 }
 
 func (i *JumpInstruction) Emulate(
 	ctx *usm64core.EmulationContext,
-) usm64core.EmulationError {
-	ctx.JumpToLabel(i.Label)
-	return nil
+) core.ResultList {
+	labelArgument := i.InstructionInfo.Arguments[0].(*gen.LabelArgumentInfo)
+	return ctx.JumpToLabel(labelArgument.Label)
 }
 
 func NewJumpInstruction(
-	targets []usm64core.Register,
-	arguments []usm64core.Argument,
-) (usm64core.Instruction, core.ResultList) {
-	label, results := usm64core.ArgumentToLabel(arguments[0])
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
-	return &JumpInstruction{Label: label}, core.ResultList{}
+	info *gen.InstructionInfo,
+) (gen.BaseInstruction, core.ResultList) {
+	return gen.BaseInstruction(&JumpInstruction{baseInstruction: baseInstruction{info}}), core.ResultList{}
 }
 
-func NewJumpInstructionDefinition() gen.InstructionDefinition[usm64core.Instruction] {
+func NewJumpInstructionDefinition() gen.InstructionDefinition {
 	return &FixedInstructionDefinition{
 		Targets:   0,
 		Arguments: 1,

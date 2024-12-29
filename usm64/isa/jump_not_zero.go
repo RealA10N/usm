@@ -7,41 +7,43 @@ import (
 )
 
 type JumpNotZeroInstruction struct {
-	Argument usm64core.ValuedArgument
-	Label    usm64core.Label
+	baseInstruction
+}
+
+func (i *JumpNotZeroInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
+	label := i.InstructionInfo.Arguments[1].(*gen.LabelArgumentInfo).Label
+	return []gen.StepInfo{
+		gen.ContinueToNextInstruction{},
+		gen.JumpToLabel{Label: label},
+	}, core.ResultList{}
 }
 
 func (i *JumpNotZeroInstruction) Emulate(
 	ctx *usm64core.EmulationContext,
-) usm64core.EmulationError {
-	if i.Argument.Value(ctx) != uint64(0) {
-		ctx.JumpToLabel(i.Label)
-	} else {
-		ctx.IncrementInstructionPointer()
+) core.ResultList {
+	value, results := ctx.ArgumentToValue(i.InstructionInfo.Arguments[0])
+	if !results.IsEmpty() {
+		return results
 	}
-	return nil
+
+	if value != uint64(0) {
+		labelArgument := i.InstructionInfo.Arguments[1].(*gen.LabelArgumentInfo)
+		return ctx.JumpToLabel(labelArgument.Label)
+
+	} else {
+		return ctx.ContinueToNextInstruction()
+	}
 }
 
 func NewJumpNotZeroInstruction(
-	targets []usm64core.Register,
-	arguments []usm64core.Argument,
-) (usm64core.Instruction, core.ResultList) {
-	results := core.ResultList{}
-
-	argument, argumentResults := usm64core.ArgumentToValuedArgument(arguments[0])
-	results.Extend(&argumentResults)
-
-	label, labelResults := usm64core.ArgumentToLabel(arguments[1])
-	results.Extend(&labelResults)
-
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
-	return &JumpNotZeroInstruction{Argument: argument, Label: label}, core.ResultList{}
+	info *gen.InstructionInfo,
+) (gen.BaseInstruction, core.ResultList) {
+	return gen.BaseInstruction(&JumpNotZeroInstruction{
+		baseInstruction: newBaseInstruction(info),
+	}), core.ResultList{}
 }
 
-func NewJumpNotZeroInstructionDefinition() gen.InstructionDefinition[usm64core.Instruction] {
+func NewJumpNotZeroInstructionDefinition() gen.InstructionDefinition {
 	return &FixedInstructionDefinition{
 		Targets:   0,
 		Arguments: 2,

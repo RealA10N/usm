@@ -6,20 +6,18 @@ import (
 	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
-	usm64core "alon.kr/x/usm/usm64/core"
 )
 
 type FixedInstructionDefinition struct {
 	Targets   core.UsmUint
 	Arguments core.UsmUint
 	Creator   func(
-		targets []usm64core.Register,
-		arguments []usm64core.Argument,
-	) (usm64core.Instruction, core.ResultList)
+		info *gen.InstructionInfo,
+	) (gen.BaseInstruction, core.ResultList)
 }
 
 func (d *FixedInstructionDefinition) InferTargetTypes(
-	ctx *gen.FunctionGenerationContext[usm64core.Instruction],
+	ctx *gen.FunctionGenerationContext,
 	targets []*gen.ReferencedTypeInfo,
 	arguments []*gen.ReferencedTypeInfo,
 ) ([]gen.ReferencedTypeInfo, core.ResultList) {
@@ -84,48 +82,13 @@ func (d *FixedInstructionDefinition) assertInputLengths(
 	return results
 }
 
-func (d *FixedInstructionDefinition) createRegisters(
-	registerInfos []*gen.RegisterArgumentInfo,
-) (registers []usm64core.Register, results core.ResultList) {
-	registers = make([]usm64core.Register, len(registerInfos))
-	for i, register := range registerInfos {
-		target, curResults := usm64core.NewRegister(register)
-		results.Extend(&curResults)
-		registers[i] = target
-	}
-	return
-}
-
-func (d *FixedInstructionDefinition) createArguments(
-	argumentInfos []gen.ArgumentInfo,
-) (arguments []usm64core.Argument, results core.ResultList) {
-	arguments = make([]usm64core.Argument, len(argumentInfos))
-	for i, argument := range argumentInfos {
-		argument, curResults := usm64core.NewArgument(argument)
-		results.Extend(&curResults)
-		arguments[i] = argument
-	}
-	return
-}
-
 func (d *FixedInstructionDefinition) BuildInstruction(
-	targetInfos []*gen.RegisterArgumentInfo,
-	argumentInfos []gen.ArgumentInfo,
-) (usm64core.Instruction, core.ResultList) {
-	results := d.assertInputLengths(targetInfos, argumentInfos)
+	info *gen.InstructionInfo,
+) (gen.BaseInstruction, core.ResultList) {
+	results := d.assertInputLengths(info.Targets, info.Arguments)
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
-	targets, results := d.createRegisters(targetInfos)
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
-	arguments, results := d.createArguments(argumentInfos)
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
-	return d.Creator(targets, arguments)
+	return d.Creator(info)
 }
