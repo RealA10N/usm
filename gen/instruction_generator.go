@@ -107,7 +107,7 @@ func (g *InstructionGenerator) getTargetRegister(
 	ctx *FunctionGenerationContext,
 	node parse.TargetNode,
 	targetType ReferencedTypeInfo,
-) (*RegisterArgumentInfo, core.Result) {
+) (*RegisterInfo, core.Result) {
 	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	nodeView := node.View()
@@ -121,12 +121,7 @@ func (g *InstructionGenerator) getTargetRegister(
 			Declaration: nodeView,
 		}
 
-		registerArgument := &RegisterArgumentInfo{
-			Register:    newRegisterInfo,
-			declaration: nodeView,
-		}
-
-		return registerArgument, ctx.Registers.NewRegister(newRegisterInfo)
+		return newRegisterInfo, ctx.Registers.NewRegister(newRegisterInfo)
 	}
 
 	// register is already defined
@@ -139,12 +134,7 @@ func (g *InstructionGenerator) getTargetRegister(
 		}}
 	}
 
-	registerArgument := &RegisterArgumentInfo{
-		Register:    registerInfo,
-		declaration: nodeView,
-	}
-
-	return registerArgument, nil
+	return registerInfo, nil
 }
 
 // Registers can be defined by being a target of an instruction.
@@ -159,6 +149,7 @@ func (g *InstructionGenerator) defineAndGetTargetRegisters(
 	ctx *FunctionGenerationContext,
 	node parse.InstructionNode,
 	targetTypes []ReferencedTypeInfo,
+	instructionInfo *InstructionInfo,
 ) ([]*RegisterArgumentInfo, core.ResultList) {
 	if len(node.Targets) != len(targetTypes) {
 		// notest: sanity check: ensure lengths match.
@@ -174,7 +165,12 @@ func (g *InstructionGenerator) defineAndGetTargetRegisters(
 	results := core.ResultList{}
 	for i, target := range node.Targets {
 		// register errors should not effect one another, so we collect them.
-		registerInfo, result := g.getTargetRegister(ctx, target, targetTypes[i])
+		registerInfo, result := g.getTargetRegister(
+			ctx,
+			target,
+			targetTypes[i],
+		)
+
 		if result != nil {
 			results.Append(result)
 		}
@@ -189,7 +185,13 @@ func (g *InstructionGenerator) defineAndGetTargetRegisters(
 			}})
 		}
 
-		registers[i] = registerInfo
+		registerArgument := &RegisterArgumentInfo{
+			Register:    registerInfo,
+			declaration: node.View(),
+		}
+
+		registerInfo.AddDefinition(instructionInfo)
+		registers[i] = registerArgument
 	}
 
 	return registers, results
@@ -233,19 +235,25 @@ func (g *InstructionGenerator) Generate(
 		return nil, results
 	}
 
-	targets, results := g.defineAndGetTargetRegisters(ctx, node, targetTypes)
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
 	v := node.View()
 	info := &InstructionInfo{
 		Instruction: nil, // will after BuildInstruction is called.
-		Targets:     targets,
 		Arguments:   arguments,
 		Labels:      labels,
 		Declaration: &v,
 	}
+
+	targets, results := g.defineAndGetTargetRegisters(
+		ctx,
+		node,
+		targetTypes,
+		info,
+	)
+
+	if !results.IsEmpty() {
+		return nil, results
+	}
+	info.Targets = targets
 
 	instruction, results := instDef.BuildInstruction(info)
 	if !results.IsEmpty() {
