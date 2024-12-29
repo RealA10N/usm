@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFunctionGeneration(t *testing.T) {
+func TestSimpleFunctionGeneration(t *testing.T) {
 	src := core.NewSourceView(
 		`func $32 @add $32 %a {
 			%b = ADD %a $32 #1
@@ -21,7 +21,6 @@ func TestFunctionGeneration(t *testing.T) {
 	tkns, err := lex.NewTokenizer().Tokenize(src)
 	assert.NoError(t, err)
 
-	// TODO: do no use parser here? test only the instruction set unit.
 	tknView := parse.NewTokenView(tkns)
 	node, result := parse.NewFunctionParser().Parse(&tknView)
 	assert.Nil(t, result)
@@ -71,4 +70,37 @@ func TestFunctionGeneration(t *testing.T) {
 			registers[2].Usages,
 		},
 	)
+}
+
+func TestIfElseFunctionGeneration(t *testing.T) {
+	src := core.NewSourceView(
+		`func @toBool $32 %n {
+			JZ %n .zero
+		.nonzero
+			%bool = ADD $32 #1 $32 #0
+			JMP .end
+		.zero
+			%bool = ADD $32 #0 $32 #0
+		.end
+			RET
+		}`,
+	)
+	tkns, err := lex.NewTokenizer().Tokenize(src)
+	assert.NoError(t, err)
+
+	tknView := parse.NewTokenView(tkns)
+	node, result := parse.NewFunctionParser().Parse(&tknView)
+	assert.Nil(t, result)
+
+	intType := &gen.NamedTypeInfo{Name: "$32", Size: 4}
+
+	ctx := &gen.FileGenerationContext{
+		GenerationContext: &testGenerationContext,
+		SourceContext:     src.Ctx(),
+		Types:             &TypeMap{intType.Name: intType},
+	}
+
+	generator := gen.NewFunctionGenerator()
+	_, results := generator.Generate(ctx, node)
+	assert.True(t, results.IsEmpty())
 }

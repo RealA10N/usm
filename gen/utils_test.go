@@ -78,6 +78,8 @@ func (m *LabelMap) NewLabel(label *gen.LabelInfo) core.Result {
 var testInstructionSet = gen.InstructionManager(
 	&InstructionMap{
 		"ADD": &AddInstructionDefinition{},
+		"JMP": &JumpInstructionDefinition{},
+		"JZ":  &JumpZeroInstructionDefinition{},
 		"RET": &RetInstructionDefinition{},
 	},
 )

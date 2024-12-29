@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// MARK: Add
+
 type AddInstruction struct{}
 
 func (i *AddInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
@@ -60,6 +62,8 @@ func (AddInstructionDefinition) InferTargetTypes(
 	}, core.ResultList{}
 }
 
+// MARK: Ret
+
 type RetInstruction struct{}
 
 func (i *RetInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
@@ -81,6 +85,66 @@ func (RetInstructionDefinition) InferTargetTypes(
 ) ([]gen.ReferencedTypeInfo, core.ResultList) {
 	return []gen.ReferencedTypeInfo{}, core.ResultList{}
 }
+
+// MARK: Jump
+
+type JumpInstruction struct {
+	*gen.InstructionInfo
+}
+
+func (i *JumpInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
+	return []gen.StepInfo{gen.JumpToLabel{
+		Label: i.Arguments[0].(*gen.LabelArgumentInfo).Label,
+	}}, core.ResultList{}
+}
+
+type JumpInstructionDefinition struct{}
+
+func (JumpInstructionDefinition) BuildInstruction(
+	info *gen.InstructionInfo,
+) (gen.BaseInstruction, core.ResultList) {
+	return gen.BaseInstruction(&JumpInstruction{info}), core.ResultList{}
+}
+
+func (JumpInstructionDefinition) InferTargetTypes(
+	ctx *gen.FunctionGenerationContext,
+	targets []*gen.ReferencedTypeInfo,
+	arguments []*gen.ReferencedTypeInfo,
+) ([]gen.ReferencedTypeInfo, core.ResultList) {
+	return []gen.ReferencedTypeInfo{}, core.ResultList{}
+}
+
+// MARK: Jump Zero
+
+// JZ %condition .label
+type JumpZeroInstruction struct {
+	*gen.InstructionInfo
+}
+
+func (i *JumpZeroInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
+	return []gen.StepInfo{
+		gen.JumpToLabel{Label: i.Arguments[1].(*gen.LabelArgumentInfo).Label},
+		gen.ContinueToNextInstruction{},
+	}, core.ResultList{}
+}
+
+type JumpZeroInstructionDefinition struct{}
+
+func (JumpZeroInstructionDefinition) BuildInstruction(
+	info *gen.InstructionInfo,
+) (gen.BaseInstruction, core.ResultList) {
+	return gen.BaseInstruction(&JumpZeroInstruction{info}), core.ResultList{}
+}
+
+func (JumpZeroInstructionDefinition) InferTargetTypes(
+	ctx *gen.FunctionGenerationContext,
+	targets []*gen.ReferencedTypeInfo,
+	arguments []*gen.ReferencedTypeInfo,
+) ([]gen.ReferencedTypeInfo, core.ResultList) {
+	return []gen.ReferencedTypeInfo{}, core.ResultList{}
+}
+
+// MARK: Instruction Map
 
 type InstructionMap map[string]gen.InstructionDefinition
 
