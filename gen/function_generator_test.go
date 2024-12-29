@@ -40,4 +40,35 @@ func TestFunctionGeneration(t *testing.T) {
 
 	assert.NotNil(t, function.EntryBlock)
 	assert.Nil(t, function.EntryBlock.NextBlock)
+
+	registers := function.Registers
+	assert.Len(t, registers, 3)
+
+	assert.ElementsMatch(
+		t,
+		[][]*gen.InstructionInfo{
+			nil, // TODO: make this not implementation dependent.
+			{function.EntryBlock.Instructions[0]},
+			{function.EntryBlock.Instructions[1]},
+		},
+		[][]*gen.InstructionInfo{
+			registers[0].Definitions,
+			registers[1].Definitions,
+			registers[2].Definitions,
+		},
+	)
+
+	assert.ElementsMatch(
+		t,
+		[][]*gen.InstructionInfo{
+			{function.EntryBlock.Instructions[0], function.EntryBlock.Instructions[1]},
+			{function.EntryBlock.Instructions[1]},
+			nil, // TODO: make this not implementation dependent.
+		},
+		[][]*gen.InstructionInfo{
+			registers[0].Usages,
+			registers[1].Usages,
+			registers[2].Usages,
+		},
+	)
 }

@@ -11,6 +11,9 @@ type RegisterInfo struct {
 
 	// Instructions in which the register is a target, and is defined or
 	// assigned a new value.
+	//
+	// Note: This list is not a complete representation of all locations in which
+	// the register is defined, since it can be defined as a function parameter.
 	Definitions []*InstructionInfo
 
 	// Instructions in which the register appears as a source, i.e. as an

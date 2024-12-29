@@ -48,6 +48,14 @@ func (m *RegisterMap) NewRegister(reg *gen.RegisterInfo) core.Result {
 	return nil
 }
 
+func (m *RegisterMap) GetAllRegisters() []*gen.RegisterInfo {
+	registers := make([]*gen.RegisterInfo, 0, len(*m))
+	for _, reg := range *m {
+		registers = append(registers, reg)
+	}
+	return registers
+}
+
 // MARK: LabelMap
 
 type LabelMap map[string]*gen.LabelInfo

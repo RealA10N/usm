@@ -228,5 +228,6 @@ func (g *FunctionGenerator) Generate(
 	return &FunctionInfo{
 		EntryBlock: blocks[0],
 		Parameters: parameters,
+		Registers:  funcCtx.Registers.GetAllRegisters(),
 	}, core.ResultList{}
 }
