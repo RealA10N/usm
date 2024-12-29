@@ -10,8 +10,8 @@ type TargetGenerator struct {
 	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewTargetGenerator() FunctionContextGenerator[parse.TargetNode, registerPartialInfo] {
-	return FunctionContextGenerator[parse.TargetNode, registerPartialInfo](
+func NewTargetGenerator() InstructionContextGenerator[parse.TargetNode, registerPartialInfo] {
+	return InstructionContextGenerator[parse.TargetNode, registerPartialInfo](
 		&TargetGenerator{
 			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
@@ -37,7 +37,7 @@ func NewRegisterTypeMismatchResult(
 }
 
 func (g *TargetGenerator) Generate(
-	ctx *FunctionGenerationContext,
+	ctx *InstructionGenerationContext,
 	node parse.TargetNode,
 ) (registerPartialInfo, core.ResultList) {
 	var explicitType *ReferencedTypeInfo

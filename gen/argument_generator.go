@@ -7,13 +7,13 @@ import (
 )
 
 type ArgumentGenerator struct {
-	RegisterArgumentGenerator  FunctionContextGenerator[parse.RegisterNode, ArgumentInfo]
-	ImmediateArgumentGenerator FunctionContextGenerator[parse.ImmediateNode, ArgumentInfo]
-	LabelArgumentGenerator     FunctionContextGenerator[parse.LabelNode, ArgumentInfo]
+	RegisterArgumentGenerator  InstructionContextGenerator[parse.RegisterNode, ArgumentInfo]
+	ImmediateArgumentGenerator InstructionContextGenerator[parse.ImmediateNode, ArgumentInfo]
+	LabelArgumentGenerator     InstructionContextGenerator[parse.LabelNode, ArgumentInfo]
 }
 
-func NewArgumentGenerator() FunctionContextGenerator[parse.ArgumentNode, ArgumentInfo] {
-	return FunctionContextGenerator[parse.ArgumentNode, ArgumentInfo](
+func NewArgumentGenerator() InstructionContextGenerator[parse.ArgumentNode, ArgumentInfo] {
+	return InstructionContextGenerator[parse.ArgumentNode, ArgumentInfo](
 		&ArgumentGenerator{
 			RegisterArgumentGenerator:  NewRegisterArgumentGenerator(),
 			ImmediateArgumentGenerator: NewImmediateArgumentGenerator(),
@@ -23,7 +23,7 @@ func NewArgumentGenerator() FunctionContextGenerator[parse.ArgumentNode, Argumen
 }
 
 func (g *ArgumentGenerator) Generate(
-	ctx *FunctionGenerationContext,
+	ctx *InstructionGenerationContext,
 	node parse.ArgumentNode,
 ) (ArgumentInfo, core.ResultList) {
 	switch typedNode := node.(type) {

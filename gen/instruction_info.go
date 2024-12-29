@@ -20,3 +20,15 @@ type InstructionInfo struct {
 	// in an optimization.
 	Declaration *core.UnmanagedSourceView
 }
+
+func NewEmptyInstructionInfo(
+	declaration *core.UnmanagedSourceView,
+) *InstructionInfo {
+	return &InstructionInfo{
+		Targets:     []*RegisterArgumentInfo{},
+		Arguments:   []ArgumentInfo{},
+		Labels:      []*LabelInfo{},
+		Instruction: nil,
+		Declaration: declaration,
+	}
+}

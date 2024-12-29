@@ -25,14 +25,14 @@ func (i *LabelArgumentInfo) Declaration() core.UnmanagedSourceView {
 
 type LabelArgumentGenerator struct{}
 
-func NewLabelArgumentGenerator() FunctionContextGenerator[parse.LabelNode, ArgumentInfo] {
-	return FunctionContextGenerator[parse.LabelNode, ArgumentInfo](
+func NewLabelArgumentGenerator() InstructionContextGenerator[parse.LabelNode, ArgumentInfo] {
+	return InstructionContextGenerator[parse.LabelNode, ArgumentInfo](
 		&LabelArgumentGenerator{},
 	)
 }
 
 func (g *LabelArgumentGenerator) Generate(
-	ctx *FunctionGenerationContext,
+	ctx *InstructionGenerationContext,
 	node parse.LabelNode,
 ) (ArgumentInfo, core.ResultList) {
 	name := nodeToSourceString(ctx.FileGenerationContext, node)

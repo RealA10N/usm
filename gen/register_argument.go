@@ -26,8 +26,8 @@ type RegisterArgumentGenerator struct {
 	RegisterGenerator FunctionContextGenerator[parse.RegisterNode, *RegisterInfo]
 }
 
-func NewRegisterArgumentGenerator() FunctionContextGenerator[parse.RegisterNode, ArgumentInfo] {
-	return FunctionContextGenerator[parse.RegisterNode, ArgumentInfo](
+func NewRegisterArgumentGenerator() InstructionContextGenerator[parse.RegisterNode, ArgumentInfo] {
+	return InstructionContextGenerator[parse.RegisterNode, ArgumentInfo](
 		&RegisterArgumentGenerator{
 			RegisterGenerator: NewRegisterGenerator(),
 		},
@@ -35,10 +35,10 @@ func NewRegisterArgumentGenerator() FunctionContextGenerator[parse.RegisterNode,
 }
 
 func (g *RegisterArgumentGenerator) Generate(
-	ctx *FunctionGenerationContext,
+	ctx *InstructionGenerationContext,
 	node parse.RegisterNode,
 ) (ArgumentInfo, core.ResultList) {
-	register, results := g.RegisterGenerator.Generate(ctx, node)
+	register, results := g.RegisterGenerator.Generate(ctx.FunctionGenerationContext, node)
 	if !results.IsEmpty() {
 		return nil, results
 	}

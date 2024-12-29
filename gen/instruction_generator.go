@@ -7,8 +7,8 @@ import (
 )
 
 type InstructionGenerator struct {
-	ArgumentGenerator FunctionContextGenerator[parse.ArgumentNode, ArgumentInfo]
-	TargetGenerator   FunctionContextGenerator[parse.TargetNode, registerPartialInfo]
+	ArgumentGenerator InstructionContextGenerator[parse.ArgumentNode, ArgumentInfo]
+	TargetGenerator   InstructionContextGenerator[parse.TargetNode, registerPartialInfo]
 }
 
 func NewInstructionGenerator() FunctionContextGenerator[
@@ -27,7 +27,7 @@ func NewInstructionGenerator() FunctionContextGenerator[
 }
 
 func (g *InstructionGenerator) generateArguments(
-	ctx *FunctionGenerationContext,
+	ctx *InstructionGenerationContext,
 	node parse.InstructionNode,
 ) ([]ArgumentInfo, core.ResultList) {
 	arguments := make([]ArgumentInfo, len(node.Arguments))
@@ -46,7 +46,7 @@ func (g *InstructionGenerator) generateArguments(
 }
 
 func (g *InstructionGenerator) generatePartialTargetsInfo(
-	ctx *FunctionGenerationContext,
+	ctx *InstructionGenerationContext,
 	node parse.InstructionNode,
 ) ([]registerPartialInfo, core.ResultList) {
 	targets := make([]registerPartialInfo, len(node.Targets))
@@ -65,7 +65,7 @@ func (g *InstructionGenerator) generatePartialTargetsInfo(
 }
 
 func (g *InstructionGenerator) generateLabels(
-	ctx *FunctionGenerationContext,
+	ctx *InstructionGenerationContext,
 	node parse.InstructionNode,
 ) ([]*LabelInfo, core.ResultList) {
 	labels := make([]*LabelInfo, 0, len(node.Labels))
@@ -104,7 +104,7 @@ func argumentsToTypes(arguments []ArgumentInfo) []*ReferencedTypeInfo {
 }
 
 func (g *InstructionGenerator) getTargetRegister(
-	ctx *FunctionGenerationContext,
+	ctx *InstructionGenerationContext,
 	node parse.TargetNode,
 	targetType ReferencedTypeInfo,
 ) (*RegisterInfo, core.Result) {
@@ -146,10 +146,9 @@ func (g *InstructionGenerator) getTargetRegister(
 // This also returns the full list of register targets for the provided
 // instruction.
 func (g *InstructionGenerator) defineAndGetTargetRegisters(
-	ctx *FunctionGenerationContext,
+	ctx *InstructionGenerationContext,
 	node parse.InstructionNode,
 	targetTypes []ReferencedTypeInfo,
-	instructionInfo *InstructionInfo,
 ) ([]*RegisterArgumentInfo, core.ResultList) {
 	if len(node.Targets) != len(targetTypes) {
 		// notest: sanity check: ensure lengths match.
@@ -190,7 +189,7 @@ func (g *InstructionGenerator) defineAndGetTargetRegisters(
 			declaration: node.View(),
 		}
 
-		registerInfo.AddDefinition(instructionInfo)
+		registerInfo.AddDefinition(ctx.InstructionInfo)
 		registers[i] = registerArgument
 	}
 
@@ -210,21 +209,32 @@ func (g *InstructionGenerator) Generate(
 	// and processing the targets and arguments. We accumulate the results,
 	// since those processes do not effect each other.
 
+	// TODO: tidy this mess.
+
+	v := node.View()
+	instCtx := InstructionGenerationContext{
+		FunctionGenerationContext: ctx,
+		InstructionInfo:           NewEmptyInstructionInfo(&v),
+	}
+
 	instName := viewToSourceString(ctx.FileGenerationContext, node.Operator)
 	instDef, results := ctx.Instructions.GetInstructionDefinition(instName, node)
 
-	arguments, curResults := g.generateArguments(ctx, node)
+	arguments, curResults := g.generateArguments(&instCtx, node)
 	results.Extend(&curResults)
 
-	partialTargets, curResults := g.generatePartialTargetsInfo(ctx, node)
+	partialTargets, curResults := g.generatePartialTargetsInfo(&instCtx, node)
 	results.Extend(&curResults)
 
-	labels, curResults := g.generateLabels(ctx, node)
+	labels, curResults := g.generateLabels(&instCtx, node)
 
 	// Now it's time to check if we have any errors so far.
 	if !results.IsEmpty() {
 		return nil, results
 	}
+
+	instCtx.InstructionInfo.Arguments = arguments
+	instCtx.InstructionInfo.Labels = labels
 
 	explicitTargetTypes := partialTargetsToTypes(partialTargets)
 	argumentTypes := argumentsToTypes(arguments)
@@ -235,31 +245,19 @@ func (g *InstructionGenerator) Generate(
 		return nil, results
 	}
 
-	v := node.View()
-	info := &InstructionInfo{
-		Instruction: nil, // will after BuildInstruction is called.
-		Arguments:   arguments,
-		Labels:      labels,
-		Declaration: &v,
-	}
-
-	targets, results := g.defineAndGetTargetRegisters(
-		ctx,
-		node,
-		targetTypes,
-		info,
-	)
+	targets, results := g.defineAndGetTargetRegisters(&instCtx, node, targetTypes)
 
 	if !results.IsEmpty() {
 		return nil, results
 	}
-	info.Targets = targets
 
-	instruction, results := instDef.BuildInstruction(info)
+	instCtx.InstructionInfo.Targets = targets
+
+	instruction, results := instDef.BuildInstruction(instCtx.InstructionInfo)
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
-	info.Instruction = instruction
-	return info, core.ResultList{}
+	instCtx.InstructionInfo.Instruction = instruction
+	return instCtx.InstructionInfo, core.ResultList{}
 }

@@ -34,13 +34,16 @@ func TestTargetRegisterAlreadyDefined(t *testing.T) {
 		"%a": &gen.RegisterInfo{Name: "%a", Type: intTypeRef},
 	}
 
-	ctx := gen.FunctionGenerationContext{
-		FileGenerationContext: &gen.FileGenerationContext{
-			GenerationContext: &testGenerationContext,
-			SourceContext:     src.Ctx(),
-			Types:             &types,
+	ctx := gen.InstructionGenerationContext{
+		FunctionGenerationContext: &gen.FunctionGenerationContext{
+			FileGenerationContext: &gen.FileGenerationContext{
+				GenerationContext: &testGenerationContext,
+				SourceContext:     src.Ctx(),
+				Types:             &types,
+			},
+			Registers: &registers,
 		},
-		Registers: &registers,
+		InstructionInfo: gen.NewEmptyInstructionInfo(&unmanaged),
 	}
 
 	generator := gen.NewTargetGenerator()

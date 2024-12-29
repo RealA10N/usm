@@ -12,8 +12,8 @@ type ImmediateArgumentGenerator struct {
 	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewImmediateArgumentGenerator() FunctionContextGenerator[parse.ImmediateNode, ArgumentInfo] {
-	return FunctionContextGenerator[parse.ImmediateNode, ArgumentInfo](
+func NewImmediateArgumentGenerator() InstructionContextGenerator[parse.ImmediateNode, ArgumentInfo] {
+	return InstructionContextGenerator[parse.ImmediateNode, ArgumentInfo](
 		&ImmediateArgumentGenerator{
 			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
@@ -21,7 +21,7 @@ func NewImmediateArgumentGenerator() FunctionContextGenerator[parse.ImmediateNod
 }
 
 func (g *ImmediateArgumentGenerator) Generate(
-	ctx *FunctionGenerationContext,
+	ctx *InstructionGenerationContext,
 	node parse.ImmediateNode,
 ) (ArgumentInfo, core.ResultList) {
 	typeInfo, results := g.ReferencedTypeGenerator.Generate(

@@ -63,6 +63,14 @@ type FunctionGenerationContext struct {
 	Labels LabelManager
 }
 
+type InstructionGenerationContext struct {
+	*FunctionGenerationContext
+
+	// A (partial) instruction info type for which we are currently working on
+	// generating.
+	InstructionInfo *InstructionInfo
+}
+
 type LabelGenerationContext struct {
 	*FunctionGenerationContext
 
@@ -93,6 +101,13 @@ type FileContextGenerator[NodeT parse.Node, InfoT any] interface {
 type FunctionContextGenerator[NodeT parse.Node, InfoT any] interface {
 	Generate(
 		ctx *FunctionGenerationContext,
+		node NodeT,
+	) (info InfoT, results core.ResultList)
+}
+
+type InstructionContextGenerator[NodeT parse.Node, InfoT any] interface {
+	Generate(
+		ctx *InstructionGenerationContext,
 		node NodeT,
 	) (info InfoT, results core.ResultList)
 }
