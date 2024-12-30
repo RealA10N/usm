@@ -13,9 +13,9 @@ type Label struct {
 
 func NewLabel(arg gen.LabelArgumentInfo) (Label, core.ResultList) {
 	return Label{
-		Name:             arg.Label.Name,
-		InstructionIndex: arg.Label.InstructionIndex,
-		declaration:      arg.Declaration(),
+		Name: arg.Label.Name,
+
+		declaration: arg.Declaration(),
 	}, core.ResultList{}
 }
 

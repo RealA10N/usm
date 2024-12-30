@@ -2,7 +2,6 @@ package managers
 
 import (
 	"alon.kr/x/usm/gen"
-	usm64core "alon.kr/x/usm/usm64/core"
 )
 
 func NewManagerCreators() gen.ManagerCreators {
@@ -13,8 +12,8 @@ func NewManagerCreators() gen.ManagerCreators {
 	}
 }
 
-func NewGenerationContext() *gen.GenerationContext[usm64core.Instruction] {
-	return &gen.GenerationContext[usm64core.Instruction]{
+func NewGenerationContext() *gen.GenerationContext {
+	return &gen.GenerationContext{
 		ManagerCreators: NewManagerCreators(),
 		Instructions:    NewInstructionManager(),
 		PointerSize:     8,

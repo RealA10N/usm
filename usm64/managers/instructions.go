@@ -6,30 +6,31 @@ import (
 	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
-	usm64core "alon.kr/x/usm/usm64/core"
+	"alon.kr/x/usm/parse"
 	usm64isa "alon.kr/x/usm/usm64/isa"
 )
 
 // TODO: optimization: implement using alon.kr/x/faststringmap
-type InstructionMap map[string]gen.InstructionDefinition[usm64core.Instruction]
+type InstructionMap map[string]gen.InstructionDefinition
 
 func (m *InstructionMap) GetInstructionDefinition(
 	name string,
-) (gen.InstructionDefinition[usm64core.Instruction], core.ResultList) {
+	node parse.InstructionNode,
+) (gen.InstructionDefinition, core.ResultList) {
 	key := strings.ToLower(name)
 	instDef, ok := (*m)[key]
 	if !ok {
 		return nil, list.FromSingle(core.Result{{
-			Type:    core.ErrorResult,
-			Message: "Undefined instruction",
-			// TODO: add location
+			Type:     core.ErrorResult,
+			Message:  "Undefined instruction",
+			Location: &node.Operator,
 		}})
 	}
 	return instDef, core.ResultList{}
 }
 
-func NewInstructionManager() gen.InstructionManager[usm64core.Instruction] {
-	return gen.InstructionManager[usm64core.Instruction](
+func NewInstructionManager() gen.InstructionManager {
+	return gen.InstructionManager(
 		&InstructionMap{
 
 			// mov
@@ -45,7 +46,8 @@ func NewInstructionManager() gen.InstructionManager[usm64core.Instruction] {
 			"jnz": usm64isa.NewJumpNotZeroInstructionDefinition(),
 
 			// debug
-			"put": usm64isa.NewPutInstructionDefinition(),
+			"put":  usm64isa.NewPutInstructionDefinition(),
+			"term": usm64isa.NewTerminateInstructionDefinition(),
 		},
 	)
 }

@@ -14,19 +14,22 @@ func TestUndefinedRegisterArgument(t *testing.T) {
 	unmanaged := src.Unmanaged()
 	node := parse.RegisterNode{TokenNode: parse.TokenNode{UnmanagedSourceView: unmanaged}}
 
-	ctx := gen.FunctionGenerationContext[Instruction]{
-		FileGenerationContext: &gen.FileGenerationContext[Instruction]{
-			GenerationContext: &gen.GenerationContext[Instruction]{
-				Instructions: &InstructionMap{},
-				PointerSize:  8,
+	ctx := gen.InstructionGenerationContext{
+		FunctionGenerationContext: &gen.FunctionGenerationContext{
+			FileGenerationContext: &gen.FileGenerationContext{
+				GenerationContext: &gen.GenerationContext{
+					Instructions: &InstructionMap{},
+					PointerSize:  8,
+				},
+				SourceContext: src.Ctx(),
+				Types:         &TypeMap{},
 			},
-			SourceContext: src.Ctx(),
-			Types:         &TypeMap{},
+			Registers: &RegisterMap{},
 		},
-		Registers: &RegisterMap{},
+		InstructionInfo: gen.NewEmptyInstructionInfo(&unmanaged),
 	}
 
-	generator := gen.NewArgumentGenerator[Instruction]()
+	generator := gen.NewArgumentGenerator()
 	_, results := generator.Generate(&ctx, node)
 
 	assert.EqualValues(t, 1, results.Len())

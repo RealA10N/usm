@@ -6,83 +6,28 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-// TODO: add basic interface methods for instruction.
-type BaseInstruction interface{}
-
-// A basic instruction definition. This defines the logic that converts the
-// generic, architecture / instruction set independent instruction AST nodes
-// into a format instruction which is part of a specific instruction set.
-type InstructionDefinition[InstT BaseInstruction] interface {
-	// Build an instruction from the provided targets and arguments.
-	BuildInstruction(
-		targets []*RegisterArgumentInfo,
-		arguments []ArgumentInfo,
-	) (InstT, core.ResultList)
-
-	// Provided a list a list of types that correspond to argument types,
-	// and a (possibly partial) list of target types, return a complete list
-	// of target types which is implicitly inferred from the argument types,
-	// and possibly the explicit target types, or an error if the target types
-	// can not be inferred.
-	//
-	// On success, the length of the returned type slice should be equal to the
-	// provided (partial) targets length. The non nil provided target types
-	// should not be modified.
-	//
-	// TODO: perhaps we should not pass the bare generation context to the "public"
-	// instruction set definition API, and should wrap it with a limited interface.
-	InferTargetTypes(
-		ctx *FunctionGenerationContext[InstT],
-		targets []*ReferencedTypeInfo,
-		arguments []*ReferencedTypeInfo,
-	) ([]ReferencedTypeInfo, core.ResultList)
+type InstructionGenerator struct {
+	ArgumentGenerator InstructionContextGenerator[parse.ArgumentNode, ArgumentInfo]
+	TargetGenerator   InstructionContextGenerator[parse.TargetNode, registerPartialInfo]
 }
 
-type InstructionInfo[InstT BaseInstruction] struct {
-	// The actual instruction instance, which is part of the instruction set,
-	// and not part of this package.
-	Instruction InstT
-
-	// The targets of the instruction.
-	Targets []*RegisterArgumentInfo
-
-	// The arguments of the instruction.
-	Arguments []ArgumentInfo
-}
-
-// MARK: Manager
-
-type InstructionManager[InstT BaseInstruction] interface {
-	// Get the instruction definition that corresponds to the provided name.
-	GetInstructionDefinition(name string) (InstructionDefinition[InstT], core.ResultList)
-}
-
-// MARK: Generator
-
-type InstructionGenerator[InstT BaseInstruction] struct {
-	ArgumentGenerator FunctionContextGenerator[InstT, parse.ArgumentNode, ArgumentInfo]
-	TargetGenerator   FunctionContextGenerator[InstT, parse.TargetNode, partialRegisterInfo]
-}
-
-func NewInstructionGenerator[InstT BaseInstruction]() FunctionContextGenerator[
-	InstT,
+func NewInstructionGenerator() FunctionContextGenerator[
 	parse.InstructionNode,
-	*InstructionInfo[InstT],
+	*InstructionInfo,
 ] {
 	return FunctionContextGenerator[
-		InstT,
 		parse.InstructionNode,
-		*InstructionInfo[InstT],
+		*InstructionInfo,
 	](
-		&InstructionGenerator[InstT]{
-			ArgumentGenerator: NewArgumentGenerator[InstT](),
-			TargetGenerator:   NewTargetGenerator[InstT](),
+		&InstructionGenerator{
+			ArgumentGenerator: NewArgumentGenerator(),
+			TargetGenerator:   NewTargetGenerator(),
 		},
 	)
 }
 
-func (g *InstructionGenerator[InstT]) generateArguments(
-	ctx *FunctionGenerationContext[InstT],
+func (g *InstructionGenerator) generateArguments(
+	ctx *InstructionGenerationContext,
 	node parse.InstructionNode,
 ) ([]ArgumentInfo, core.ResultList) {
 	arguments := make([]ArgumentInfo, len(node.Arguments))
@@ -100,11 +45,11 @@ func (g *InstructionGenerator[InstT]) generateArguments(
 	return arguments, results
 }
 
-func (g *InstructionGenerator[InstT]) generatePartialTargetsInfo(
-	ctx *FunctionGenerationContext[InstT],
+func (g *InstructionGenerator) generatePartialTargetsInfo(
+	ctx *InstructionGenerationContext,
 	node parse.InstructionNode,
-) ([]partialRegisterInfo, core.ResultList) {
-	targets := make([]partialRegisterInfo, len(node.Targets))
+) ([]registerPartialInfo, core.ResultList) {
+	targets := make([]registerPartialInfo, len(node.Targets))
 	results := core.ResultList{}
 
 	// Different targets should not effect one another.
@@ -119,7 +64,30 @@ func (g *InstructionGenerator[InstT]) generatePartialTargetsInfo(
 	return targets, results
 }
 
-func partialTargetsToTypes(targets []partialRegisterInfo) []*ReferencedTypeInfo {
+func (g *InstructionGenerator) generateLabels(
+	ctx *InstructionGenerationContext,
+	node parse.InstructionNode,
+) ([]*LabelInfo, core.ResultList) {
+	labels := make([]*LabelInfo, 0, len(node.Labels))
+	for _, node := range node.Labels {
+		name := nodeToSourceString(ctx.FileGenerationContext, node)
+		label := ctx.Labels.GetLabel(name)
+		if label == nil {
+			v := node.View()
+			return nil, list.FromSingle(core.Result{{
+				Type:     core.ErrorResult,
+				Message:  "Label does not exist",
+				Location: &v,
+			}})
+		}
+
+		labels = append(labels, label)
+	}
+
+	return labels, core.ResultList{}
+}
+
+func partialTargetsToTypes(targets []registerPartialInfo) []*ReferencedTypeInfo {
 	types := make([]*ReferencedTypeInfo, len(targets))
 	for i, target := range targets {
 		types[i] = target.Type
@@ -135,11 +103,11 @@ func argumentsToTypes(arguments []ArgumentInfo) []*ReferencedTypeInfo {
 	return types
 }
 
-func (g *InstructionGenerator[InstT]) getTargetRegister(
-	ctx *FunctionGenerationContext[InstT],
+func (g *InstructionGenerator) getTargetRegister(
+	ctx *InstructionGenerationContext,
 	node parse.TargetNode,
 	targetType ReferencedTypeInfo,
-) (*RegisterArgumentInfo, core.Result) {
+) (*RegisterInfo, core.Result) {
 	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	nodeView := node.View()
@@ -153,16 +121,11 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 			Declaration: nodeView,
 		}
 
-		registerArgument := &RegisterArgumentInfo{
-			Register:    newRegisterInfo,
-			declaration: nodeView,
-		}
-
-		return registerArgument, ctx.Registers.NewRegister(newRegisterInfo)
+		return newRegisterInfo, ctx.Registers.NewRegister(newRegisterInfo)
 	}
 
 	// register is already defined
-	if !registerInfo.Type.Equals(targetType) {
+	if !registerInfo.Type.Equal(targetType) {
 		// notest: sanity check only
 		return nil, core.Result{{
 			Type:     core.InternalErrorResult,
@@ -171,12 +134,7 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 		}}
 	}
 
-	registerArgument := &RegisterArgumentInfo{
-		Register:    registerInfo,
-		declaration: nodeView,
-	}
-
-	return registerArgument, nil
+	return registerInfo, nil
 }
 
 // Registers can be defined by being a target of an instruction.
@@ -187,8 +145,8 @@ func (g *InstructionGenerator[InstT]) getTargetRegister(
 //
 // This also returns the full list of register targets for the provided
 // instruction.
-func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
-	ctx *FunctionGenerationContext[InstT],
+func (g *InstructionGenerator) defineAndGetTargetRegisters(
+	ctx *InstructionGenerationContext,
 	node parse.InstructionNode,
 	targetTypes []ReferencedTypeInfo,
 ) ([]*RegisterArgumentInfo, core.ResultList) {
@@ -206,7 +164,12 @@ func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
 	results := core.ResultList{}
 	for i, target := range node.Targets {
 		// register errors should not effect one another, so we collect them.
-		registerInfo, result := g.getTargetRegister(ctx, target, targetTypes[i])
+		registerInfo, result := g.getTargetRegister(
+			ctx,
+			target,
+			targetTypes[i],
+		)
+
 		if result != nil {
 			results.Append(result)
 		}
@@ -221,7 +184,13 @@ func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
 			}})
 		}
 
-		registers[i] = registerInfo
+		registerArgument := &RegisterArgumentInfo{
+			Register:    registerInfo,
+			declaration: node.View(),
+		}
+
+		registerInfo.AddDefinition(ctx.InstructionInfo)
+		registers[i] = registerArgument
 	}
 
 	return registers, results
@@ -232,27 +201,40 @@ func (g *InstructionGenerator[InstT]) defineAndGetTargetRegisters(
 // If new registers are defined in the instruction (by assigning values to
 // instruction targets), the register is created and added to the generation
 // context.
-func (g *InstructionGenerator[InstT]) Generate(
-	ctx *FunctionGenerationContext[InstT],
+func (g *InstructionGenerator) Generate(
+	ctx *FunctionGenerationContext,
 	node parse.InstructionNode,
-) (info *InstructionInfo[InstT], results core.ResultList) {
+) (*InstructionInfo, core.ResultList) {
 	// We start generating the instruction, by getting the definition interface,
 	// and processing the targets and arguments. We accumulate the results,
 	// since those processes do not effect each other.
 
+	// TODO: tidy this mess.
+
+	v := node.View()
+	instCtx := InstructionGenerationContext{
+		FunctionGenerationContext: ctx,
+		InstructionInfo:           NewEmptyInstructionInfo(&v),
+	}
+
 	instName := viewToSourceString(ctx.FileGenerationContext, node.Operator)
-	instDef, results := ctx.Instructions.GetInstructionDefinition(instName)
+	instDef, results := ctx.Instructions.GetInstructionDefinition(instName, node)
 
-	arguments, curResults := g.generateArguments(ctx, node)
+	arguments, curResults := g.generateArguments(&instCtx, node)
 	results.Extend(&curResults)
 
-	partialTargets, curResults := g.generatePartialTargetsInfo(ctx, node)
+	partialTargets, curResults := g.generatePartialTargetsInfo(&instCtx, node)
 	results.Extend(&curResults)
+
+	labels, curResults := g.generateLabels(&instCtx, node)
 
 	// Now it's time to check if we have any errors so far.
 	if !results.IsEmpty() {
-		return
+		return nil, results
 	}
+
+	instCtx.InstructionInfo.Arguments = arguments
+	instCtx.InstructionInfo.Labels = labels
 
 	explicitTargetTypes := partialTargetsToTypes(partialTargets)
 	argumentTypes := argumentsToTypes(arguments)
@@ -260,24 +242,22 @@ func (g *InstructionGenerator[InstT]) Generate(
 	// TODO: validate that the returned target types matches expected constraints.
 
 	if !results.IsEmpty() {
-		return
+		return nil, results
 	}
 
-	targets, results := g.defineAndGetTargetRegisters(ctx, node, targetTypes)
+	targets, results := g.defineAndGetTargetRegisters(&instCtx, node, targetTypes)
+
 	if !results.IsEmpty() {
-		return
+		return nil, results
 	}
 
-	instruction, results := instDef.BuildInstruction(targets, arguments)
+	instCtx.InstructionInfo.Targets = targets
+
+	instruction, results := instDef.BuildInstruction(instCtx.InstructionInfo)
 	if !results.IsEmpty() {
-		return
+		return nil, results
 	}
 
-	info = &InstructionInfo[InstT]{
-		Instruction: instruction,
-		Targets:     targets,
-		Arguments:   arguments,
-	}
-
-	return info, core.ResultList{}
+	instCtx.InstructionInfo.Instruction = instruction
+	return instCtx.InstructionInfo, core.ResultList{}
 }

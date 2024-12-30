@@ -5,35 +5,31 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-type FileInfo[InstT BaseInstruction] struct {
-	Functions []*FunctionInfo[InstT]
+type FileGenerator struct {
+	NamedTypeGenerator FileContextGenerator[parse.TypeDeclarationNode, *NamedTypeInfo]
+	FunctionGenerator  FileContextGenerator[parse.FunctionNode, *FunctionInfo]
 }
 
-type FileGenerator[InstT BaseInstruction] struct {
-	NamedTypeGenerator FileContextGenerator[InstT, parse.TypeDeclarationNode, *NamedTypeInfo]
-	FunctionGenerator  FileContextGenerator[InstT, parse.FunctionNode, *FunctionInfo[InstT]]
-}
-
-func NewFileGenerator[InstT BaseInstruction]() FileGenerator[InstT] {
-	return FileGenerator[InstT]{
-		NamedTypeGenerator: NewNamedTypeGenerator[InstT](),
-		FunctionGenerator:  NewFunctionGenerator[InstT](),
+func NewFileGenerator() FileGenerator {
+	return FileGenerator{
+		NamedTypeGenerator: NewNamedTypeGenerator(),
+		FunctionGenerator:  NewFunctionGenerator(),
 	}
 }
 
-func (g *FileGenerator[InstT]) createFileContext(
-	ctx *GenerationContext[InstT],
+func (g *FileGenerator) createFileContext(
+	ctx *GenerationContext,
 	source core.SourceContext,
-) *FileGenerationContext[InstT] {
-	return &FileGenerationContext[InstT]{
+) *FileGenerationContext {
+	return &FileGenerationContext{
 		GenerationContext: ctx,
 		SourceContext:     source,
 		Types:             ctx.TypeManagerCreator(),
 	}
 }
 
-func (g *FileGenerator[InstT]) generateTypesFromDeclarations(
-	ctx *FileGenerationContext[InstT],
+func (g *FileGenerator) generateTypesFromDeclarations(
+	ctx *FileGenerationContext,
 	nodes []parse.TypeDeclarationNode,
 ) (types []*NamedTypeInfo, results core.ResultList) {
 	types = make([]*NamedTypeInfo, len(nodes))
@@ -45,11 +41,11 @@ func (g *FileGenerator[InstT]) generateTypesFromDeclarations(
 	return types, results
 }
 
-func (g *FileGenerator[InstT]) generateFunctions(
-	ctx *FileGenerationContext[InstT],
+func (g *FileGenerator) generateFunctions(
+	ctx *FileGenerationContext,
 	nodes []parse.FunctionNode,
-) (functions []*FunctionInfo[InstT], results core.ResultList) {
-	functions = make([]*FunctionInfo[InstT], len(nodes))
+) (functions []*FunctionInfo, results core.ResultList) {
+	functions = make([]*FunctionInfo, len(nodes))
 	for i, node := range nodes {
 		functionInfo, curResults := g.FunctionGenerator.Generate(ctx, node)
 		functions[i] = functionInfo
@@ -58,11 +54,11 @@ func (g *FileGenerator[InstT]) generateFunctions(
 	return functions, results
 }
 
-func (g *FileGenerator[InstT]) Generate(
-	ctx *GenerationContext[InstT],
+func (g *FileGenerator) Generate(
+	ctx *GenerationContext,
 	source core.SourceContext,
 	node parse.FileNode,
-) (*FileInfo[InstT], core.ResultList) {
+) (*FileInfo, core.ResultList) {
 	var results core.ResultList
 	fileCtx := g.createFileContext(ctx, source)
 
@@ -76,7 +72,7 @@ func (g *FileGenerator[InstT]) Generate(
 		return nil, results
 	}
 
-	file := &FileInfo[InstT]{
+	file := &FileInfo{
 		Functions: functions,
 	}
 

@@ -6,16 +6,14 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-// MARK: Generator
-
-type TargetGenerator[InstT BaseInstruction] struct {
-	ReferencedTypeGenerator FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo]
+type TargetGenerator struct {
+	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewTargetGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.TargetNode, partialRegisterInfo] {
-	return FunctionContextGenerator[InstT, parse.TargetNode, partialRegisterInfo](
-		&TargetGenerator[InstT]{
-			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
+func NewTargetGenerator() InstructionContextGenerator[parse.TargetNode, registerPartialInfo] {
+	return InstructionContextGenerator[parse.TargetNode, registerPartialInfo](
+		&TargetGenerator{
+			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
 	)
 }
@@ -38,10 +36,10 @@ func NewRegisterTypeMismatchResult(
 	})
 }
 
-func (g *TargetGenerator[InstT]) Generate(
-	ctx *FunctionGenerationContext[InstT],
+func (g *TargetGenerator) Generate(
+	ctx *InstructionGenerationContext,
 	node parse.TargetNode,
-) (partialRegisterInfo, core.ResultList) {
+) (registerPartialInfo, core.ResultList) {
 	var explicitType *ReferencedTypeInfo
 
 	// if an explicit type is provided to the target, get the type info.
@@ -52,7 +50,7 @@ func (g *TargetGenerator[InstT]) Generate(
 			*node.Type,
 		)
 		if !results.IsEmpty() {
-			return partialRegisterInfo{}, results
+			return registerPartialInfo{}, results
 		}
 
 		explicitType = &explicitTypeValue
@@ -65,8 +63,8 @@ func (g *TargetGenerator[InstT]) Generate(
 	if registerAlreadyDefined {
 		if explicitType != nil {
 			// ensure explicit type matches the previously declared one.
-			if !explicitType.Equals(registerInfo.Type) {
-				return partialRegisterInfo{}, NewRegisterTypeMismatchResult(
+			if !explicitType.Equal(registerInfo.Type) {
+				return registerPartialInfo{}, NewRegisterTypeMismatchResult(
 					node.View(),
 					registerInfo.Declaration,
 				)
@@ -82,7 +80,7 @@ func (g *TargetGenerator[InstT]) Generate(
 		// the target register at this.
 		// the type and register will be finalized when the instruction is built,
 		// and only then it is added to the register manager.
-		return partialRegisterInfo{
+		return registerPartialInfo{
 			Name:        registerName,
 			Type:        explicitType,
 			Declaration: node.View(),

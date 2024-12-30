@@ -48,28 +48,39 @@ func (m *RegisterMap) NewRegister(reg *gen.RegisterInfo) core.Result {
 	return nil
 }
 
+func (m *RegisterMap) GetAllRegisters() []*gen.RegisterInfo {
+	registers := make([]*gen.RegisterInfo, 0, len(*m))
+	for _, reg := range *m {
+		registers = append(registers, reg)
+	}
+	return registers
+}
+
 // MARK: LabelMap
 
-type LabelMap map[string]gen.LabelInfo
+type LabelMap map[string]*gen.LabelInfo
 
 func (m *LabelMap) GetLabel(name string) *gen.LabelInfo {
 	val, ok := (*m)[name]
 	if !ok {
 		return nil
 	}
-	return &val
+	return val
 }
 
-func (m *LabelMap) NewLabel(label gen.LabelInfo) core.Result {
+func (m *LabelMap) NewLabel(label *gen.LabelInfo) core.Result {
 	(*m)[label.Name] = label
 	return nil
 }
 
 // MARK: Context
 
-var testInstructionSet = gen.InstructionManager[Instruction](
+var testInstructionSet = gen.InstructionManager(
 	&InstructionMap{
 		"ADD": &AddInstructionDefinition{},
+		"JMP": &JumpInstructionDefinition{},
+		"JZ":  &JumpZeroInstructionDefinition{},
+		"RET": &RetInstructionDefinition{},
 	},
 )
 
@@ -85,7 +96,7 @@ var testManagerCreators = gen.ManagerCreators{
 	},
 }
 
-var testGenerationContext = gen.GenerationContext[Instruction]{
+var testGenerationContext = gen.GenerationContext{
 	ManagerCreators: testManagerCreators,
 	Instructions:    testInstructionSet,
 	PointerSize:     314, // An arbitrary, unique value.

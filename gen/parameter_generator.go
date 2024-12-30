@@ -6,19 +6,19 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-type ParameterGenerator[InstT BaseInstruction] struct {
-	ReferencedTypeGenerator FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo]
+type ParameterGenerator struct {
+	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewParameterGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.ParameterNode, *RegisterInfo] {
-	return FunctionContextGenerator[InstT, parse.ParameterNode, *RegisterInfo](
-		&ParameterGenerator[InstT]{
-			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
+func NewParameterGenerator() FunctionContextGenerator[parse.ParameterNode, *RegisterInfo] {
+	return FunctionContextGenerator[parse.ParameterNode, *RegisterInfo](
+		&ParameterGenerator{
+			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
 	)
 }
 
-func NewRegisterAlreadyDefinedResult(
+func newRegisterAlreadyDefinedResult(
 	NewDeclaration core.UnmanagedSourceView,
 	FirstDeclaration core.UnmanagedSourceView,
 ) core.ResultList {
@@ -39,8 +39,8 @@ func NewRegisterAlreadyDefinedResult(
 // Asserts that a register with the same name does not exist yet,
 // creates the new register, registers it to the register manager,
 // and returns the unique register info structure pointer.
-func (g *ParameterGenerator[InstT]) Generate(
-	ctx *FunctionGenerationContext[InstT],
+func (g *ParameterGenerator) Generate(
+	ctx *FunctionGenerationContext,
 	node parse.ParameterNode,
 ) (*RegisterInfo, core.ResultList) {
 	results := core.ResultList{}
@@ -54,7 +54,7 @@ func (g *ParameterGenerator[InstT]) Generate(
 	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	if registerInfo != nil {
-		registerResults := NewRegisterAlreadyDefinedResult(
+		registerResults := newRegisterAlreadyDefinedResult(
 			node.View(),
 			registerInfo.Declaration,
 		)

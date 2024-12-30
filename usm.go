@@ -10,7 +10,6 @@ import (
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/parse"
 	usm64core "alon.kr/x/usm/usm64/core"
-	usm64emulate "alon.kr/x/usm/usm64/emulate"
 	"alon.kr/x/usm/usm64/managers"
 	"github.com/spf13/cobra"
 )
@@ -96,7 +95,7 @@ func emuCommand(cmd *cobra.Command, args []string) {
 	}
 
 	ctx := managers.NewGenerationContext()
-	generator := gen.NewFileGenerator[usm64core.Instruction]()
+	generator := gen.NewFileGenerator()
 	info, results := generator.Generate(ctx, view.Ctx(), node)
 	if !results.IsEmpty() {
 		stringer := core.NewResultStringer(view.Ctx(), inputFilepath)
@@ -106,8 +105,17 @@ func emuCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	emulator := usm64emulate.NewEmulator()
-	emulator.Emulate(info.Functions[0])
+	emulator := usm64core.NewEmulator()
+	results = emulator.Emulate(info.Functions[0])
+	if !results.IsEmpty() {
+		stringer := core.NewResultStringer(view.Ctx(), inputFilepath)
+		for result := range results.Range() {
+			fmt.Print(stringer.StringResult(result))
+		}
+		os.Exit(1)
+	}
+
+	os.Exit(0)
 }
 
 func main() {

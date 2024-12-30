@@ -9,7 +9,7 @@ import (
 // MARK: Info
 
 type LabelArgumentInfo struct {
-	Label       LabelInfo
+	Label       *LabelInfo
 	declaration core.UnmanagedSourceView
 }
 
@@ -23,16 +23,16 @@ func (i *LabelArgumentInfo) Declaration() core.UnmanagedSourceView {
 
 // MARK: Generator
 
-type LabelArgumentGenerator[InstT BaseInstruction] struct{}
+type LabelArgumentGenerator struct{}
 
-func NewLabelArgumentGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.LabelNode, ArgumentInfo] {
-	return FunctionContextGenerator[InstT, parse.LabelNode, ArgumentInfo](
-		&LabelArgumentGenerator[InstT]{},
+func NewLabelArgumentGenerator() InstructionContextGenerator[parse.LabelNode, ArgumentInfo] {
+	return InstructionContextGenerator[parse.LabelNode, ArgumentInfo](
+		&LabelArgumentGenerator{},
 	)
 }
 
-func (g *LabelArgumentGenerator[InstT]) Generate(
-	ctx *FunctionGenerationContext[InstT],
+func (g *LabelArgumentGenerator) Generate(
+	ctx *InstructionGenerationContext,
 	node parse.LabelNode,
 ) (ArgumentInfo, core.ResultList) {
 	name := nodeToSourceString(ctx.FileGenerationContext, node)
@@ -50,7 +50,7 @@ func (g *LabelArgumentGenerator[InstT]) Generate(
 	}
 
 	argument := &LabelArgumentInfo{
-		Label:       *labelInfo,
+		Label:       labelInfo,
 		declaration: node.View(),
 	}
 

@@ -9,30 +9,30 @@ import (
 )
 
 type PutInstruction struct {
-	Argument usm64core.ValuedArgument
+	nonBranchingInstruction
 }
 
 func (i *PutInstruction) Emulate(
 	ctx *usm64core.EmulationContext,
-) usm64core.EmulationError {
-	fmt.Println(i.Argument.Value(ctx))
-	ctx.NextInstructionIndex++
-	return nil
+) core.ResultList {
+	value, results := ctx.ArgumentToValue(i.Arguments[0])
+	if !results.IsEmpty() {
+		return results
+	}
+
+	fmt.Println(value)
+	return ctx.ContinueToNextInstruction()
 }
 
 func NewPutInstruction(
-	targets []usm64core.Register,
-	arguments []usm64core.Argument,
-) (usm64core.Instruction, core.ResultList) {
-	valued, results := usm64core.ArgumentToValuedArgument(arguments[0])
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
-	return &PutInstruction{Argument: valued}, core.ResultList{}
+	info *gen.InstructionInfo,
+) (gen.BaseInstruction, core.ResultList) {
+	return gen.BaseInstruction(&PutInstruction{
+		nonBranchingInstruction: newNonBranchingInstruction(info),
+	}), core.ResultList{}
 }
 
-func NewPutInstructionDefinition() gen.InstructionDefinition[usm64core.Instruction] {
+func NewPutInstructionDefinition() gen.InstructionDefinition {
 	return &FixedInstructionDefinition{
 		Targets:   0,
 		Arguments: 1,

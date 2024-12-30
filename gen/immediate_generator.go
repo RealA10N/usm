@@ -8,39 +8,20 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-// MARK: Info
-
-type ImmediateInfo struct {
-	Type        ReferencedTypeInfo
-	Value       *big.Int // TODO: Add floating types
-	declaration core.UnmanagedSourceView
-	// TODO: more complex and complete representation of immediate structs.
+type ImmediateArgumentGenerator struct {
+	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func (i *ImmediateInfo) GetType() *ReferencedTypeInfo {
-	return &i.Type
-}
-
-func (i *ImmediateInfo) Declaration() core.UnmanagedSourceView {
-	return i.declaration
-}
-
-// MARK: Generator
-
-type ImmediateArgumentGenerator[InstT BaseInstruction] struct {
-	ReferencedTypeGenerator FileContextGenerator[InstT, parse.TypeNode, ReferencedTypeInfo]
-}
-
-func NewImmediateArgumentGenerator[InstT BaseInstruction]() FunctionContextGenerator[InstT, parse.ImmediateNode, ArgumentInfo] {
-	return FunctionContextGenerator[InstT, parse.ImmediateNode, ArgumentInfo](
-		&ImmediateArgumentGenerator[InstT]{
-			ReferencedTypeGenerator: NewReferencedTypeGenerator[InstT](),
+func NewImmediateArgumentGenerator() InstructionContextGenerator[parse.ImmediateNode, ArgumentInfo] {
+	return InstructionContextGenerator[parse.ImmediateNode, ArgumentInfo](
+		&ImmediateArgumentGenerator{
+			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
 	)
 }
 
-func (g *ImmediateArgumentGenerator[InstT]) Generate(
-	ctx *FunctionGenerationContext[InstT],
+func (g *ImmediateArgumentGenerator) Generate(
+	ctx *InstructionGenerationContext,
 	node parse.ImmediateNode,
 ) (ArgumentInfo, core.ResultList) {
 	typeInfo, results := g.ReferencedTypeGenerator.Generate(
