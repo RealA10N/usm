@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/graph"
 	"alon.kr/x/usm/parse"
@@ -72,7 +73,7 @@ func (g *FunctionGenerator) collectLabelDefinitions(
 	return labelToInstructionIndex, results
 }
 
-func (g *FunctionGenerator) generateFunctionBody(
+func (g *FunctionGenerator) generateInstructions(
 	ctx *FunctionGenerationContext,
 	instNodes []parse.InstructionNode,
 ) ([]*InstructionInfo, core.ResultList) {
@@ -153,7 +154,7 @@ func (g *FunctionGenerator) generateInstructionsGraph(
 	return instructionsGraph, core.ResultList{}
 }
 
-func (g *FunctionGenerator) generateFunctionBasicBlocks(
+func (g *FunctionGenerator) generateBasicBlocks(
 	cfg graph.ControlFlowGraph,
 	instructions []*InstructionInfo,
 ) (blocks []*BasicBlockInfo, results core.ResultList) {
@@ -218,7 +219,7 @@ func (g *FunctionGenerator) Generate(
 		return nil, results
 	}
 
-	instructions, results := g.generateFunctionBody(funcCtx, node.Instructions.Nodes)
+	instructions, results := g.generateInstructions(funcCtx, node.Instructions.Nodes)
 	if !results.IsEmpty() {
 		return nil, results
 	}
@@ -228,9 +229,18 @@ func (g *FunctionGenerator) Generate(
 		return nil, results
 	}
 
+	if graph.Size() == 0 {
+		v := node.View()
+		return nil, list.FromSingle(core.Result{{
+			Type:     core.ErrorResult,
+			Message:  "Function must contain at least one instruction",
+			Location: &v,
+		}})
+	}
+
 	cfg := graph.ControlFlowGraph(0)
 
-	blocks, results := g.generateFunctionBasicBlocks(cfg, instructions)
+	blocks, results := g.generateBasicBlocks(cfg, instructions)
 	if !results.IsEmpty() {
 		return nil, results
 	}
