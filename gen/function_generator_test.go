@@ -114,3 +114,14 @@ func TestEmptyFunctionGeneration(t *testing.T) {
 	details := results.Head.Value
 	assert.Contains(t, details[0].Message, "at least one instruction")
 }
+
+func TestNoReturnFunctionGeneration(t *testing.T) {
+	src := `func @noReturn {
+				%n = ADD $32 #1 $32 #2
+			}`
+	function, results := generateFunctionFromSource(t, src)
+	assert.False(t, results.IsEmpty())
+	assert.Nil(t, function)
+	details := results.Head.Value
+	assert.Contains(t, details[0].Message, "end a function")
+}
