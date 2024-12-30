@@ -10,15 +10,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSimpleFunctionGeneration(t *testing.T) {
-	src := core.NewSourceView(
-		`func $32 @add $32 %a {
-			%b = ADD %a $32 #1
-			%c = ADD %b %a
-			RET
-		}`,
-	)
-	tkns, err := lex.NewTokenizer().Tokenize(src)
+func generateFunctionFromSource(
+	t *testing.T,
+	source string,
+) (*gen.FunctionInfo, core.ResultList) {
+	t.Helper()
+
+	sourceView := core.NewSourceView(source)
+
+	tkns, err := lex.NewTokenizer().Tokenize(sourceView)
 	assert.NoError(t, err)
 
 	tknView := parse.NewTokenView(tkns)
@@ -29,12 +29,22 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 
 	ctx := &gen.FileGenerationContext{
 		GenerationContext: &testGenerationContext,
-		SourceContext:     src.Ctx(),
+		SourceContext:     sourceView.Ctx(),
 		Types:             &TypeMap{intType.Name: intType},
 	}
 
 	generator := gen.NewFunctionGenerator()
-	function, results := generator.Generate(ctx, node)
+	return generator.Generate(ctx, node)
+}
+
+func TestSimpleFunctionGeneration(t *testing.T) {
+	src := `func $32 @add $32 %a {
+				%b = ADD %a $32 #1
+				%c = ADD %b %a
+				RET
+			}`
+
+	function, results := generateFunctionFromSource(t, src)
 	assert.True(t, results.IsEmpty())
 
 	assert.NotNil(t, function.EntryBlock)
@@ -73,35 +83,18 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 }
 
 func TestIfElseFunctionGeneration(t *testing.T) {
-	src := core.NewSourceView(
-		`func @toBool $32 %n {
-			JZ %n .zero
-		.nonzero
-			%bool = ADD $32 #1 $32 #0
-			JMP .end
-		.zero
-			%bool = ADD $32 #0 $32 #0
-		.end
-			RET
-		}`,
-	)
-	tkns, err := lex.NewTokenizer().Tokenize(src)
-	assert.NoError(t, err)
+	src := `func @toBool $32 %n {
+				JZ %n .zero
+			.nonzero
+				%bool = ADD $32 #1 $32 #0
+				JMP .end
+			.zero
+				%bool = ADD $32 #0 $32 #0
+			.end
+				RET
+			}`
 
-	tknView := parse.NewTokenView(tkns)
-	node, result := parse.NewFunctionParser().Parse(&tknView)
-	assert.Nil(t, result)
-
-	intType := &gen.NamedTypeInfo{Name: "$32", Size: 4}
-
-	ctx := &gen.FileGenerationContext{
-		GenerationContext: &testGenerationContext,
-		SourceContext:     src.Ctx(),
-		Types:             &TypeMap{intType.Name: intType},
-	}
-
-	generator := gen.NewFunctionGenerator()
-	function, results := generator.Generate(ctx, node)
+	function, results := generateFunctionFromSource(t, src)
 	assert.True(t, results.IsEmpty())
 
 	entryBlock := function.EntryBlock
@@ -112,4 +105,12 @@ func TestIfElseFunctionGeneration(t *testing.T) {
 	assert.Nil(t, endBlock.NextBlock)
 
 	assert.ElementsMatch(t, entryBlock.ForwardEdges, []*gen.BasicBlockInfo{nonzeroBlock, zeroBlock})
+}
+
+func TestEmptyFunctionGeneration(t *testing.T) {
+	function, results := generateFunctionFromSource(t, `func @empty { }`)
+	assert.False(t, results.IsEmpty())
+	assert.Nil(t, function)
+	details := results.Head.Value
+	assert.Contains(t, details[0].Message, "at least one instruction")
 }
