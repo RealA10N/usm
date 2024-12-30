@@ -138,6 +138,7 @@ func (g *FunctionGenerator) generateInstructionsGraph(
 				// Don't add an edge.
 
 			default:
+				// notest
 				results.Append(core.Result{{
 					Type:     core.InternalErrorResult,
 					Message:  "Unknown next step type",
