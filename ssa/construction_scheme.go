@@ -13,14 +13,16 @@ type ReachingDefinitionsSet interface {
 	// RenameBasicBlock method, in which the reaching definition is the unique
 	// definition of the register that reaches (dominates) the entry of the
 	// basic block.
-
-	// Note that this does not include definitions of the register in the basic
-	// block itself, and it is up to the implementation to track.
-	// This DOES NOT include definitions of the register in inserted phi
-	// functions, including phi functions in the entry this basic block.
-	// Such phi instructions should be first handled by the
-	// RenameDefinitionRegister method, as if it was a regular register
-	// definition.
+	//
+	// First, the USM engine initializes the data structure with the reaching
+	// definitions to the entry of the basic block, NOT including the phi
+	// functions defined in the block.
+	// Then, the implementation of the ISA should update the data structure
+	// while renaming variables in a basic block, and when a new definition
+	// is reached inside a basic block (including a definition from a phi
+	// instruction), it the implementation should call the "rename register"
+	// method to get the new renamed register, and update the internal reaching
+	// definitions set.
 	GetReachingDefinition(base *gen.RegisterInfo) (renamed *gen.RegisterInfo)
 
 	// Update the reaching definition of a base register to the new renamed one.
