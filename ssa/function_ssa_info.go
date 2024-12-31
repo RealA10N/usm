@@ -9,6 +9,8 @@ import (
 type FunctionSsaInfo struct {
 	*gen.FunctionInfo
 
+	SsaConstructionScheme
+
 	// A slice that contains all blocks that are defined in the function.
 	// It can be assumed that the length of the slice is >= 1, and that the
 	// first block in the slice is the entry block.
