@@ -4,6 +4,7 @@ go 1.23.0
 
 require (
 	alon.kr/x/list v0.0.0-20241203223347-3173d76828c0
+	alon.kr/x/set v0.0.0-20241231162956-88a172226e90
 	alon.kr/x/view v0.0.0-20241117132723-5c30dbef3c86
 	github.com/fatih/color v1.18.0
 	github.com/spf13/cobra v1.8.1
