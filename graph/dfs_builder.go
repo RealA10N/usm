@@ -16,6 +16,7 @@ func newDfsBuilder(g *Graph) dfsBuilder {
 		Dfs: Dfs{
 			PreOrder:    make([]uint, n),
 			PostOrder:   make([]uint, n),
+			Timeline:    make([]uint, 0, 2*n),
 			Parent:      make([]uint, n),
 			Depth:       make([]uint, n),
 			SubtreeSize: make([]uint, n),
@@ -24,6 +25,19 @@ func newDfsBuilder(g *Graph) dfsBuilder {
 		NextPreTime:  0,
 		NextPostTime: 0,
 	}
+}
+
+func (g *dfsBuilder) recordPre(node uint) {
+	g.Timeline = append(g.Timeline, node)
+	g.PreOrder[node] = g.NextPreTime
+	g.NextPreTime++
+}
+
+func (g *dfsBuilder) recordPost(node uint) {
+	n := uint(len(g.Nodes))
+	g.Timeline = append(g.Timeline, n+node)
+	g.PostOrder[node] = g.NextPostTime
+	g.NextPostTime++
 }
 
 func (g *dfsBuilder) dfs(node, from, depth uint) bool {
@@ -36,8 +50,7 @@ func (g *dfsBuilder) dfs(node, from, depth uint) bool {
 	g.Depth[node] = depth
 	g.SubtreeSize[node] = 1
 
-	g.PreOrder[node] = g.NextPreTime
-	g.NextPreTime++
+	g.recordPre(node)
 
 	for _, next := range g.Nodes[node].ForwardEdges {
 		if g.dfs(next, node, depth+1) {
@@ -45,9 +58,7 @@ func (g *dfsBuilder) dfs(node, from, depth uint) bool {
 		}
 	}
 
-	g.PostOrder[node] = g.NextPostTime
-	g.NextPostTime++
-
+	g.recordPost(node)
 	return true
 }
 

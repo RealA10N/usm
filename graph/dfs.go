@@ -10,6 +10,15 @@ type Dfs struct {
 	// PostOrder[v] is the index of v in the DFS post-order traversal.
 	PostOrder []uint
 
+	// Timeline is a slice of length 2n, where each push and pop operation
+	// during the DFS traversal of the stack is recorded.
+	//
+	// Operations are ordered in chronological order. If Timeline[i] = k,
+	// where k in [0, n), then the i-th operation in the traversal was a push
+	// operation of the value k. Otherwise, if k in [n, 2n), then it represents
+	// a pop of the value k-n.
+	Timeline []uint
+
 	// Parent[v] is the parent of v in the DFS spanning tree.
 	// The parent of the root of the tree is itself.
 	Parent []uint
