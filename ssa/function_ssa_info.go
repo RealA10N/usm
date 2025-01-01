@@ -9,24 +9,29 @@ import (
 type FunctionSsaInfo struct {
 	*gen.FunctionInfo
 
-	SsaConstructionScheme
+	SsaConstructionScheme SsaConstructionScheme
 
-	// A slice that contains all blocks that are defined in the function.
-	// It can be assumed that the length of the slice is >= 1, and that the
-	// first block in the slice is the entry block.
-	Blocks []*gen.BasicBlockInfo
+	// A linear representation of all basic blocks in the function.
+	BasicBlocks []*gen.BasicBlockInfo
 
 	// A mapping between all basic blocks in the function and their index in the
 	// Blocks slice.
 	BasicBlocksToIndex map[*gen.BasicBlockInfo]uint
 
+	// A mapping from (base) registers to their index in the registers slice.
+	RegistersToIndex map[*gen.RegisterInfo]uint
+
 	ControlFlowGraph   *graph.Graph
 	DominatorJoinGraph *graph.DominatorJoinGraph
 }
 
-func collectAllFunctionBasicBlocks(
-	block *gen.BasicBlockInfo,
-) []*gen.BasicBlockInfo {
+func collectBasicBlocks(block *gen.BasicBlockInfo) []*gen.BasicBlockInfo {
+	// TODO: this slice actually exists in the previous step in the compilation,
+	// in the `gen.FunctionGenerator`. The current implementation creates the
+	// array again instead of just passing it through so the implementation is
+	// more complete and independent. However, if it is still the case we should
+	// find a way to pass the array through as an optimization.
+
 	blocks := make([]*gen.BasicBlockInfo, 0)
 	for block != nil {
 		blocks = append(blocks, block)
@@ -68,7 +73,7 @@ func getBasicBlocksForwardEdges(
 }
 
 func NewFunctionSsaInfo(function *gen.FunctionInfo) FunctionSsaInfo {
-	basicBlocks := collectAllFunctionBasicBlocks(function.EntryBlock)
+	basicBlocks := collectBasicBlocks(function.EntryBlock)
 	basicBlockToIndex := createBasicBlockToIndexMapping(basicBlocks)
 	forwardEdges := getBasicBlocksForwardEdges(basicBlocks, basicBlockToIndex)
 	graph := graph.NewGraph(forwardEdges)
@@ -76,7 +81,6 @@ func NewFunctionSsaInfo(function *gen.FunctionInfo) FunctionSsaInfo {
 
 	return FunctionSsaInfo{
 		FunctionInfo:       function,
-		Blocks:             basicBlocks,
 		BasicBlocksToIndex: basicBlockToIndex,
 		ControlFlowGraph:   &graph,
 		DominatorJoinGraph: &dominatorJoinGraph,
@@ -110,16 +114,25 @@ func (i *FunctionSsaInfo) blockIndicesToBlockInfos(
 ) []*gen.BasicBlockInfo {
 	blocks := make([]*gen.BasicBlockInfo, len(indices))
 	for _, index := range indices {
-		blocks = append(blocks, i.Blocks[index])
+		blocks = append(blocks, i.BasicBlocks[index])
 	}
 	return blocks
 }
 
-func (i *FunctionSsaInfo) GetPhiInsertionPoints(
+func (i *FunctionSsaInfo) getRegisterPhiInsertionPoints(
 	register *gen.RegisterInfo,
 ) []*gen.BasicBlockInfo {
 	definitions := i.GetDefinitions(register)
 	definitionsIndices := i.BlockInfosToIndices(definitions)
 	phiBlocksIndices := i.DominatorJoinGraph.IteratedDominatorFrontier(definitionsIndices)
 	return i.blockIndicesToBlockInfos(phiBlocksIndices)
+}
+
+func (i *FunctionSsaInfo) InsertPhiInstructions() {
+	for _, register := range i.Registers {
+		phiBlocks := i.getRegisterPhiInsertionPoints(register)
+		for _, block := range phiBlocks {
+			i.SsaConstructionScheme.NewPhiInstruction(block, register)
+		}
+	}
 }
