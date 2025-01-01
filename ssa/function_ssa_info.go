@@ -136,3 +136,20 @@ func (i *FunctionSsaInfo) InsertPhiInstructions() {
 		}
 	}
 }
+
+func (i *FunctionSsaInfo) RenameRegisters() {
+	reachingSet := NewReachingDefinitionsSet(i)
+	n := uint(len(i.BasicBlocks))
+
+	for _, event := range i.DominatorJoinGraph.Dfs.Timeline {
+		isPop := event >= n
+		if isPop {
+			reachingSet.popBlock()
+		} else {
+			reachingSet.pushBlock()
+			basicBlockIndex := event
+			basicBlock := i.BasicBlocks[basicBlockIndex]
+			i.SsaConstructionScheme.RenameBasicBlock(basicBlock, reachingSet)
+		}
+	}
+}
