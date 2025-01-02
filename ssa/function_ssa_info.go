@@ -6,6 +6,10 @@ import (
 	"alon.kr/x/usm/graph"
 )
 
+type PhiInstructionDescriptor struct {
+	PhiInstruction
+	base *gen.RegisterInfo
+}
 type FunctionSsaInfo struct {
 	*gen.FunctionInfo
 
@@ -18,11 +22,37 @@ type FunctionSsaInfo struct {
 	// Blocks slice.
 	BasicBlocksToIndex map[*gen.BasicBlockInfo]uint
 
+	// A mapping between all basic blocks and the phi instructions that they
+	// define in their entry.
+	//
+	// Initially, this slice is empty for each block, and each new phi instruction
+	// which we create is inserted to to corresponding block's slice.
+	PhiInstructionsPerBlock [][]PhiInstructionDescriptor
+
 	// A mapping from (base) registers to their index in the registers slice.
 	RegistersToIndex map[*gen.RegisterInfo]uint
 
 	ControlFlowGraph   *graph.Graph
 	DominatorJoinGraph *graph.DominatorJoinGraph
+}
+
+func NewFunctionSsaInfo(function *gen.FunctionInfo) FunctionSsaInfo {
+	basicBlocks := collectBasicBlocks(function.EntryBlock)
+	basicBlockToIndex := createMappingToIndex(basicBlocks)
+	forwardEdges := getBasicBlocksForwardEdges(basicBlocks, basicBlockToIndex)
+	graph := graph.NewGraph(forwardEdges)
+	dominatorJoinGraph := graph.DominatorJoinGraph(0)
+	registersToIndex := createMappingToIndex(function.Registers)
+
+	return FunctionSsaInfo{
+		FunctionInfo:            function,
+		BasicBlocks:             basicBlocks,
+		BasicBlocksToIndex:      basicBlockToIndex,
+		PhiInstructionsPerBlock: make([][]PhiInstructionDescriptor, len(basicBlocks)),
+		RegistersToIndex:        registersToIndex,
+		ControlFlowGraph:        &graph,
+		DominatorJoinGraph:      &dominatorJoinGraph,
+	}
 }
 
 func collectBasicBlocks(block *gen.BasicBlockInfo) []*gen.BasicBlockInfo {
@@ -40,12 +70,12 @@ func collectBasicBlocks(block *gen.BasicBlockInfo) []*gen.BasicBlockInfo {
 	return blocks
 }
 
-func createBasicBlockToIndexMapping(
-	blocks []*gen.BasicBlockInfo,
-) map[*gen.BasicBlockInfo]uint {
-	mapping := make(map[*gen.BasicBlockInfo]uint)
-	for i, block := range blocks {
-		mapping[block] = uint(i)
+func createMappingToIndex[T comparable](
+	slice []T,
+) map[T]uint {
+	mapping := make(map[T]uint)
+	for i, element := range slice {
+		mapping[element] = uint(i)
 	}
 	return mapping
 }
@@ -72,23 +102,8 @@ func getBasicBlocksForwardEdges(
 	return edges
 }
 
-func NewFunctionSsaInfo(function *gen.FunctionInfo) FunctionSsaInfo {
-	basicBlocks := collectBasicBlocks(function.EntryBlock)
-	basicBlockToIndex := createBasicBlockToIndexMapping(basicBlocks)
-	forwardEdges := getBasicBlocksForwardEdges(basicBlocks, basicBlockToIndex)
-	graph := graph.NewGraph(forwardEdges)
-	dominatorJoinGraph := graph.DominatorJoinGraph(0)
-
-	return FunctionSsaInfo{
-		FunctionInfo:       function,
-		BasicBlocksToIndex: basicBlockToIndex,
-		ControlFlowGraph:   &graph,
-		DominatorJoinGraph: &dominatorJoinGraph,
-	}
-}
-
 // Returns all the basic blocks in which the provided register is defined.
-func (i *FunctionSsaInfo) GetDefinitions(
+func (i *FunctionSsaInfo) getDefinitions(
 	register *gen.RegisterInfo,
 ) set.Set[*gen.BasicBlockInfo] {
 	blocks := set.New[*gen.BasicBlockInfo]()
@@ -99,7 +114,7 @@ func (i *FunctionSsaInfo) GetDefinitions(
 	return blocks
 }
 
-func (i *FunctionSsaInfo) BlockInfosToIndices(
+func (i *FunctionSsaInfo) blockInfosToIndices(
 	blocks set.Set[*gen.BasicBlockInfo],
 ) []uint {
 	indices := make([]uint, len(blocks))
@@ -122,8 +137,8 @@ func (i *FunctionSsaInfo) blockIndicesToBlockInfos(
 func (i *FunctionSsaInfo) getRegisterPhiInsertionPoints(
 	register *gen.RegisterInfo,
 ) []*gen.BasicBlockInfo {
-	definitions := i.GetDefinitions(register)
-	definitionsIndices := i.BlockInfosToIndices(definitions)
+	definitions := i.getDefinitions(register)
+	definitionsIndices := i.blockInfosToIndices(definitions)
 	phiBlocksIndices := i.DominatorJoinGraph.IteratedDominatorFrontier(definitionsIndices)
 	return i.blockIndicesToBlockInfos(phiBlocksIndices)
 }
@@ -132,7 +147,15 @@ func (i *FunctionSsaInfo) InsertPhiInstructions() {
 	for _, register := range i.Registers {
 		phiBlocks := i.getRegisterPhiInsertionPoints(register)
 		for _, block := range phiBlocks {
-			i.SsaConstructionScheme.NewPhiInstruction(block, register)
+			blockIndex := i.BasicBlocksToIndex[block]
+			phi := i.SsaConstructionScheme.NewPhiInstruction(block, register)
+			descriptor := PhiInstructionDescriptor{
+				PhiInstruction: phi,
+				base:           register,
+			}
+			i.PhiInstructionsPerBlock[blockIndex] = append(
+				i.PhiInstructionsPerBlock[blockIndex],
+				descriptor)
 		}
 	}
 }
@@ -150,6 +173,15 @@ func (i *FunctionSsaInfo) RenameRegisters() {
 			basicBlockIndex := event
 			basicBlock := i.BasicBlocks[basicBlockIndex]
 			i.SsaConstructionScheme.RenameBasicBlock(basicBlock, reachingSet)
+
+			basicBlockDominatorTreeNode := i.DominatorJoinGraph.DominatorTree.Nodes[basicBlockIndex]
+			for _, childIndex := range basicBlockDominatorTreeNode.ForwardEdges {
+				childBlock := i.BasicBlocks[childIndex]
+				for _, phiDescriptor := range i.PhiInstructionsPerBlock[childIndex] {
+					renamed := reachingSet.GetReachingDefinition(phiDescriptor.base)
+					phiDescriptor.AddForwardingRegister(childBlock, renamed)
+				}
+			}
 		}
 	}
 }
