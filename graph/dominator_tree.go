@@ -5,6 +5,7 @@
 package graph
 
 type DominatorTree struct {
+	*Graph
 	Dfs
 
 	// ImmDom[v] is the immediate dominator of v, and by definition of the

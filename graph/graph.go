@@ -116,8 +116,9 @@ func (g *Graph) DominatorTree(entry uint) DominatorTree {
 	dominatorTreeGraph := NewGraphFromRootedTree(immediateDominators)
 
 	return DominatorTree{
-		ImmDom: immediateDominators,
+		Graph:  g,
 		Dfs:    dominatorTreeGraph.Dfs(entry),
+		ImmDom: immediateDominators,
 	}
 }
 
