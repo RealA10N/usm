@@ -54,3 +54,10 @@ func (b *BasicBlockInfo) AppendInstruction(instruction *InstructionInfo) {
 	b.Instructions = append(b.Instructions, instruction)
 	instruction.LinkToBasicBlock(b)
 }
+
+func (b *BasicBlockInfo) PrependInstruction(instruction *InstructionInfo) {
+	// TODO: move labels to this instruction instead of the second one?
+	// TODO: convert instructions to a linked list.
+	b.Instructions = append([]*InstructionInfo{instruction}, b.Instructions...)
+	instruction.LinkToBasicBlock(b)
+}
