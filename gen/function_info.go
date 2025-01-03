@@ -17,7 +17,9 @@ func (i *FunctionInfo) String() string {
 	s += i.Name + " "
 
 	for _, param := range i.Parameters {
-		s += param.String() + " "
+		// TODO: create a separate ParameterInfo type and just call String()
+		// on it.
+		s += param.Type.String() + " " + param.String() + " "
 	}
 
 	s += "{\n"
