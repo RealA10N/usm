@@ -11,6 +11,7 @@ type FunctionGenerator struct {
 	InstructionGenerator     FunctionContextGenerator[parse.InstructionNode, *InstructionInfo]
 	ParameterGenerator       FunctionContextGenerator[parse.ParameterNode, *RegisterInfo]
 	LabelDefinitionGenerator LabelContextGenerator[parse.LabelNode, *LabelInfo]
+	ReferencedTypeGenerator  FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
 func NewFunctionGenerator() FileContextGenerator[parse.FunctionNode, *FunctionInfo] {
@@ -19,6 +20,7 @@ func NewFunctionGenerator() FileContextGenerator[parse.FunctionNode, *FunctionIn
 			InstructionGenerator:     NewInstructionGenerator(),
 			ParameterGenerator:       NewParameterGenerator(),
 			LabelDefinitionGenerator: NewLabelDefinitionGenerator(),
+			ReferencedTypeGenerator:  NewReferencedTypeGenerator(),
 		},
 	)
 }
@@ -46,6 +48,21 @@ func (g *FunctionGenerator) createParameterRegisters(
 	}
 
 	return registers, results
+}
+
+func (g *FunctionGenerator) generateTargets(
+	ctx *FunctionGenerationContext,
+	nodes []parse.TypeNode,
+) ([]ReferencedTypeInfo, core.ResultList) {
+	types := make([]ReferencedTypeInfo, 0, len(nodes))
+	results := core.ResultList{}
+	for _, node := range nodes {
+		typeInfo, curResults := g.ReferencedTypeGenerator.Generate(ctx.FileGenerationContext, node)
+		results.Extend(&curResults)
+		types = append(types, typeInfo)
+	}
+
+	return types, results
 }
 
 func (g *FunctionGenerator) collectLabelDefinitions(
@@ -213,6 +230,9 @@ func (g *FunctionGenerator) Generate(
 	parameters, paramResults := g.createParameterRegisters(funcCtx, node.Signature.Parameters)
 	results.Extend(&paramResults)
 
+	targets, targetResults := g.generateTargets(funcCtx, node.Signature.Returns)
+	results.Extend(&targetResults)
+
 	labelToInstructionIndex, labelResults := g.collectLabelDefinitions(funcCtx, node.Instructions.Nodes)
 	results.Extend(&labelResults)
 
@@ -248,7 +268,8 @@ func (g *FunctionGenerator) Generate(
 
 	return &FunctionInfo{
 		EntryBlock: blocks[0],
-		Parameters: parameters,
 		Registers:  funcCtx.Registers.GetAllRegisters(),
+		Parameters: parameters,
+		Targets:    targets,
 	}, core.ResultList{}
 }

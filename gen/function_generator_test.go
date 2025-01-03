@@ -80,6 +80,13 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 			registers[2].Usages,
 		},
 	)
+
+	assert.EqualValues(t,
+		[]gen.ReferencedTypeInfo{
+			{Base: &gen.NamedTypeInfo{Name: "$32", Size: 4}, Descriptors: []gen.TypeDescriptorInfo{}},
+		},
+		function.Targets,
+	)
 }
 
 func TestIfElseFunctionGeneration(t *testing.T) {

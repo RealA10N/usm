@@ -4,5 +4,5 @@ type FunctionInfo struct {
 	EntryBlock *BasicBlockInfo
 	Registers  []*RegisterInfo
 	Parameters []*RegisterInfo
-	// TODO: add targets
+	Targets    []ReferencedTypeInfo
 }
