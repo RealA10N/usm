@@ -19,8 +19,8 @@ func (i *PhiInstruction) Emulate(
 
 func NewPhiInstruction(
 	info *gen.InstructionInfo,
-) (gen.BaseInstruction, core.ResultList) {
-	return gen.BaseInstruction(&PhiInstruction{newNonBranchingInstruction(info)}), core.ResultList{}
+) (*PhiInstruction, core.ResultList) {
+	return &PhiInstruction{newNonBranchingInstruction(info)}, core.ResultList{}
 }
 
 func (i *PhiInstruction) String() string {

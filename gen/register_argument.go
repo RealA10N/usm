@@ -34,6 +34,13 @@ func (i *RegisterArgumentInfo) Declaration() core.UnmanagedSourceView {
 	return i.declaration
 }
 
+// Switch the argument to use a different register, instead of the current
+// one.
+func (i *RegisterArgumentInfo) SwitchRegister(newRegister *RegisterInfo) {
+	// TODO: handle definitions and usages
+	i.Register = newRegister
+}
+
 // MARK: Generator
 
 type RegisterArgumentGenerator struct {
