@@ -45,6 +45,9 @@ func NewInstructionManager() gen.InstructionManager {
 			"jz":  usm64isa.NewJumpZeroInstructionDefinition(),
 			"jnz": usm64isa.NewJumpNotZeroInstructionDefinition(),
 
+			// SSA
+			"phi": usm64isa.NewPhiInstructionDefinition(),
+
 			// debug
 			"put":  usm64isa.NewPutInstructionDefinition(),
 			"term": usm64isa.NewTerminateInstructionDefinition(),
