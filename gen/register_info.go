@@ -27,7 +27,15 @@ type RegisterInfo struct {
 
 	// The first location in the source code in which the register is declared
 	// or assigned a value.
+	// TODO: make this not required, for generated registers.
 	Declaration core.UnmanagedSourceView
+}
+
+func NewRegisterInfo(name string, typ ReferencedTypeInfo) *RegisterInfo {
+	return &RegisterInfo{
+		Name: name,
+		Type: typ,
+	}
 }
 
 // Return the string that represents the register, as it should appear in the
