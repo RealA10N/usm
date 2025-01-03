@@ -14,6 +14,14 @@ type BasicBlockInfo struct {
 	NextBlock *BasicBlockInfo
 }
 
+func (i *BasicBlockInfo) String() string {
+	s := ""
+	for _, instruction := range i.Instructions {
+		s += "\t" + instruction.String() + "\n"
+	}
+	return s
+}
+
 func NewEmptyBasicBlockInfo() *BasicBlockInfo {
 	return &BasicBlockInfo{
 		Instructions: []*InstructionInfo{},
