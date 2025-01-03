@@ -3,7 +3,7 @@ package gen
 type FunctionInfo struct {
 	Name       string
 	EntryBlock *BasicBlockInfo
-	Registers  []*RegisterInfo
+	Registers  RegisterManager
 	Parameters []*RegisterInfo
 	Targets    []ReferencedTypeInfo
 }

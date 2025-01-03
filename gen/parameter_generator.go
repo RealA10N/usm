@@ -71,9 +71,9 @@ func (g *ParameterGenerator) Generate(
 		Declaration: node.View(),
 	}
 
-	result := ctx.Registers.NewRegister(registerInfo)
-	if result != nil {
-		return nil, list.FromSingle(result)
+	results = ctx.Registers.NewRegister(registerInfo)
+	if !results.IsEmpty() {
+		return nil, results
 	}
 
 	return registerInfo, core.ResultList{}

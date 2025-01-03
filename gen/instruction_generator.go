@@ -107,7 +107,7 @@ func (g *InstructionGenerator) getTargetRegister(
 	ctx *InstructionGenerationContext,
 	node parse.TargetNode,
 	targetType ReferencedTypeInfo,
-) (*RegisterInfo, core.Result) {
+) (*RegisterInfo, core.ResultList) {
 	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	nodeView := node.View()
@@ -127,14 +127,14 @@ func (g *InstructionGenerator) getTargetRegister(
 	// register is already defined
 	if !registerInfo.Type.Equal(targetType) {
 		// notest: sanity check only
-		return nil, core.Result{{
+		return nil, list.FromSingle(core.Result{{
 			Type:     core.InternalErrorResult,
 			Message:  "Internal register type mismatch",
 			Location: &nodeView,
-		}}
+		}})
 	}
 
-	return registerInfo, nil
+	return registerInfo, core.ResultList{}
 }
 
 // Registers can be defined by being a target of an instruction.
@@ -164,14 +164,14 @@ func (g *InstructionGenerator) defineAndGetTargetRegisters(
 	results := core.ResultList{}
 	for i, target := range node.Targets {
 		// register errors should not effect one another, so we collect them.
-		registerInfo, result := g.getTargetRegister(
+		registerInfo, curResults := g.getTargetRegister(
 			ctx,
 			target,
 			targetTypes[i],
 		)
 
-		if result != nil {
-			results.Append(result)
+		if !results.IsEmpty() {
+			results.Extend(&curResults)
 		}
 
 		if registerInfo == nil {

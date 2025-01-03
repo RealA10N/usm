@@ -47,7 +47,7 @@ type ReachingDefinitionsSet struct {
 const blockSeparator = ^uint(0)
 
 func NewReachingDefinitionsSet(function *FunctionSsaInfo) ReachingDefinitionsSet {
-	registers := len(function.Registers)
+	registers := function.Registers.Size()
 	return ReachingDefinitionsSet{
 		FunctionSsaInfo:          function,
 		registerDefinitionStacks: make([]stack.Stack[*gen.RegisterInfo], registers),

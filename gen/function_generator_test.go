@@ -50,7 +50,7 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 	assert.NotNil(t, function.EntryBlock)
 	assert.Nil(t, function.EntryBlock.NextBlock)
 
-	registers := function.Registers
+	registers := function.Registers.GetAllRegisters()
 	assert.Len(t, registers, 3)
 
 	assert.ElementsMatch(

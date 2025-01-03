@@ -30,6 +30,8 @@ type FunctionSsaInfo struct {
 	// which we create is inserted to to corresponding block's slice.
 	PhiInstructionsPerBlock [][]PhiInstructionDescriptor
 
+	BaseRegisters []*gen.RegisterInfo
+
 	// A mapping from (base) registers to their index in the registers slice.
 	RegistersToIndex map[*gen.RegisterInfo]uint
 
@@ -46,7 +48,9 @@ func NewFunctionSsaInfo(
 	forwardEdges := getBasicBlocksForwardEdges(basicBlocks, basicBlockToIndex)
 	graph := graph.NewGraph(forwardEdges)
 	dominatorJoinGraph := graph.DominatorJoinGraph(0)
-	registersToIndex := createMappingToIndex(function.Registers)
+
+	baseRegisters := function.Registers.GetAllRegisters()
+	registersToIndex := createMappingToIndex(baseRegisters)
 
 	return FunctionSsaInfo{
 		FunctionInfo:            function,
@@ -54,6 +58,7 @@ func NewFunctionSsaInfo(
 		BasicBlocks:             basicBlocks,
 		BasicBlocksToIndex:      basicBlockToIndex,
 		PhiInstructionsPerBlock: make([][]PhiInstructionDescriptor, len(basicBlocks)),
+		BaseRegisters:           baseRegisters,
 		RegistersToIndex:        registersToIndex,
 		ControlFlowGraph:        &graph,
 		DominatorJoinGraph:      &dominatorJoinGraph,
@@ -149,7 +154,7 @@ func (i *FunctionSsaInfo) getRegisterPhiInsertionPoints(
 }
 
 func (i *FunctionSsaInfo) InsertPhiInstructions() core.ResultList {
-	for _, register := range i.Registers {
+	for _, register := range i.BaseRegisters {
 		phiBlocks := i.getRegisterPhiInsertionPoints(register)
 		for _, block := range phiBlocks {
 			blockIndex := i.BasicBlocksToIndex[block]
@@ -168,6 +173,15 @@ func (i *FunctionSsaInfo) InsertPhiInstructions() core.ResultList {
 	}
 
 	return core.ResultList{}
+}
+
+func (i *FunctionSsaInfo) deleteBaseRegisters() core.ResultList {
+	results := core.ResultList{}
+	for _, register := range i.BaseRegisters {
+		curResults := i.Registers.DeleteRegister(register)
+		results.Extend(&curResults)
+	}
+	return results
 }
 
 func (i *FunctionSsaInfo) RenameRegisters() core.ResultList {
@@ -199,6 +213,11 @@ func (i *FunctionSsaInfo) RenameRegisters() core.ResultList {
 				}
 			}
 		}
+	}
+
+	results := i.deleteBaseRegisters()
+	if !results.IsEmpty() {
+		return results
 	}
 
 	return core.ResultList{}

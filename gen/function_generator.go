@@ -271,7 +271,7 @@ func (g *FunctionGenerator) Generate(
 	return &FunctionInfo{
 		Name:       name,
 		EntryBlock: blocks[0],
-		Registers:  funcCtx.Registers.GetAllRegisters(),
+		Registers:  funcCtx.Registers,
 		Parameters: parameters,
 		Targets:    targets,
 	}, core.ResultList{}
