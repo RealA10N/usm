@@ -6,6 +6,7 @@ type InstructionInfo struct {
 	*BasicBlockInfo
 
 	// The targets of the instruction.
+	// TODO: is a pointer reference really required here?
 	Targets []*RegisterArgumentInfo
 
 	// The arguments of the instruction.
@@ -41,6 +42,22 @@ func (i *InstructionInfo) LinkToBasicBlock(basicBlock *BasicBlockInfo) {
 	for _, label := range i.Labels {
 		label.LinkToBasicBlock(basicBlock)
 	}
+}
+
+// Appends the given register as a target of the instruction,
+// including updating the required instruction and register information fields.
+func (i *InstructionInfo) AppendTarget(target *RegisterArgumentInfo) {
+	target.Register.AddDefinition(i)
+	i.Targets = append(i.Targets, target)
+}
+
+// Updates the internal instruction instance to the provided one.
+//
+// This can be used to update the instruction, but keep the same arguments and
+// targets, for example, as an optimization to a more specific operation which
+// accepts the same arguments in certain cases.
+func (i *InstructionInfo) SetBaseInstruction(instruction BaseInstruction) {
+	i.Instruction = instruction
 }
 
 func (i *InstructionInfo) String() string {
