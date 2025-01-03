@@ -266,7 +266,10 @@ func (g *FunctionGenerator) Generate(
 		return nil, results
 	}
 
+	name := viewToSourceString(funcCtx.FileGenerationContext, node.Signature.Identifier)
+
 	return &FunctionInfo{
+		Name:       name,
 		EntryBlock: blocks[0],
 		Registers:  funcCtx.Registers.GetAllRegisters(),
 		Parameters: parameters,

@@ -17,7 +17,7 @@ type BasicBlockInfo struct {
 func (i *BasicBlockInfo) String() string {
 	s := ""
 	for _, instruction := range i.Instructions {
-		s += "\t" + instruction.String() + "\n"
+		s += instruction.String() + "\n"
 	}
 	return s
 }
