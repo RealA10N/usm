@@ -175,6 +175,7 @@ func (g *FunctionGenerator) generateInstructionsGraph(
 func (g *FunctionGenerator) generateBasicBlocks(
 	cfg graph.ControlFlowGraph,
 	instructions []*InstructionInfo,
+	function *FunctionInfo,
 ) (blocks []*BasicBlockInfo, results core.ResultList) {
 	blocksCount := cfg.Size()
 	blocks = make([]*BasicBlockInfo, blocksCount)
@@ -184,7 +185,7 @@ func (g *FunctionGenerator) generateBasicBlocks(
 	// references to other blocks.
 	for i := uint(0); i < blocksCount; i++ {
 		blockInstructionIndices := cfg.BasicBlockToNodes[i]
-		blocks[i] = NewEmptyBasicBlockInfo()
+		blocks[i] = NewEmptyBasicBlockInfo(function)
 
 		for _, instructionIndex := range blockInstructionIndices {
 			blocks[i].AppendInstruction(instructions[instructionIndex])
@@ -240,6 +241,16 @@ func (g *FunctionGenerator) Generate(
 		return nil, results
 	}
 
+	name := viewToSourceString(funcCtx.FileGenerationContext, node.Signature.Identifier)
+
+	function := &FunctionInfo{
+		Name:       name,
+		EntryBlock: nil, // will be defined later.
+		Registers:  funcCtx.Registers,
+		Parameters: parameters,
+		Targets:    targets,
+	}
+
 	instructions, results := g.generateInstructions(funcCtx, node.Instructions.Nodes)
 	if !results.IsEmpty() {
 		return nil, results
@@ -261,18 +272,11 @@ func (g *FunctionGenerator) Generate(
 
 	cfg := graph.ControlFlowGraph(0)
 
-	blocks, results := g.generateBasicBlocks(cfg, instructions)
+	blocks, results := g.generateBasicBlocks(cfg, instructions, function)
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
-	name := viewToSourceString(funcCtx.FileGenerationContext, node.Signature.Identifier)
-
-	return &FunctionInfo{
-		Name:       name,
-		EntryBlock: blocks[0],
-		Registers:  funcCtx.Registers,
-		Parameters: parameters,
-		Targets:    targets,
-	}, core.ResultList{}
+	function.EntryBlock = blocks[0]
+	return function, core.ResultList{}
 }

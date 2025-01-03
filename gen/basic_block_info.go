@@ -1,6 +1,8 @@
 package gen
 
 type BasicBlockInfo struct {
+	*FunctionInfo
+
 	Instructions []*InstructionInfo
 
 	ForwardEdges  []*BasicBlockInfo
@@ -39,14 +41,9 @@ func (i *BasicBlockInfo) GetRepresentingLabel() *LabelInfo {
 	return labels[0]
 }
 
-func NewEmptyBasicBlockInfo() *BasicBlockInfo {
+func NewEmptyBasicBlockInfo(function *FunctionInfo) *BasicBlockInfo {
 	return &BasicBlockInfo{
-		Instructions: []*InstructionInfo{},
-
-		ForwardEdges:  []*BasicBlockInfo{},
-		BackwardEdges: []*BasicBlockInfo{},
-
-		NextBlock: nil,
+		FunctionInfo: function,
 	}
 }
 
