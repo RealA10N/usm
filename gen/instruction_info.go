@@ -45,6 +45,12 @@ func (i *InstructionInfo) LinkToBasicBlock(basicBlock *BasicBlockInfo) {
 
 func (i *InstructionInfo) String() string {
 	s := ""
+	for _, label := range i.Labels {
+		s += label.String() + "\n"
+	}
+
+	s += "\t"
+
 	if len(i.Targets) > 0 {
 		for _, target := range i.Targets {
 			s += target.String() + " "

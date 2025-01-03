@@ -13,6 +13,10 @@ type LabelInfo struct {
 	Declaration core.UnmanagedSourceView
 }
 
-func (l *LabelInfo) LinkToBasicBlock(basicBlock *BasicBlockInfo) {
-	l.BasicBlock = basicBlock
+func (i *LabelInfo) LinkToBasicBlock(basicBlock *BasicBlockInfo) {
+	i.BasicBlock = basicBlock
+}
+
+func (i *LabelInfo) String() string {
+	return i.Name
 }
