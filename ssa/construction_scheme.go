@@ -114,7 +114,10 @@ func (s *ReachingDefinitionsSet) popBlock() {
 }
 
 type PhiInstruction interface {
-	AddForwardingRegister(*gen.BasicBlockInfo, *gen.RegisterInfo)
+	AddForwardingRegister(
+		*gen.BasicBlockInfo,
+		*gen.RegisterInfo,
+	) core.ResultList
 }
 
 // This interface defines the process of renaming registers in the SSA
@@ -125,7 +128,10 @@ type SsaConstructionScheme interface {
 	// as a new definition to the provided basic block. This is called before
 	// the register renaming procedure, and thus the provided register is
 	// a register which is defined in the source code.
-	NewPhiInstruction(*gen.BasicBlockInfo, *gen.RegisterInfo) PhiInstruction
+	NewPhiInstruction(
+		*gen.BasicBlockInfo,
+		*gen.RegisterInfo,
+	) (PhiInstruction, core.ResultList)
 
 	// Creates a new unique register that is used as a renaming of the provided
 	// register in the construction of the SSA form.
