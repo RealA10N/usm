@@ -106,7 +106,7 @@ func (i *JumpInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) 
 	}}, core.ResultList{}
 }
 
-func (i *JumpInstruction) OperatorString() string {
+func (i *JumpInstruction) String() string {
 	return "JMP"
 }
 
@@ -140,7 +140,7 @@ func (i *JumpZeroInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultLi
 	}, core.ResultList{}
 }
 
-func (i *JumpZeroInstruction) OperatorString() string {
+func (i *JumpZeroInstruction) String() string {
 	return "JZ"
 }
 
