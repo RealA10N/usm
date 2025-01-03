@@ -122,7 +122,7 @@ func (i *FunctionSsaInfo) getDefinitions(
 func (i *FunctionSsaInfo) blockInfosToIndices(
 	blocks set.Set[*gen.BasicBlockInfo],
 ) []uint {
-	indices := make([]uint, len(blocks))
+	indices := make([]uint, 0, len(blocks))
 	for block := range blocks {
 		indices = append(indices, i.BasicBlocksToIndex[block])
 	}
@@ -132,7 +132,7 @@ func (i *FunctionSsaInfo) blockInfosToIndices(
 func (i *FunctionSsaInfo) blockIndicesToBlockInfos(
 	indices []uint,
 ) []*gen.BasicBlockInfo {
-	blocks := make([]*gen.BasicBlockInfo, len(indices))
+	blocks := make([]*gen.BasicBlockInfo, 0, len(indices))
 	for _, index := range indices {
 		blocks = append(blocks, i.BasicBlocks[index])
 	}
@@ -170,7 +170,7 @@ func (i *FunctionSsaInfo) InsertPhiInstructions() core.ResultList {
 	return core.ResultList{}
 }
 
-func (i *FunctionSsaInfo) RenameRegisters() {
+func (i *FunctionSsaInfo) RenameRegisters() core.ResultList {
 	reachingSet := NewReachingDefinitionsSet(i)
 	n := uint(len(i.BasicBlocks))
 
@@ -182,16 +182,24 @@ func (i *FunctionSsaInfo) RenameRegisters() {
 			reachingSet.pushBlock()
 			basicBlockIndex := event
 			basicBlock := i.BasicBlocks[basicBlockIndex]
-			i.SsaConstructionScheme.RenameBasicBlock(basicBlock, reachingSet)
+			results := i.SsaConstructionScheme.RenameBasicBlock(basicBlock, reachingSet)
+			if !results.IsEmpty() {
+				return results
+			}
 
 			basicBlockDominatorTreeNode := i.DominatorJoinGraph.DominatorTree.Nodes[basicBlockIndex]
 			for _, childIndex := range basicBlockDominatorTreeNode.ForwardEdges {
 				childBlock := i.BasicBlocks[childIndex]
 				for _, phiDescriptor := range i.PhiInstructionsPerBlock[childIndex] {
 					renamed := reachingSet.GetReachingDefinition(phiDescriptor.base)
-					phiDescriptor.AddForwardingRegister(childBlock, renamed)
+					results := phiDescriptor.AddForwardingRegister(childBlock, renamed)
+					if !results.IsEmpty() {
+						return results
+					}
 				}
 			}
 		}
 	}
+
+	return core.ResultList{}
 }
