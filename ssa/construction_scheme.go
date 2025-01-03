@@ -49,6 +49,7 @@ const blockSeparator = ^uint(0)
 func NewReachingDefinitionsSet(function *FunctionSsaInfo) ReachingDefinitionsSet {
 	registers := len(function.Registers)
 	return ReachingDefinitionsSet{
+		FunctionSsaInfo:          function,
 		registerDefinitionStacks: make([]stack.Stack[*gen.RegisterInfo], registers),
 		registerDefinitionPushes: stack.New[uint](),
 	}
