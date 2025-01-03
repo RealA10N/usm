@@ -2,6 +2,7 @@ package ssa
 
 import (
 	"alon.kr/x/set"
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 	"alon.kr/x/usm/graph"
 )
@@ -36,7 +37,10 @@ type FunctionSsaInfo struct {
 	DominatorJoinGraph *graph.DominatorJoinGraph
 }
 
-func NewFunctionSsaInfo(function *gen.FunctionInfo) FunctionSsaInfo {
+func NewFunctionSsaInfo(
+	function *gen.FunctionInfo,
+	ssaConstructionScheme SsaConstructionScheme,
+) FunctionSsaInfo {
 	basicBlocks := collectBasicBlocks(function.EntryBlock)
 	basicBlockToIndex := createMappingToIndex(basicBlocks)
 	forwardEdges := getBasicBlocksForwardEdges(basicBlocks, basicBlockToIndex)
@@ -46,6 +50,7 @@ func NewFunctionSsaInfo(function *gen.FunctionInfo) FunctionSsaInfo {
 
 	return FunctionSsaInfo{
 		FunctionInfo:            function,
+		SsaConstructionScheme:   ssaConstructionScheme,
 		BasicBlocks:             basicBlocks,
 		BasicBlocksToIndex:      basicBlockToIndex,
 		PhiInstructionsPerBlock: make([][]PhiInstructionDescriptor, len(basicBlocks)),
@@ -143,12 +148,15 @@ func (i *FunctionSsaInfo) getRegisterPhiInsertionPoints(
 	return i.blockIndicesToBlockInfos(phiBlocksIndices)
 }
 
-func (i *FunctionSsaInfo) InsertPhiInstructions() {
+func (i *FunctionSsaInfo) InsertPhiInstructions() core.ResultList {
 	for _, register := range i.Registers {
 		phiBlocks := i.getRegisterPhiInsertionPoints(register)
 		for _, block := range phiBlocks {
 			blockIndex := i.BasicBlocksToIndex[block]
-			phi := i.SsaConstructionScheme.NewPhiInstruction(block, register)
+			phi, results := i.SsaConstructionScheme.NewPhiInstruction(block, register)
+			if !results.IsEmpty() {
+				return results
+			}
 			descriptor := PhiInstructionDescriptor{
 				PhiInstruction: phi,
 				base:           register,
@@ -158,6 +166,8 @@ func (i *FunctionSsaInfo) InsertPhiInstructions() {
 				descriptor)
 		}
 	}
+
+	return core.ResultList{}
 }
 
 func (i *FunctionSsaInfo) RenameRegisters() {
