@@ -33,6 +33,10 @@ func (i *AddInstruction) Emulate(
 	return ctx.ContinueToNextInstruction()
 }
 
+func (i *AddInstruction) String() string {
+	return "ADD"
+}
+
 func NewAddInstruction(
 	info *gen.InstructionInfo,
 ) (gen.BaseInstruction, core.ResultList) {

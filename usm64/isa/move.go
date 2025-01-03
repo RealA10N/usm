@@ -25,6 +25,10 @@ func (i *MoveInstruction) Emulate(
 	return ctx.ContinueToNextInstruction()
 }
 
+func (i *MoveInstruction) String() string {
+	return ""
+}
+
 func NewMoveInstruction(
 	info *gen.InstructionInfo,
 ) (gen.BaseInstruction, core.ResultList) {

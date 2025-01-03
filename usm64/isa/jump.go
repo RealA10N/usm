@@ -22,6 +22,10 @@ func (i *JumpInstruction) Emulate(
 	return ctx.JumpToLabel(labelArgument.Label)
 }
 
+func (i *JumpInstruction) String() string {
+	return "JMP"
+}
+
 func NewJumpInstruction(
 	info *gen.InstructionInfo,
 ) (gen.BaseInstruction, core.ResultList) {

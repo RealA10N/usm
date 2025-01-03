@@ -35,6 +35,10 @@ func (i *JumpNotZeroInstruction) Emulate(
 	}
 }
 
+func (i *JumpNotZeroInstruction) String() string {
+	return "JNZ"
+}
+
 func NewJumpNotZeroInstruction(
 	info *gen.InstructionInfo,
 ) (gen.BaseInstruction, core.ResultList) {

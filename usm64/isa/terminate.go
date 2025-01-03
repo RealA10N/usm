@@ -14,6 +14,10 @@ func (i *TerminateInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultL
 	return []gen.StepInfo{gen.ReturnFromFunction{}}, core.ResultList{}
 }
 
+func (i *TerminateInstruction) String() string {
+	return "TERM"
+}
+
 func (i *TerminateInstruction) Emulate(
 	ctx *usm64core.EmulationContext,
 ) core.ResultList {

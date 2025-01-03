@@ -24,6 +24,10 @@ func (i *PutInstruction) Emulate(
 	return ctx.ContinueToNextInstruction()
 }
 
+func (i *PutInstruction) String() string {
+	return "PUT"
+}
+
 func NewPutInstruction(
 	info *gen.InstructionInfo,
 ) (gen.BaseInstruction, core.ResultList) {
