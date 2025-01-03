@@ -13,3 +13,7 @@ type NamedTypeInfo struct {
 	// Should be nil only if it is a builtin type.
 	Declaration *core.UnmanagedSourceView
 }
+
+func (n NamedTypeInfo) String() string {
+	return n.Name
+}

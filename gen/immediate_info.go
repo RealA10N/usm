@@ -20,3 +20,7 @@ func (i *ImmediateInfo) GetType() *ReferencedTypeInfo {
 func (i *ImmediateInfo) Declaration() core.UnmanagedSourceView {
 	return i.declaration
 }
+
+func (i *ImmediateInfo) String() string {
+	return i.Type.String() + " #" + i.Value.String()
+}

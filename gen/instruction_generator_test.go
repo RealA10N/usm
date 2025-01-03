@@ -19,6 +19,10 @@ func (i *AddInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
 	return []gen.StepInfo{gen.ContinueToNextInstruction{}}, core.ResultList{}
 }
 
+func (i *AddInstruction) String() string {
+	return "ADD"
+}
+
 type AddInstructionDefinition struct{}
 
 func (AddInstructionDefinition) BuildInstruction(
@@ -70,6 +74,10 @@ func (i *RetInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
 	return []gen.StepInfo{gen.ReturnFromFunction{}}, core.ResultList{}
 }
 
+func (i *RetInstruction) String() string {
+	return "RET"
+}
+
 type RetInstructionDefinition struct{}
 
 func (RetInstructionDefinition) BuildInstruction(
@@ -96,6 +104,10 @@ func (i *JumpInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) 
 	return []gen.StepInfo{gen.JumpToLabel{
 		Label: i.Arguments[0].(*gen.LabelArgumentInfo).Label,
 	}}, core.ResultList{}
+}
+
+func (i *JumpInstruction) OperatorString() string {
+	return "JMP"
 }
 
 type JumpInstructionDefinition struct{}
@@ -126,6 +138,10 @@ func (i *JumpZeroInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultLi
 		gen.JumpToLabel{Label: i.Arguments[1].(*gen.LabelArgumentInfo).Label},
 		gen.ContinueToNextInstruction{},
 	}, core.ResultList{}
+}
+
+func (i *JumpZeroInstruction) OperatorString() string {
+	return "JZ"
 }
 
 type JumpZeroInstructionDefinition struct{}

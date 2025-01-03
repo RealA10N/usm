@@ -1,6 +1,8 @@
 package gen
 
-import "alon.kr/x/usm/core"
+import (
+	"alon.kr/x/usm/core"
+)
 
 type BaseInstruction interface {
 	// This method is usd by the USM engine to generate the internal control
@@ -10,6 +12,10 @@ type BaseInstruction interface {
 	// consecutive steps in the function (for example, a return statement),
 	// then a special dedicated return step should be returned.
 	PossibleNextSteps() ([]StepInfo, core.ResultList)
+
+	// Returns the string that represents the operator of the instruction.
+	// For example, for the add instruction this method would return "ADD".
+	String() string
 }
 
 // A basic instruction definition. This defines the logic that converts the

@@ -30,6 +30,12 @@ type RegisterInfo struct {
 	Declaration core.UnmanagedSourceView
 }
 
+// Return the string that represents the register, as it should appear in the
+// source code.
+func (i *RegisterInfo) String() string {
+	return i.Name
+}
+
 func (i *RegisterInfo) AddDefinition(info *InstructionInfo) {
 	i.Definitions = append(i.Definitions, info)
 }

@@ -42,3 +42,23 @@ func (i *InstructionInfo) LinkToBasicBlock(basicBlock *BasicBlockInfo) {
 		label.LinkToBasicBlock(basicBlock)
 	}
 }
+
+func (i *InstructionInfo) String() string {
+	s := ""
+	if len(i.Targets) > 0 {
+		for _, target := range i.Targets {
+			s += target.String() + " "
+		}
+		s += "= "
+	}
+
+	s += i.Instruction.String()
+
+	if len(i.Arguments) > 0 {
+		for _, argument := range i.Arguments {
+			s += " " + argument.String()
+		}
+	}
+
+	return s
+}

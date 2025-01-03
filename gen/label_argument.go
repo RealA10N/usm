@@ -21,6 +21,10 @@ func (i *LabelArgumentInfo) Declaration() core.UnmanagedSourceView {
 	return i.declaration
 }
 
+func (i *LabelArgumentInfo) String() string {
+	return i.Label.Name
+}
+
 // MARK: Generator
 
 type LabelArgumentGenerator struct{}

@@ -12,6 +12,10 @@ type RegisterArgumentInfo struct {
 	declaration core.UnmanagedSourceView
 }
 
+func (i *RegisterArgumentInfo) String() string {
+	return i.Register.String()
+}
+
 func (i *RegisterArgumentInfo) GetType() *ReferencedTypeInfo {
 	return &i.Register.Type
 }
