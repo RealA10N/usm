@@ -1,6 +1,8 @@
 package gen_test
 
 import (
+	"fmt"
+
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 )
@@ -71,6 +73,12 @@ func (m *LabelMap) GetLabel(name string) *gen.LabelInfo {
 func (m *LabelMap) NewLabel(label *gen.LabelInfo) core.Result {
 	(*m)[label.Name] = label
 	return nil
+}
+
+func (m *LabelMap) GenerateLabel(block *gen.BasicBlockInfo) *gen.LabelInfo {
+	return &gen.LabelInfo{
+		Name: ".L" + fmt.Sprint(len(*m)),
+	}
 }
 
 // MARK: Context
