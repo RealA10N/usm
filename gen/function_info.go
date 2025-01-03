@@ -4,6 +4,7 @@ type FunctionInfo struct {
 	Name       string
 	EntryBlock *BasicBlockInfo
 	Registers  RegisterManager
+	Labels     LabelManager
 	Parameters []*RegisterInfo
 	Targets    []ReferencedTypeInfo
 }

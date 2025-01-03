@@ -24,6 +24,10 @@ func (i *BasicBlockInfo) String() string {
 	return s
 }
 
+func (i *BasicBlockInfo) AppendLabel(label *LabelInfo) {
+	i.Instructions[0].AppendLabel(label)
+}
+
 // Get a single label instance that represents the basic block, if it exists.
 // If the basic block has multiple labels, the function will return one of
 // them arbitrary.
@@ -32,10 +36,11 @@ func (i *BasicBlockInfo) GetRepresentingLabel() *LabelInfo {
 	firstInstruction := i.Instructions[0]
 	labels := firstInstruction.Labels
 
-	if len(labels) < 1 {
-		// TODO: in this case, we should generate a new label, using some sort of
-		// "LabelManager".
-		return nil
+	if len(labels) == 0 {
+		label := i.FunctionInfo.Labels.GenerateLabel(i)
+		i.FunctionInfo.Labels.NewLabel(label)
+		i.AppendLabel(label)
+		return label
 	}
 
 	return labels[0]
@@ -49,12 +54,12 @@ func NewEmptyBasicBlockInfo(function *FunctionInfo) *BasicBlockInfo {
 
 func (b *BasicBlockInfo) AppendInstruction(instruction *InstructionInfo) {
 	b.Instructions = append(b.Instructions, instruction)
-	instruction.LinkToBasicBlock(b)
+	instruction.linkToBasicBlock(b)
 }
 
 func (b *BasicBlockInfo) PrependInstruction(instruction *InstructionInfo) {
 	// TODO: move labels to this instruction instead of the second one?
 	// TODO: convert instructions to a linked list.
 	b.Instructions = append([]*InstructionInfo{instruction}, b.Instructions...)
-	instruction.LinkToBasicBlock(b)
+	instruction.linkToBasicBlock(b)
 }

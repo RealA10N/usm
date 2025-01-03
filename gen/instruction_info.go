@@ -37,10 +37,10 @@ func NewEmptyInstructionInfo(
 	}
 }
 
-func (i *InstructionInfo) LinkToBasicBlock(basicBlock *BasicBlockInfo) {
+func (i *InstructionInfo) linkToBasicBlock(basicBlock *BasicBlockInfo) {
 	i.BasicBlockInfo = basicBlock
 	for _, label := range i.Labels {
-		label.LinkToBasicBlock(basicBlock)
+		label.linkToBasicBlock(basicBlock)
 	}
 }
 
@@ -49,6 +49,11 @@ func (i *InstructionInfo) LinkToBasicBlock(basicBlock *BasicBlockInfo) {
 func (i *InstructionInfo) AppendTarget(target *RegisterArgumentInfo) {
 	target.Register.AddDefinition(i)
 	i.Targets = append(i.Targets, target)
+}
+
+func (i *InstructionInfo) AppendLabel(label *LabelInfo) {
+	i.Labels = append(i.Labels, label)
+	label.linkToBasicBlock(i.BasicBlockInfo)
 }
 
 // Updates the internal instruction instance to the provided one.

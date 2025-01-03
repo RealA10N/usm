@@ -247,6 +247,7 @@ func (g *FunctionGenerator) Generate(
 		Name:       name,
 		EntryBlock: nil, // will be defined later.
 		Registers:  funcCtx.Registers,
+		Labels:     funcCtx.Labels,
 		Parameters: parameters,
 		Targets:    targets,
 	}
