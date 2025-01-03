@@ -10,6 +10,7 @@ type LabelInfo struct {
 	BasicBlock *BasicBlockInfo
 
 	// A view of the label declaration in the source code.
+	// TODO: make this not required, since we may generate labels?
 	Declaration core.UnmanagedSourceView
 }
 
