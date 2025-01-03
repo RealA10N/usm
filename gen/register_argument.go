@@ -8,8 +8,18 @@ import (
 // MARK: Info
 
 type RegisterArgumentInfo struct {
-	Register    *RegisterInfo
+	Register *RegisterInfo
+
+	// TODO: make this not required, for generated arguments, for example after
+	// SSA construction (phi register arguments which do not appear in the
+	// source code).
 	declaration core.UnmanagedSourceView
+}
+
+func NewRegisterArgument(register *RegisterInfo) RegisterArgumentInfo {
+	return RegisterArgumentInfo{
+		Register: register,
+	}
 }
 
 func (i *RegisterArgumentInfo) String() string {

@@ -9,8 +9,18 @@ import (
 // MARK: Info
 
 type LabelArgumentInfo struct {
-	Label       *LabelInfo
+	Label *LabelInfo
+
+	// TODO: make this not required.
 	declaration core.UnmanagedSourceView
+}
+
+func NewLabelArgumentInfo(
+	label *LabelInfo,
+) *LabelArgumentInfo {
+	return &LabelArgumentInfo{
+		Label: label,
+	}
 }
 
 func (i *LabelArgumentInfo) GetType() *ReferencedTypeInfo {
