@@ -94,7 +94,7 @@ func getSingleBasicBlockForwardEdges(
 	block *gen.BasicBlockInfo,
 	basicBlockToIndex map[*gen.BasicBlockInfo]uint,
 ) []uint {
-	indices := make([]uint, len(block.ForwardEdges))
+	indices := make([]uint, 0, len(block.ForwardEdges))
 	for _, targetBlock := range block.ForwardEdges {
 		indices = append(indices, basicBlockToIndex[targetBlock])
 	}
