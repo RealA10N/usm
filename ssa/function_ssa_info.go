@@ -203,10 +203,9 @@ func (i *FunctionSsaInfo) RenameRegisters() core.ResultList {
 
 			basicBlockDominatorTreeNode := i.DominatorJoinGraph.DominatorTree.Nodes[basicBlockIndex]
 			for _, childIndex := range basicBlockDominatorTreeNode.ForwardEdges {
-				childBlock := i.BasicBlocks[childIndex]
 				for _, phiDescriptor := range i.PhiInstructionsPerBlock[childIndex] {
 					renamed := reachingSet.GetReachingDefinition(phiDescriptor.base)
-					results := phiDescriptor.AddForwardingRegister(childBlock, renamed)
+					results := phiDescriptor.AddForwardingRegister(basicBlock, renamed)
 					if !results.IsEmpty() {
 						return results
 					}
