@@ -25,7 +25,7 @@ func (i *BasicBlockInfo) String() string {
 }
 
 func (i *BasicBlockInfo) AppendLabel(label *LabelInfo) {
-	i.Instructions[0].AppendLabel(label)
+	i.Instructions[0].AppendLabels(label)
 }
 
 // Get a single label instance that represents the basic block, if it exists.
@@ -58,7 +58,10 @@ func (b *BasicBlockInfo) AppendInstruction(instruction *InstructionInfo) {
 }
 
 func (b *BasicBlockInfo) PrependInstruction(instruction *InstructionInfo) {
-	// TODO: move labels to this instruction instead of the second one?
+	if len(b.Instructions) > 0 {
+		b.Instructions[0].MoveLabels(instruction)
+	}
+
 	// TODO: convert instructions to a linked list.
 	b.Instructions = append([]*InstructionInfo{instruction}, b.Instructions...)
 	instruction.linkToBasicBlock(b)

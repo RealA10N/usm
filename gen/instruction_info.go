@@ -51,9 +51,16 @@ func (i *InstructionInfo) AppendTarget(target *RegisterArgumentInfo) {
 	i.Targets = append(i.Targets, target)
 }
 
-func (i *InstructionInfo) AppendLabel(label *LabelInfo) {
-	i.Labels = append(i.Labels, label)
-	label.linkToBasicBlock(i.BasicBlockInfo)
+func (i *InstructionInfo) AppendLabels(labels ...*LabelInfo) {
+	i.Labels = append(i.Labels, labels...)
+	for _, label := range labels {
+		label.linkToBasicBlock(i.BasicBlockInfo)
+	}
+}
+
+func (i *InstructionInfo) MoveLabels(targetInstruction *InstructionInfo) {
+	targetInstruction.AppendLabels(i.Labels...)
+	i.Labels = nil
 }
 
 // Updates the internal instruction instance to the provided one.
