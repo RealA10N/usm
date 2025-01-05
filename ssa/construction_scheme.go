@@ -90,12 +90,17 @@ func (s *ReachingDefinitionsSet) RenameDefinitionRegister(
 	base *gen.RegisterInfo,
 ) *gen.RegisterInfo {
 	baseIndex := s.FunctionSsaInfo.RegistersToIndex[base]
-	s.registerDefinitionPushes.Push(baseIndex)
-
 	renamed := s.SsaConstructionScheme.NewRenamedRegister(base)
-	s.registerDefinitionStacks[baseIndex].Push(renamed)
-
+	s.updateReachingDefinition(baseIndex, renamed)
 	return renamed
+}
+
+func (s *ReachingDefinitionsSet) updateReachingDefinition(
+	baseIndex uint,
+	renamed *gen.RegisterInfo,
+) {
+	s.registerDefinitionPushes.Push(baseIndex)
+	s.registerDefinitionStacks[baseIndex].Push(renamed)
 }
 
 func (s *ReachingDefinitionsSet) pushBlock() {
