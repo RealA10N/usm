@@ -1,5 +1,10 @@
 package gen
 
+import (
+	"alon.kr/x/set"
+	"alon.kr/x/stack"
+)
+
 type FunctionInfo struct {
 	Name       string
 	EntryBlock *BasicBlockInfo
@@ -7,6 +12,33 @@ type FunctionInfo struct {
 	Labels     LabelManager
 	Parameters []*RegisterInfo
 	Targets    []ReferencedTypeInfo
+}
+
+// Performs a DFS traversal of the function's basic blocks, and returns a set
+// of the collected blocks in the traversal.
+func (f *FunctionInfo) CollectBasicBlocks() []*BasicBlockInfo {
+	blocks := make([]*BasicBlockInfo, 0)
+	visited := set.New[*BasicBlockInfo]()
+	toVisit := stack.New[*BasicBlockInfo]()
+
+	blocks = append(blocks, f.EntryBlock)
+	toVisit.Push(f.EntryBlock)
+	visited.Add(f.EntryBlock)
+
+	for len(toVisit) > 0 {
+		block := toVisit.Top()
+		toVisit.Pop()
+
+		for _, nextBlock := range block.ForwardEdges {
+			if !visited.Contains(nextBlock) {
+				blocks = append(blocks, nextBlock)
+				toVisit.Push(nextBlock)
+				visited.Add(nextBlock)
+			}
+		}
+	}
+
+	return blocks
 }
 
 func (i *FunctionInfo) String() string {
@@ -25,10 +57,8 @@ func (i *FunctionInfo) String() string {
 
 	s += "{\n"
 
-	block := i.EntryBlock
-	for block != nil {
+	for _, block := range i.CollectBasicBlocks() {
 		s += block.String()
-		block = block.NextBlock
 	}
 
 	s += "}"

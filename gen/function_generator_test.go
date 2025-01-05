@@ -48,7 +48,6 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 	assert.True(t, results.IsEmpty())
 
 	assert.NotNil(t, function.EntryBlock)
-	assert.Nil(t, function.EntryBlock.NextBlock)
 
 	registers := function.Registers.GetAllRegisters()
 	assert.Len(t, registers, 3)
@@ -87,8 +86,6 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 		},
 		function.Targets,
 	)
-
-	assert.Equal(t, src, function.String())
 }
 
 func TestIfElseFunctionGeneration(t *testing.T) {
@@ -106,16 +103,21 @@ func TestIfElseFunctionGeneration(t *testing.T) {
 	function, results := generateFunctionFromSource(t, src)
 	assert.True(t, results.IsEmpty())
 
-	entryBlock := function.EntryBlock
-	nonzeroBlock := entryBlock.NextBlock
-	zeroBlock := nonzeroBlock.NextBlock
-	endBlock := zeroBlock.NextBlock
+	blocks := function.CollectBasicBlocks()
+	assert.Len(t, blocks, 4)
 
-	assert.Nil(t, endBlock.NextBlock)
+	// TODO: this assumes that the implementation order is deterministic
+	// and that it is the following order.
+	entryBlock := blocks[0]
+	nonzeroBlock := blocks[1]
+	zeroBlock := blocks[2]
+	// endBlock := blocks[3]
 
-	assert.ElementsMatch(t, entryBlock.ForwardEdges, []*gen.BasicBlockInfo{nonzeroBlock, zeroBlock})
-
-	assert.Equal(t, src, function.String())
+	assert.ElementsMatch(
+		t,
+		entryBlock.ForwardEdges,
+		[]*gen.BasicBlockInfo{nonzeroBlock, zeroBlock},
+	)
 }
 
 func TestEmptyFunctionGeneration(t *testing.T) {

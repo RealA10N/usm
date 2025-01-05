@@ -43,7 +43,7 @@ func NewFunctionSsaInfo(
 	function *gen.FunctionInfo,
 	ssaConstructionScheme SsaConstructionScheme,
 ) FunctionSsaInfo {
-	basicBlocks := collectBasicBlocks(function.EntryBlock)
+	basicBlocks := function.CollectBasicBlocks()
 	basicBlockToIndex := createMappingToIndex(basicBlocks)
 	forwardEdges := getBasicBlocksForwardEdges(basicBlocks, basicBlockToIndex)
 	graph := graph.NewGraph(forwardEdges)
@@ -63,21 +63,6 @@ func NewFunctionSsaInfo(
 		ControlFlowGraph:        &graph,
 		DominatorJoinGraph:      &dominatorJoinGraph,
 	}
-}
-
-func collectBasicBlocks(block *gen.BasicBlockInfo) []*gen.BasicBlockInfo {
-	// TODO: this slice actually exists in the previous step in the compilation,
-	// in the `gen.FunctionGenerator`. The current implementation creates the
-	// array again instead of just passing it through so the implementation is
-	// more complete and independent. However, if it is still the case we should
-	// find a way to pass the array through as an optimization.
-
-	blocks := make([]*gen.BasicBlockInfo, 0)
-	for block != nil {
-		blocks = append(blocks, block)
-		block = block.NextBlock
-	}
-	return blocks
 }
 
 func createMappingToIndex[T comparable](

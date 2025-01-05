@@ -173,7 +173,7 @@ func (g *FunctionGenerator) generateInstructionsGraph(
 }
 
 func (g *FunctionGenerator) generateBasicBlocks(
-	cfg graph.ControlFlowGraph,
+	cfg *graph.ControlFlowGraph,
 	instructions []*InstructionInfo,
 	function *FunctionInfo,
 ) (blocks []*BasicBlockInfo, results core.ResultList) {
@@ -202,20 +202,6 @@ func (g *FunctionGenerator) generateBasicBlocks(
 		for _, j := range node.BackwardEdges {
 			blocks[i].BackwardEdges = append(blocks[i].BackwardEdges, blocks[j])
 		}
-	}
-
-	// finally, fill in the NextBlock field.
-	// We do it this way, to guarantee that the order of the blocks in the
-	// `NextBlock` list matches the order of them in the source code.
-	for i := uint(0); i < blocksCount; i++ {
-		lastBlockInstructionIndex := cfg.BasicBlockToNodes[i][len(cfg.BasicBlockToNodes[i])-1]
-		firstNextBlockInstructionIndex := lastBlockInstructionIndex + 1
-		if firstNextBlockInstructionIndex >= uint(len(instructions)) {
-			continue // This is the last block in the function.
-		}
-
-		nextBlockIndex := cfg.NodeToBasicBlock[firstNextBlockInstructionIndex]
-		blocks[i].NextBlock = blocks[nextBlockIndex]
 	}
 
 	return blocks, core.ResultList{}
@@ -273,7 +259,7 @@ func (g *FunctionGenerator) Generate(
 
 	cfg := graph.ControlFlowGraph(0)
 
-	blocks, results := g.generateBasicBlocks(cfg, instructions, function)
+	blocks, results := g.generateBasicBlocks(&cfg, instructions, function)
 	if !results.IsEmpty() {
 		return nil, results
 	}
