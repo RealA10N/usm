@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	alon.kr/x/list v0.0.0-20241203223347-3173d76828c0
-	alon.kr/x/set v0.0.0-20241231162956-88a172226e90
+	alon.kr/x/set v0.0.0-20250105200711-55a9ad95f635
 	alon.kr/x/stack v0.0.0-20241231201659-c96903670d6f
 	alon.kr/x/view v0.0.0-20241117132723-5c30dbef3c86
 	github.com/fatih/color v1.18.0
