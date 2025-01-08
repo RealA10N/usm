@@ -1,0 +1,9 @@
+func @main {
+    j .def
+.use 
+    put %n
+    term
+.def
+    %n = $64 #0
+    j .use
+}
