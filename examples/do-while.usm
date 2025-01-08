@@ -1,0 +1,8 @@
+func @main {
+    j .assign
+.loop
+    PUT %n
+.assign
+    $64 %n = $64 #1337
+    J .loop
+}
