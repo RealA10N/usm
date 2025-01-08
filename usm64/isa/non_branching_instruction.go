@@ -13,6 +13,6 @@ func newNonBranchingInstruction(info *gen.InstructionInfo) nonBranchingInstructi
 	return nonBranchingInstruction{baseInstruction: newBaseInstruction(info)}
 }
 
-func (i *nonBranchingInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
-	return []gen.StepInfo{gen.ContinueToNextInstruction{}}, core.ResultList{}
+func (i *nonBranchingInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
+	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
 }

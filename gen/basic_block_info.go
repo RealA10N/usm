@@ -7,6 +7,8 @@ type BasicBlockInfo struct {
 
 	ForwardEdges  []*BasicBlockInfo
 	BackwardEdges []*BasicBlockInfo
+
+	NextBlock *BasicBlockInfo
 }
 
 func (i *BasicBlockInfo) String() string {
@@ -58,4 +60,14 @@ func (b *BasicBlockInfo) PrependInstruction(instruction *InstructionInfo) {
 	// TODO: convert instructions to a linked list.
 	b.Instructions = append([]*InstructionInfo{instruction}, b.Instructions...)
 	instruction.linkToBasicBlock(b)
+}
+
+func (b *BasicBlockInfo) AppendBasicBlock(otherBlock *BasicBlockInfo) {
+	otherBlock.NextBlock = b.NextBlock
+	b.NextBlock = otherBlock
+}
+
+func (b *BasicBlockInfo) AppendForwardEdge(otherBlock *BasicBlockInfo) {
+	b.ForwardEdges = append(b.ForwardEdges, otherBlock)
+	otherBlock.BackwardEdges = append(otherBlock.BackwardEdges, b)
 }

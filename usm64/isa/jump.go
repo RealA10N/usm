@@ -10,9 +10,9 @@ type JumpInstruction struct {
 	baseInstruction
 }
 
-func (i *JumpInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
+func (i *JumpInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	label := i.InstructionInfo.Arguments[0].(*gen.LabelArgumentInfo).Label
-	return []gen.StepInfo{gen.JumpToLabel{Label: label}}, core.ResultList{}
+	return gen.StepInfo{PossibleBranches: []*gen.LabelInfo{label}}, core.ResultList{}
 }
 
 func (i *JumpInstruction) Emulate(

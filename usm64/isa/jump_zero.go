@@ -10,11 +10,11 @@ type JumpZeroInstruction struct {
 	baseInstruction
 }
 
-func (i *JumpZeroInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
+func (i *JumpZeroInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	label := i.InstructionInfo.Arguments[1].(*gen.LabelArgumentInfo).Label
-	return []gen.StepInfo{
-		gen.ContinueToNextInstruction{},
-		gen.JumpToLabel{Label: label},
+	return gen.StepInfo{
+		PossibleBranches: []*gen.LabelInfo{label},
+		PossibleContinue: true,
 	}, core.ResultList{}
 }
 

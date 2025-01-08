@@ -10,8 +10,8 @@ import (
 
 type TerminateInstruction struct{}
 
-func (i *TerminateInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
-	return []gen.StepInfo{gen.ReturnFromFunction{}}, core.ResultList{}
+func (i *TerminateInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
+	return gen.StepInfo{PossibleReturn: true}, core.ResultList{}
 }
 
 func (i *TerminateInstruction) String() string {

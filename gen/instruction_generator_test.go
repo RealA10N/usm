@@ -15,8 +15,8 @@ import (
 
 type AddInstruction struct{}
 
-func (i *AddInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
-	return []gen.StepInfo{gen.ContinueToNextInstruction{}}, core.ResultList{}
+func (i *AddInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
+	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
 }
 
 func (i *AddInstruction) String() string {
@@ -70,8 +70,8 @@ func (AddInstructionDefinition) InferTargetTypes(
 
 type RetInstruction struct{}
 
-func (i *RetInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
-	return []gen.StepInfo{gen.ReturnFromFunction{}}, core.ResultList{}
+func (i *RetInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
+	return gen.StepInfo{PossibleReturn: true}, core.ResultList{}
 }
 
 func (i *RetInstruction) String() string {
@@ -100,10 +100,12 @@ type JumpInstruction struct {
 	*gen.InstructionInfo
 }
 
-func (i *JumpInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
-	return []gen.StepInfo{gen.JumpToLabel{
-		Label: i.Arguments[0].(*gen.LabelArgumentInfo).Label,
-	}}, core.ResultList{}
+func (i *JumpInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
+	return gen.StepInfo{
+		PossibleBranches: []*gen.LabelInfo{
+			i.Arguments[0].(*gen.LabelArgumentInfo).Label,
+		},
+	}, core.ResultList{}
 }
 
 func (i *JumpInstruction) String() string {
@@ -133,10 +135,11 @@ type JumpZeroInstruction struct {
 	*gen.InstructionInfo
 }
 
-func (i *JumpZeroInstruction) PossibleNextSteps() ([]gen.StepInfo, core.ResultList) {
-	return []gen.StepInfo{
-		gen.JumpToLabel{Label: i.Arguments[1].(*gen.LabelArgumentInfo).Label},
-		gen.ContinueToNextInstruction{},
+func (i *JumpZeroInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
+	label := i.Arguments[1].(*gen.LabelArgumentInfo).Label
+	return gen.StepInfo{
+		PossibleBranches: []*gen.LabelInfo{label},
+		PossibleContinue: true,
 	}, core.ResultList{}
 }
 

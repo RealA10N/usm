@@ -86,6 +86,8 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 		},
 		function.Targets,
 	)
+
+	assert.Equal(t, src, function.String())
 }
 
 func TestIfElseFunctionGeneration(t *testing.T) {
@@ -106,8 +108,6 @@ func TestIfElseFunctionGeneration(t *testing.T) {
 	blocks := function.CollectBasicBlocks()
 	assert.Len(t, blocks, 4)
 
-	// TODO: this assumes that the implementation order is deterministic
-	// and that it is the following order.
 	entryBlock := blocks[0]
 	nonzeroBlock := blocks[1]
 	zeroBlock := blocks[2]
@@ -118,6 +118,8 @@ func TestIfElseFunctionGeneration(t *testing.T) {
 		entryBlock.ForwardEdges,
 		[]*gen.BasicBlockInfo{nonzeroBlock, zeroBlock},
 	)
+
+	assert.Equal(t, src, function.String())
 }
 
 func TestEmptyFunctionGeneration(t *testing.T) {

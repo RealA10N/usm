@@ -11,7 +11,7 @@ type BaseInstruction interface {
 	// Should return a non-empty slice. If the instruction does not have any
 	// consecutive steps in the function (for example, a return statement),
 	// then a special dedicated return step should be returned.
-	PossibleNextSteps() ([]StepInfo, core.ResultList)
+	PossibleNextSteps() (StepInfo, core.ResultList)
 
 	// Returns the string that represents the operator of the instruction.
 	// For example, for the add instruction this method would return "ADD".

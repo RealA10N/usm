@@ -3,11 +3,15 @@ package gen
 import (
 	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
-	"alon.kr/x/usm/graph"
 	"alon.kr/x/usm/parse"
 )
 
+type FunctionGenerationScheme interface {
+	NewJumpInstruction(label *LabelInfo) *InstructionInfo
+}
+
 type FunctionGenerator struct {
+	FunctionGenerationScheme
 	InstructionGenerator     FunctionContextGenerator[parse.InstructionNode, *InstructionInfo]
 	ParameterGenerator       FunctionContextGenerator[parse.ParameterNode, *RegisterInfo]
 	LabelDefinitionGenerator LabelContextGenerator[parse.LabelNode, *LabelInfo]
@@ -112,99 +116,127 @@ func (g *FunctionGenerator) generateInstructions(
 	return instructions, core.ResultList{}
 }
 
-func (g *FunctionGenerator) generateInstructionsGraph(
-	instructions []*InstructionInfo,
+func (g *FunctionGenerator) getInstructionBranchingDestinations(
+	info *InstructionInfo,
 	labelToInstructionIndex map[*LabelInfo]uint,
-) (graph.Graph, core.ResultList) {
-	instructionCount := uint(len(instructions))
-	instructionsGraph := graph.NewEmptyGraph(instructionCount)
-	results := core.ResultList{}
+) ([]uint, core.ResultList) {
+	steps, results := info.Instruction.PossibleNextSteps()
+	if !results.IsEmpty() {
+		return nil, results
+	}
 
-	for i := uint(0); i < instructionCount; i++ {
-		info := instructions[i]
-		possibleNextSteps, curResults := info.Instruction.PossibleNextSteps()
-		if !results.IsEmpty() {
-			results.Extend(&curResults)
-			continue
-		}
-
-		for _, nextStep := range possibleNextSteps {
-			switch typedNextStep := nextStep.(type) {
-			case ContinueToNextInstruction:
-				if i+1 >= instructionCount {
-					results.Append(core.Result{
-						{
-							Type:     core.ErrorResult,
-							Message:  "Unexpected instruction to end a function",
-							Location: info.Declaration,
-						},
-						{
-							Type:    core.HintResult,
-							Message: "Perhaps you forgot a return instruction?",
-						},
-					})
-					continue
-				}
-				instructionsGraph.AddEdge(i, i+1)
-
-			case JumpToLabel:
-				j := labelToInstructionIndex[typedNextStep.Label]
-				instructionsGraph.AddEdge(i, j)
-
-			case ReturnFromFunction:
-				// Don't add an edge.
-
-			default:
-				// notest
-				results.Append(core.Result{{
-					Type:     core.InternalErrorResult,
-					Message:  "Unknown next step type",
-					Location: info.Declaration,
-				}})
-			}
-		}
+	destinationIndices := []uint{}
+	for _, label := range steps.PossibleBranches {
+		destinationIndex := labelToInstructionIndex[label]
+		destinationIndices = append(destinationIndices, destinationIndex)
 	}
 
 	if !results.IsEmpty() {
-		return graph.Graph{}, results
+		return nil, results
 	}
 
-	return instructionsGraph, core.ResultList{}
+	return destinationIndices, core.ResultList{}
+}
+
+func (g *FunctionGenerator) getInstructionBranchingEdges(
+	instructions []*InstructionInfo,
+	labelToInstructionIndex map[*LabelInfo]uint,
+) ([]bool, []bool, core.ResultList) {
+	instructionCount := uint(len(instructions))
+
+	forwardEdges := make([]bool, instructionCount)
+	backwardEdges := make([]bool, instructionCount)
+	for i := uint(0); i < instructionCount; i++ {
+		destinationIndices, results := g.getInstructionBranchingDestinations(
+			instructions[i],
+			labelToInstructionIndex,
+		)
+
+		if !results.IsEmpty() {
+			return nil, nil, results
+		}
+
+		for _, j := range destinationIndices {
+			forwardEdges[i] = true
+			backwardEdges[j] = true
+		}
+	}
+
+	return forwardEdges, backwardEdges, core.ResultList{}
 }
 
 func (g *FunctionGenerator) generateBasicBlocks(
-	cfg *graph.ControlFlowGraph,
 	instructions []*InstructionInfo,
 	function *FunctionInfo,
-) (blocks []*BasicBlockInfo, results core.ResultList) {
-	blocksCount := cfg.Size()
-	blocks = make([]*BasicBlockInfo, blocksCount)
+	labelToInstructionIndex map[*LabelInfo]uint,
+) (*BasicBlockInfo, core.ResultList) {
+	instructionCount := uint(len(instructions))
 
-	// first, initialize ("malloc") blocks so we can take references to them.
-	// on the way, also compute and fill any trivial fields that do not require
-	// references to other blocks.
-	for i := uint(0); i < blocksCount; i++ {
-		blockInstructionIndices := cfg.BasicBlockToNodes[i]
-		blocks[i] = NewEmptyBasicBlockInfo(function)
+	forwardBranchingEdges, backwardBranchingEdges, results := g.getInstructionBranchingEdges(
+		instructions,
+		labelToInstructionIndex,
+	)
 
-		for _, instructionIndex := range blockInstructionIndices {
-			blocks[i].AppendInstruction(instructions[instructionIndex])
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	entryBasicBlock := NewEmptyBasicBlockInfo(function)
+	currentBasicBlock := entryBasicBlock
+	currentBasicBlock.AppendInstruction(instructions[0])
+
+	for i := uint(1); i < instructionCount; i++ {
+		currentInstruction := instructions[i]
+		previousInstructionBranches := forwardBranchingEdges[i-1]
+		branchingToCurrentInstruction := backwardBranchingEdges[i]
+		shouldStartNewBlock := previousInstructionBranches || branchingToCurrentInstruction
+
+		if shouldStartNewBlock {
+			newBasicBlock := NewEmptyBasicBlockInfo(function)
+			currentBasicBlock.AppendBasicBlock(newBasicBlock)
+			currentBasicBlock = newBasicBlock
+		}
+
+		currentBasicBlock.AppendInstruction(currentInstruction)
+	}
+
+	currentBasicBlock = entryBasicBlock
+	for currentBasicBlock = entryBasicBlock; currentBasicBlock != nil; currentBasicBlock = currentBasicBlock.NextBlock {
+		basicBlockLength := len(currentBasicBlock.Instructions)
+		lastInstruction := currentBasicBlock.Instructions[basicBlockLength-1]
+
+		steps, results := lastInstruction.Instruction.PossibleNextSteps()
+		if !results.IsEmpty() {
+			return nil, results
+		}
+
+		if steps.PossibleContinue {
+			nextBasicBlock := currentBasicBlock.NextBlock
+			if nextBasicBlock == nil {
+				return nil, list.FromSingle(core.Result{
+					{
+						Type:     core.ErrorResult,
+						Message:  "Unexpected instruction to end a function",
+						Location: lastInstruction.Declaration,
+					}, {
+						Type:    core.HintResult,
+						Message: "Perhaps you forgot a return instruction?",
+					},
+				})
+			}
+
+			currentBasicBlock.AppendForwardEdge(nextBasicBlock)
+		}
+
+		for _, label := range steps.PossibleBranches {
+			branchToInstructionIndex := labelToInstructionIndex[label]
+			branchToInstruction := instructions[branchToInstructionIndex]
+			branchToBlock := branchToInstruction.BasicBlockInfo
+			currentBasicBlock.AppendForwardEdge(branchToBlock)
 		}
 	}
 
-	// now fill in the missing edges fields.
-	for i := uint(0); i < blocksCount; i++ {
-		node := cfg.Nodes[i]
-		for _, j := range node.ForwardEdges {
-			blocks[i].ForwardEdges = append(blocks[i].ForwardEdges, blocks[j])
-		}
-
-		for _, j := range node.BackwardEdges {
-			blocks[i].BackwardEdges = append(blocks[i].BackwardEdges, blocks[j])
-		}
-	}
-
-	return blocks, core.ResultList{}
+	return entryBasicBlock, core.ResultList{}
 }
 
 func (g *FunctionGenerator) Generate(
@@ -243,12 +275,7 @@ func (g *FunctionGenerator) Generate(
 		return nil, results
 	}
 
-	graph, results := g.generateInstructionsGraph(instructions, labelToInstructionIndex)
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
-	if graph.Size() == 0 {
+	if len(instructions) == 0 {
 		v := node.View()
 		return nil, list.FromSingle(core.Result{{
 			Type:     core.ErrorResult,
@@ -257,13 +284,16 @@ func (g *FunctionGenerator) Generate(
 		}})
 	}
 
-	cfg := graph.ControlFlowGraph(0)
+	entryBlock, results := g.generateBasicBlocks(
+		instructions,
+		function,
+		labelToInstructionIndex,
+	)
 
-	blocks, results := g.generateBasicBlocks(&cfg, instructions, function)
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
-	function.EntryBlock = blocks[0]
+	function.EntryBlock = entryBlock
 	return function, core.ResultList{}
 }
