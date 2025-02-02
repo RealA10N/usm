@@ -211,14 +211,17 @@ func (g *InstructionGenerator) Generate(
 
 	// TODO: tidy this mess.
 
+	instName := viewToSourceString(ctx.FileGenerationContext, node.Operator)
+	instDef, results := ctx.Instructions.GetInstructionDefinition(instName, node)
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
 	v := node.View()
 	instCtx := InstructionGenerationContext{
 		FunctionGenerationContext: ctx,
-		InstructionInfo:           NewEmptyInstructionInfo(&v),
+		InstructionInfo:           NewEmptyInstructionInfo(&v, instDef),
 	}
-
-	instName := viewToSourceString(ctx.FileGenerationContext, node.Operator)
-	instDef, results := ctx.Instructions.GetInstructionDefinition(instName, node)
 
 	arguments, curResults := g.generateArguments(&instCtx, node)
 	results.Extend(&curResults)

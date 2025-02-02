@@ -18,6 +18,10 @@ type InstructionInfo struct {
 	// The actual instruction information, which is ISA specific.
 	Instruction BaseInstruction
 
+	// The instruction definition instance, which implements some "static" methods
+	// related to the instruction type only.
+	Definition InstructionDefinition
+
 	// The location in which the instruction was defined in the source code.
 	// Can be nil if the instruction was defined internally, for example,
 	// in an optimization.
@@ -26,6 +30,7 @@ type InstructionInfo struct {
 
 func NewEmptyInstructionInfo(
 	declaration *core.UnmanagedSourceView,
+	instDef InstructionDefinition,
 ) *InstructionInfo {
 	return &InstructionInfo{
 		BasicBlockInfo: nil,
@@ -33,6 +38,7 @@ func NewEmptyInstructionInfo(
 		Arguments:      []ArgumentInfo{},
 		Labels:         []*LabelInfo{},
 		Instruction:    nil,
+		Definition:     instDef,
 		Declaration:    declaration,
 	}
 }
