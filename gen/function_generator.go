@@ -131,10 +131,6 @@ func (g *FunctionGenerator) getInstructionBranchingDestinations(
 		destinationIndices = append(destinationIndices, destinationIndex)
 	}
 
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
 	return destinationIndices, core.ResultList{}
 }
 
