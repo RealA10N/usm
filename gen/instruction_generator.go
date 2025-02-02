@@ -227,6 +227,7 @@ func (g *InstructionGenerator) Generate(
 	results.Extend(&curResults)
 
 	labels, curResults := g.generateLabels(&instCtx, node)
+	results.Extend(&curResults)
 
 	// Now it's time to check if we have any errors so far.
 	if !results.IsEmpty() {
