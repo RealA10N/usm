@@ -47,7 +47,7 @@ func (ctx *EmulationContext) ArgumentToValue(
 			return 0, list.FromSingle(core.Result{{
 				Type:     core.InternalErrorResult,
 				Message:  "Undefined register",
-				Location: &v,
+				Location: v,
 			}})
 		}
 
@@ -59,7 +59,7 @@ func (ctx *EmulationContext) ArgumentToValue(
 			return 0, list.FromSingle(core.Result{{
 				Type:     core.ErrorResult,
 				Message:  "Immediate overflows 64 bits",
-				Location: &v,
+				Location: v,
 			}})
 		}
 
@@ -70,7 +70,7 @@ func (ctx *EmulationContext) ArgumentToValue(
 		return 0, list.FromSingle(core.Result{{
 			Type:     core.ErrorResult,
 			Message:  "Expected valued argument",
-			Location: &v,
+			Location: v,
 		}})
 
 	default:
@@ -78,7 +78,7 @@ func (ctx *EmulationContext) ArgumentToValue(
 		return 0, list.FromSingle(core.Result{{
 			Type:     core.InternalErrorResult,
 			Message:  "Unexpected argument type",
-			Location: &v,
+			Location: v,
 		}})
 	}
 }

@@ -17,8 +17,8 @@ func (i *ImmediateInfo) GetType() *ReferencedTypeInfo {
 	return &i.Type
 }
 
-func (i *ImmediateInfo) Declaration() core.UnmanagedSourceView {
-	return i.declaration
+func (i *ImmediateInfo) Declaration() *core.UnmanagedSourceView {
+	return &i.declaration
 }
 
 func (i *ImmediateInfo) String() string {
