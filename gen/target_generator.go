@@ -10,8 +10,8 @@ type TargetGenerator struct {
 	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewTargetGenerator() InstructionContextGenerator[parse.TargetNode, registerPartialInfo] {
-	return InstructionContextGenerator[parse.TargetNode, registerPartialInfo](
+func NewTargetGenerator() InstructionContextGenerator[parse.TargetNode, *RegisterInfo] {
+	return InstructionContextGenerator[parse.TargetNode, *RegisterInfo](
 		&TargetGenerator{
 			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
@@ -36,54 +36,63 @@ func NewRegisterTypeMismatchResult(
 	})
 }
 
+// The target generator creates returns the register information that matches
+// the provided target node.
+//
+// If the targe node does not have an explicit type, and the register has not
+// been defined and processed yet, the generator will return nil.
 func (g *TargetGenerator) Generate(
 	ctx *InstructionGenerationContext,
 	node parse.TargetNode,
-) (registerPartialInfo, core.ResultList) {
-	var explicitType *ReferencedTypeInfo
+) (*RegisterInfo, core.ResultList) {
+	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
+	registerInfo := ctx.Registers.GetRegister(registerName)
+	nodeView := node.View()
 
-	// if an explicit type is provided to the target, get the type info.
 	explicitTypeProvided := node.Type != nil
-	if explicitTypeProvided {
-		explicitTypeValue, results := g.ReferencedTypeGenerator.Generate(
+	if !explicitTypeProvided {
+		// If an explicit type is not provided, the best we can do is to return
+		// the previously defined register information. If it is not have been
+		// defined yet, we return nil here.
+		return registerInfo, core.ResultList{}
+
+	} else {
+		targetType, results := g.ReferencedTypeGenerator.Generate(
 			ctx.FileGenerationContext,
 			*node.Type,
 		)
+
 		if !results.IsEmpty() {
-			return registerPartialInfo{}, results
+			return nil, results
 		}
 
-		explicitType = &explicitTypeValue
-	}
-
-	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
-	registerInfo := ctx.Registers.GetRegister(registerName)
-
-	registerAlreadyDefined := registerInfo != nil
-	if registerAlreadyDefined {
-		if explicitType != nil {
-			// ensure explicit type matches the previously declared one.
-			if !explicitType.Equal(registerInfo.Type) {
-				return registerPartialInfo{}, NewRegisterTypeMismatchResult(
+		registerAlreadyDefined := registerInfo != nil
+		if registerAlreadyDefined {
+			// Register is already defined, so we just ensure that the explicit type
+			// we got now matches the previously defined one.
+			if !registerInfo.Type.Equal(targetType) {
+				return nil, NewRegisterTypeMismatchResult(
 					node.View(),
 					registerInfo.Declaration,
 				)
 			}
+
+			return registerInfo, core.ResultList{}
+
+		} else {
+			// Register is not defined yet, so we define it now.
+			registerInfo = &RegisterInfo{
+				Name:        registerName,
+				Type:        targetType,
+				Declaration: nodeView,
+			}
+
+			results := ctx.Registers.NewRegister(registerInfo)
+			if !results.IsEmpty() {
+				return nil, results
+			}
+
+			return registerInfo, core.ResultList{}
 		}
-
-		// all checks passed; return previously defined register type.
-		return registerInfo.toPartialRegisterInfo(), core.ResultList{}
-
-	} else {
-		// this is the first appearance of the register; if the type is provided
-		// explicitly, use it. otherwise, there is no way to know the type of
-		// the target register at this.
-		// the type and register will be finalized when the instruction is built,
-		// and only then it is added to the register manager.
-		return registerPartialInfo{
-			Name:        registerName,
-			Type:        explicitType,
-			Declaration: node.View(),
-		}, core.ResultList{}
 	}
 }
