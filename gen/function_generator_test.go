@@ -156,3 +156,18 @@ func TestNoExplicitRegisterType(t *testing.T) {
 	details := results.Head.Value
 	assert.Contains(t, details[0].Message, "untyped register")
 }
+
+func TestExplicitRegisterDefinitionNotOnSecondSight(t *testing.T) {
+	src := `func @main {
+				%a = ADD $32 #0 $32 #0
+				$32 %a = ADD %a $32 #1
+				RET
+			}`
+	function, results := generateFunctionFromSource(t, src)
+	assert.True(t, results.IsEmpty())
+	assert.NotNil(t, function)
+
+	a := function.Registers.GetRegister("%a")
+	assert.NotNil(t, a)
+	assert.Equal(t, "$32", a.Type.String())
+}

@@ -8,7 +8,7 @@ import (
 
 type InstructionGenerator struct {
 	ArgumentGenerator InstructionContextGenerator[parse.ArgumentNode, ArgumentInfo]
-	TargetGenerator   InstructionContextGenerator[parse.TargetNode, *TargetInfo]
+	TargetGenerator   FunctionContextGenerator[parse.TargetNode, *TargetInfo]
 }
 
 func NewInstructionGenerator() FunctionContextGenerator[
@@ -54,7 +54,10 @@ func (g *InstructionGenerator) generateTargets(
 
 	for i, target := range node.Targets {
 		v := target.View()
-		targetInfo, curResults := g.TargetGenerator.Generate(ctx, target)
+		targetInfo, curResults := g.TargetGenerator.Generate(
+			ctx.FunctionGenerationContext,
+			target,
+		)
 		results.Extend(&curResults)
 
 		if targetInfo.Register == nil {

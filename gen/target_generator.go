@@ -10,8 +10,8 @@ type TargetGenerator struct {
 	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewTargetGenerator() InstructionContextGenerator[parse.TargetNode, *TargetInfo] {
-	return InstructionContextGenerator[parse.TargetNode, *TargetInfo](
+func NewTargetGenerator() FunctionContextGenerator[parse.TargetNode, *TargetInfo] {
+	return FunctionContextGenerator[parse.TargetNode, *TargetInfo](
 		&TargetGenerator{
 			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
@@ -42,7 +42,7 @@ func NewRegisterTypeMismatchResult(
 // If the targe node does not have an explicit type, and the register has not
 // been defined and processed yet, the generator will return nil.
 func (g *TargetGenerator) Generate(
-	ctx *InstructionGenerationContext,
+	ctx *FunctionGenerationContext,
 	node parse.TargetNode,
 ) (*TargetInfo, core.ResultList) {
 	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)

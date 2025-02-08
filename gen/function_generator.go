@@ -16,6 +16,7 @@ type FunctionGenerator struct {
 	ParameterGenerator       FunctionContextGenerator[parse.ParameterNode, *RegisterInfo]
 	LabelDefinitionGenerator LabelContextGenerator[parse.LabelNode, *LabelInfo]
 	ReferencedTypeGenerator  FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
+	TargetGenerator          FunctionContextGenerator[parse.TargetNode, *TargetInfo]
 }
 
 func NewFunctionGenerator() FileContextGenerator[parse.FunctionNode, *FunctionInfo] {
@@ -25,6 +26,7 @@ func NewFunctionGenerator() FileContextGenerator[parse.FunctionNode, *FunctionIn
 			ParameterGenerator:       NewParameterGenerator(),
 			LabelDefinitionGenerator: NewLabelDefinitionGenerator(),
 			ReferencedTypeGenerator:  NewReferencedTypeGenerator(),
+			TargetGenerator:          NewTargetGenerator(),
 		},
 	)
 }
@@ -94,10 +96,31 @@ func (g *FunctionGenerator) collectLabelDefinitions(
 	return labelToInstructionIndex, results
 }
 
+// Before actually generating the instructions, we iterate over instruction and
+// only collect information about target registers.
+// Since USM requires all registers to be defined at least once with an explicit
+// type, after collecting all register definitions the register manager should
+// contain all registers with the required information.
+func (g *FunctionGenerator) collectRegisterDefinitions(
+	ctx *FunctionGenerationContext,
+	instructions []parse.InstructionNode,
+) (results core.ResultList) {
+	for _, instruction := range instructions {
+		for _, target := range instruction.Targets {
+			_, curResults := g.TargetGenerator.Generate(ctx, target)
+			results.Extend(&curResults)
+		}
+	}
+
+	return results
+}
+
 func (g *FunctionGenerator) generateInstructions(
 	ctx *FunctionGenerationContext,
 	instNodes []parse.InstructionNode,
 ) ([]*InstructionInfo, core.ResultList) {
+	g.collectRegisterDefinitions(ctx, instNodes)
+
 	instructions := make([]*InstructionInfo, 0, len(instNodes))
 
 	for _, instNode := range instNodes {
