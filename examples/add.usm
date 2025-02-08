@@ -1,5 +1,5 @@
 func @main {
-    %n = $64 #0
+   $64 %n = $64 #0
 .loop
     put %n
     %n = add %n $64 #1

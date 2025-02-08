@@ -4,6 +4,6 @@ func @main {
     put %n
     term
 .def
-    %n = $64 #0
+    $64 %n = $64 #0
     j .use
 }

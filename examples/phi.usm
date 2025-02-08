@@ -1,14 +1,15 @@
 func @main {
-    %n = $64 #1
-    
+    $64 %n = $64 #1
     jp %n .if
     j .else
+
 .if
     j .end
+
 .else
     j .end
 
 .end
-    %m = phi $64 #1 .if $64 #0 .else
+    $64 %m = phi $64 #1 .if $64 #0 .else
     put %m
 }

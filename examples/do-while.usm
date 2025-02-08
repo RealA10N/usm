@@ -1,11 +1,11 @@
 func @main {
-    %n = $64 #0
+    $64 %n = $64 #0
     j .assign
 .loop
     %n = add %n $64 #1
     PUT %n
 .assign
-    %cond = add %n $64 #-10
+    $64 %cond = add %n $64 #-10
     jnz %cond .loop
     term
 }
