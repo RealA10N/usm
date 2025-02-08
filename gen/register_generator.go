@@ -22,8 +22,12 @@ func UndefinedRegisterResult(node parse.RegisterNode) core.ResultList {
 	return list.FromSingle(core.Result{
 		{
 			Type:     core.ErrorResult,
-			Message:  "Undefined register",
+			Message:  "Undefined or untyped register",
 			Location: &v,
+		},
+		{
+			Type:    core.HintResult,
+			Message: "A register must be defined with an explicit type at least once",
 		},
 	})
 }

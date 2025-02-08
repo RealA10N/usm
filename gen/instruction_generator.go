@@ -53,7 +53,6 @@ func (g *InstructionGenerator) generateTargets(
 	results := core.ResultList{}
 
 	for i, target := range node.Targets {
-		v := target.View()
 		targetInfo, curResults := g.TargetGenerator.Generate(
 			ctx.FunctionGenerationContext,
 			target,
@@ -65,18 +64,8 @@ func (g *InstructionGenerator) generateTargets(
 		}
 
 		if targetInfo.Register == nil {
-			// TODO: improve error message
-			results.Append(core.Result{
-				{
-					Type:     core.ErrorResult,
-					Message:  "Undefined or untyped register",
-					Location: &v,
-				},
-				{
-					Type:    core.HintResult,
-					Message: "A register must be defined with an explicit type at least once",
-				},
-			})
+			curResults := UndefinedRegisterResult(target.Register)
+			results.Extend(&curResults)
 		}
 
 		targets[i] = targetInfo
