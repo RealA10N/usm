@@ -143,3 +143,16 @@ func TestNoReturnFunctionGeneration(t *testing.T) {
 	details := results.Head.Value
 	assert.Contains(t, details[0].Message, "end a function")
 }
+
+func TestNoExplicitRegisterType(t *testing.T) {
+	src := `func @noExplicitType {
+				%a = ADD $32 #1 $32 #2
+				RET
+			}`
+
+	function, results := generateFunctionFromSource(t, src)
+	assert.False(t, results.IsEmpty())
+	assert.Nil(t, function)
+	details := results.Head.Value
+	assert.Contains(t, details[0].Message, "untyped register")
+}

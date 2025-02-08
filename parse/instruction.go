@@ -114,7 +114,7 @@ func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) core
 
 // Parsing of the following regular expression:
 //
-// > Lbl* (Reg+ Eql)? Opr? Arg+ !Arg \n+
+// > Lbl* ((Type? Reg)+ Eql)? Opr? Arg+ !Arg \n+
 func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err core.Result) {
 	node.Labels, _ = ParseManyIgnoreSeparators(p.LabelParser, v)
 	node.Targets = ParseMany(p.TargetParser, v)

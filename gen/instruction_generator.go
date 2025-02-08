@@ -57,7 +57,7 @@ func (g *InstructionGenerator) generateTargets(
 		targetInfo, curResults := g.TargetGenerator.Generate(ctx, target)
 		results.Extend(&curResults)
 
-		if targetInfo == nil {
+		if targetInfo.Register == nil {
 			// TODO: improve error message
 			results.Append(core.Result{
 				{
