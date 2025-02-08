@@ -51,11 +51,3 @@ func (i *RegisterInfo) AddDefinition(info *InstructionInfo) {
 func (i *RegisterInfo) AddUsage(info *InstructionInfo) {
 	i.Usages = append(i.Usages, info)
 }
-
-func (i *RegisterInfo) toPartialRegisterInfo() registerPartialInfo {
-	return registerPartialInfo{
-		Name:        i.Name,
-		Type:        &i.Type,
-		Declaration: i.Declaration,
-	}
-}

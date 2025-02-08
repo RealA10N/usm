@@ -39,8 +39,8 @@ func generateFunctionFromSource(
 
 func TestSimpleFunctionGeneration(t *testing.T) {
 	src := `func $32 @add $32 %a {
-	%b = ADD %a $32 #1
-	%c = ADD %b %a
+	$32 %b = ADD %a $32 #1
+	$32 %c = ADD %b %a
 	RET
 }`
 
@@ -82,7 +82,10 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 
 	assert.EqualValues(t,
 		[]gen.ReferencedTypeInfo{
-			{Base: &gen.NamedTypeInfo{Name: "$32", Size: 4}, Descriptors: []gen.TypeDescriptorInfo{}},
+			{
+				Base:        &gen.NamedTypeInfo{Name: "$32", Size: 4},
+				Descriptors: []gen.TypeDescriptorInfo{},
+			},
 		},
 		function.Targets,
 	)
@@ -94,10 +97,10 @@ func TestIfElseFunctionGeneration(t *testing.T) {
 	src := `func @toBool $32 %n {
 	JZ %n .zero
 .nonzero
-	%bool = ADD $32 #1 $32 #0
+	$32 %bool = ADD $32 #1 $32 #0
 	JMP .end
 .zero
-	%bool = ADD $32 #0 $32 #0
+	$32 %bool = ADD $32 #0 $32 #0
 .end
 	RET
 }`
@@ -132,11 +135,24 @@ func TestEmptyFunctionGeneration(t *testing.T) {
 
 func TestNoReturnFunctionGeneration(t *testing.T) {
 	src := `func @noReturn {
-				%n = ADD $32 #1 $32 #2
+				$32 %n = ADD $32 #1 $32 #2
 			}`
 	function, results := generateFunctionFromSource(t, src)
 	assert.False(t, results.IsEmpty())
 	assert.Nil(t, function)
 	details := results.Head.Value
 	assert.Contains(t, details[0].Message, "end a function")
+}
+
+func TestNoExplicitRegisterType(t *testing.T) {
+	src := `func @noExplicitType {
+				%a = ADD $32 #1 $32 #2
+				RET
+			}`
+
+	function, results := generateFunctionFromSource(t, src)
+	assert.False(t, results.IsEmpty())
+	assert.Nil(t, function)
+	details := results.Head.Value
+	assert.Contains(t, details[0].Message, "untyped register")
 }

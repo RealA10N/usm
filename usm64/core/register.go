@@ -9,7 +9,7 @@ import (
 
 type Register struct {
 	Name        string
-	declaration core.UnmanagedSourceView
+	declaration *core.UnmanagedSourceView
 }
 
 func NewRegister(arg *gen.RegisterArgumentInfo) (Register, core.ResultList) {
@@ -27,6 +27,6 @@ func (r Register) String(ctx *EmulationContext) string {
 	return fmt.Sprintf("%s (#%d)", r.Name, r.Value(ctx))
 }
 
-func (r Register) Declaration() core.UnmanagedSourceView {
+func (r Register) Declaration() *core.UnmanagedSourceView {
 	return r.declaration
 }

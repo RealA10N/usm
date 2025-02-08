@@ -183,7 +183,7 @@ func (m *InstructionMap) GetInstructionDefinition(
 }
 
 func TestInstructionCreateTarget(t *testing.T) {
-	src := core.NewSourceView("%c = ADD %a %b\n")
+	src := core.NewSourceView("$32 %c = ADD %a %b\n")
 	tkns, err := lex.NewTokenizer().Tokenize(src)
 	assert.NoError(t, err)
 
@@ -221,5 +221,5 @@ func TestInstructionCreateTarget(t *testing.T) {
 	assert.NotNil(t, target)
 	assert.Equal(t, "%c", target.Name)
 	assert.Equal(t, intType, target.Type.Base)
-	assert.Equal(t, src.Unmanaged().Subview(0, 2), target.Declaration)
+	assert.Equal(t, src.Unmanaged().Subview(0, 6), target.Declaration)
 }

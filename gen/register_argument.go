@@ -10,10 +10,7 @@ import (
 type RegisterArgumentInfo struct {
 	Register *RegisterInfo
 
-	// TODO: make this not required, for generated arguments, for example after
-	// SSA construction (phi register arguments which do not appear in the
-	// source code).
-	declaration core.UnmanagedSourceView
+	declaration *core.UnmanagedSourceView
 }
 
 func NewRegisterArgument(register *RegisterInfo) RegisterArgumentInfo {
@@ -30,7 +27,7 @@ func (i *RegisterArgumentInfo) GetType() *ReferencedTypeInfo {
 	return &i.Register.Type
 }
 
-func (i *RegisterArgumentInfo) Declaration() core.UnmanagedSourceView {
+func (i *RegisterArgumentInfo) Declaration() *core.UnmanagedSourceView {
 	return i.declaration
 }
 
@@ -64,9 +61,10 @@ func (g *RegisterArgumentGenerator) Generate(
 		return nil, results
 	}
 
+	v := node.View()
 	argument := RegisterArgumentInfo{
 		Register:    register,
-		declaration: node.View(),
+		declaration: &v,
 	}
 
 	register.AddUsage(ctx.InstructionInfo)

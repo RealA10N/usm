@@ -40,7 +40,7 @@ func (d *FixedInstructionDefinition) InferTargetTypes(
 }
 
 func (d *FixedInstructionDefinition) assertTargetAmount(
-	targets []*gen.RegisterArgumentInfo,
+	targets []*gen.TargetInfo,
 ) core.ResultList {
 	// TODO: possible overflow?
 	if core.UsmUint(len(targets)) != d.Targets {
@@ -70,7 +70,7 @@ func (d *FixedInstructionDefinition) assertArgumentAmount(
 }
 
 func (d *FixedInstructionDefinition) assertInputLengths(
-	targetInfos []*gen.RegisterArgumentInfo,
+	targetInfos []*gen.TargetInfo,
 	argumentInfos []gen.ArgumentInfo,
 ) (results core.ResultList) {
 	targetResults := d.assertTargetAmount(targetInfos)
