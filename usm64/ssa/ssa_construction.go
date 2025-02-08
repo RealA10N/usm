@@ -26,7 +26,7 @@ func (s *ConstructionScheme) NewPhiInstruction(
 	register *gen.RegisterInfo,
 ) (ssa.PhiInstruction, core.ResultList) {
 	info := gen.NewEmptyInstructionInfo(nil)
-	target := gen.NewRegisterArgument(register)
+	target := gen.NewTargetInfo(register)
 	info.AppendTarget(&target)
 	instruction, results := usm64isa.NewPhiInstruction(info)
 	info.SetBaseInstruction(instruction)
@@ -57,7 +57,7 @@ func (s *ConstructionScheme) renameArgument(
 }
 
 func (s *ConstructionScheme) renameTarget(
-	target *gen.RegisterArgumentInfo,
+	target *gen.TargetInfo,
 	reachingSet ssa.ReachingDefinitionsSet,
 ) core.ResultList {
 	baseRegister := target.Register

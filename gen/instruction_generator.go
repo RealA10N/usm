@@ -8,7 +8,7 @@ import (
 
 type InstructionGenerator struct {
 	ArgumentGenerator InstructionContextGenerator[parse.ArgumentNode, ArgumentInfo]
-	TargetGenerator   InstructionContextGenerator[parse.TargetNode, *RegisterInfo]
+	TargetGenerator   InstructionContextGenerator[parse.TargetNode, *TargetInfo]
 }
 
 func NewInstructionGenerator() FunctionContextGenerator[
@@ -48,16 +48,16 @@ func (g *InstructionGenerator) generateArguments(
 func (g *InstructionGenerator) generateTargets(
 	ctx *InstructionGenerationContext,
 	node parse.InstructionNode,
-) ([]*RegisterArgumentInfo, core.ResultList) {
-	targets := make([]*RegisterArgumentInfo, len(node.Targets))
+) ([]*TargetInfo, core.ResultList) {
+	targets := make([]*TargetInfo, len(node.Targets))
 	results := core.ResultList{}
 
 	for i, target := range node.Targets {
 		v := target.View()
-		registerInfo, curResults := g.TargetGenerator.Generate(ctx, target)
+		targetInfo, curResults := g.TargetGenerator.Generate(ctx, target)
 		results.Extend(&curResults)
 
-		if registerInfo == nil {
+		if targetInfo == nil {
 			// TODO: improve error message
 			results.Append(core.Result{
 				{
@@ -72,10 +72,7 @@ func (g *InstructionGenerator) generateTargets(
 			})
 		}
 
-		targets[i] = &RegisterArgumentInfo{
-			Register:    registerInfo,
-			declaration: &v,
-		}
+		targets[i] = targetInfo
 	}
 
 	if !results.IsEmpty() {
@@ -144,9 +141,9 @@ func (g *InstructionGenerator) Generate(
 		return nil, results
 	}
 
-	instCtx.InstructionInfo.Arguments = arguments
-	instCtx.InstructionInfo.Targets = targets
-	instCtx.InstructionInfo.Labels = labels
+	instCtx.InstructionInfo.AppendTarget(targets...)
+	instCtx.InstructionInfo.AppendArgument(arguments...)
+	instCtx.InstructionInfo.AppendLabels(labels...)
 
 	instruction, results := instDef.BuildInstruction(instCtx.InstructionInfo)
 	if !results.IsEmpty() {

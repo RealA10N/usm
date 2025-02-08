@@ -39,8 +39,8 @@ func generateFunctionFromSource(
 
 func TestSimpleFunctionGeneration(t *testing.T) {
 	src := `func $32 @add $32 %a {
-	%b = ADD %a $32 #1
-	%c = ADD %b %a
+	$32 %b = ADD %a $32 #1
+	$32 %c = ADD %b %a
 	RET
 }`
 
@@ -82,7 +82,10 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 
 	assert.EqualValues(t,
 		[]gen.ReferencedTypeInfo{
-			{Base: &gen.NamedTypeInfo{Name: "$32", Size: 4}, Descriptors: []gen.TypeDescriptorInfo{}},
+			{
+				Base:        &gen.NamedTypeInfo{Name: "$32", Size: 4},
+				Descriptors: []gen.TypeDescriptorInfo{},
+			},
 		},
 		function.Targets,
 	)

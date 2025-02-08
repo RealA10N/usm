@@ -10,8 +10,8 @@ type TargetGenerator struct {
 	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewTargetGenerator() InstructionContextGenerator[parse.TargetNode, *RegisterInfo] {
-	return InstructionContextGenerator[parse.TargetNode, *RegisterInfo](
+func NewTargetGenerator() InstructionContextGenerator[parse.TargetNode, *TargetInfo] {
+	return InstructionContextGenerator[parse.TargetNode, *TargetInfo](
 		&TargetGenerator{
 			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
@@ -44,7 +44,7 @@ func NewRegisterTypeMismatchResult(
 func (g *TargetGenerator) Generate(
 	ctx *InstructionGenerationContext,
 	node parse.TargetNode,
-) (*RegisterInfo, core.ResultList) {
+) (*TargetInfo, core.ResultList) {
 	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	nodeView := node.View()
@@ -54,7 +54,10 @@ func (g *TargetGenerator) Generate(
 		// If an explicit type is not provided, the best we can do is to return
 		// the previously defined register information. If it is not have been
 		// defined yet, we return nil here.
-		return registerInfo, core.ResultList{}
+		return &TargetInfo{
+			Register:    registerInfo,
+			Declaration: &nodeView,
+		}, core.ResultList{}
 
 	} else {
 		targetType, results := g.ReferencedTypeGenerator.Generate(
@@ -77,7 +80,10 @@ func (g *TargetGenerator) Generate(
 				)
 			}
 
-			return registerInfo, core.ResultList{}
+			return &TargetInfo{
+				Register:    registerInfo,
+				Declaration: &nodeView,
+			}, core.ResultList{}
 
 		} else {
 			// Register is not defined yet, so we define it now.
@@ -92,7 +98,10 @@ func (g *TargetGenerator) Generate(
 				return nil, results
 			}
 
-			return registerInfo, core.ResultList{}
+			return &TargetInfo{
+				Register:    registerInfo,
+				Declaration: &nodeView,
+			}, core.ResultList{}
 		}
 	}
 }

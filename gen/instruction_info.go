@@ -7,7 +7,7 @@ type InstructionInfo struct {
 
 	// The targets of the instruction.
 	// TODO: is a pointer reference really required here?
-	Targets []*RegisterArgumentInfo
+	Targets []*TargetInfo
 
 	// The arguments of the instruction.
 	Arguments []ArgumentInfo
@@ -29,7 +29,7 @@ func NewEmptyInstructionInfo(
 ) *InstructionInfo {
 	return &InstructionInfo{
 		BasicBlockInfo: nil,
-		Targets:        []*RegisterArgumentInfo{},
+		Targets:        []*TargetInfo{},
 		Arguments:      []ArgumentInfo{},
 		Labels:         []*LabelInfo{},
 		Instruction:    nil,
@@ -44,11 +44,18 @@ func (i *InstructionInfo) linkToBasicBlock(basicBlock *BasicBlockInfo) {
 	}
 }
 
-// Appends the given register as a target of the instruction,
+// Appends the given register(s) as a target(s) of the instruction,
 // including updating the required instruction and register information fields.
-func (i *InstructionInfo) AppendTarget(target *RegisterArgumentInfo) {
-	target.Register.AddDefinition(i)
-	i.Targets = append(i.Targets, target)
+func (i *InstructionInfo) AppendTarget(targets ...*TargetInfo) {
+	for _, target := range targets {
+		target.Register.AddDefinition(i)
+	}
+
+	i.Targets = append(i.Targets, targets...)
+}
+
+func (i *InstructionInfo) AppendArgument(arguments ...ArgumentInfo) {
+	i.Arguments = append(i.Arguments, arguments...)
 }
 
 func (i *InstructionInfo) AppendLabels(labels ...*LabelInfo) {
