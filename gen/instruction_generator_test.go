@@ -182,13 +182,17 @@ func (m *InstructionMap) GetInstructionDefinition(
 	return instDef, core.ResultList{}
 }
 
-func TestInstructionCreateTarget(t *testing.T) {
-	src := core.NewSourceView("$32 %c = ADD %a %b\n")
+func PrepareTestForInstructionGeneration(
+	src core.SourceView,
+	t *testing.T,
+) (parse.InstructionNode, *gen.FunctionGenerationContext) {
+	t.Helper()
+
 	tkns, err := lex.NewTokenizer().Tokenize(src)
+	tknView := parse.NewTokenView(tkns)
 	assert.NoError(t, err)
 
 	// TODO: do no use parser here? test only the instruction set unit.
-	tknView := parse.NewTokenView(tkns)
 	node, result := parse.NewInstructionParser().Parse(&tknView)
 	assert.Nil(t, result)
 
@@ -213,13 +217,34 @@ func TestInstructionCreateTarget(t *testing.T) {
 		Registers: &registers,
 	}
 
+	return node, ctx
+}
+
+func TestInstructionCreateTarget(t *testing.T) {
+	src := core.NewSourceView("$32 %c = ADD %a %b\n")
+	node, ctx := PrepareTestForInstructionGeneration(src, t)
+
 	generator := gen.NewInstructionGenerator()
 	_, results := generator.Generate(ctx, node)
 	assert.True(t, results.IsEmpty())
+
+	registers := ctx.Registers
+	intType := ctx.Types.GetType("$32")
+	assert.NotNil(t, intType)
 
 	target := registers.GetRegister("%c")
 	assert.NotNil(t, target)
 	assert.Equal(t, "%c", target.Name)
 	assert.Equal(t, intType, target.Type.Base)
 	assert.Equal(t, src.Unmanaged().Subview(0, 6), target.Declaration)
+}
+
+func TestUndefinedTargetType(t *testing.T) {
+	src := core.NewSourceView("$undefined %c = ADD %a %b\n")
+	node, ctx := PrepareTestForInstructionGeneration(src, t)
+
+	generator := gen.NewInstructionGenerator()
+	info, results := generator.Generate(ctx, node)
+	assert.False(t, results.IsEmpty())
+	assert.Nil(t, info)
 }

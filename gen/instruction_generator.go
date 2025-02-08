@@ -58,7 +58,11 @@ func (g *InstructionGenerator) generateTargets(
 			ctx.FunctionGenerationContext,
 			target,
 		)
-		results.Extend(&curResults)
+
+		if !curResults.IsEmpty() {
+			results.Extend(&curResults)
+			continue
+		}
 
 		if targetInfo.Register == nil {
 			// TODO: improve error message
