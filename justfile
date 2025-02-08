@@ -12,6 +12,9 @@ test:
 	{{GO}} test ./...
 
 cover:
+	#!/usr/bin/env bash
+	set -euxo pipefail
+
 	courtney -v -o={{COVERPROFILE}} | richgo testfilter
 
 fmt:
