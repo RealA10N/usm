@@ -97,10 +97,10 @@ func TestIfElseFunctionGeneration(t *testing.T) {
 	src := `func @toBool $32 %n {
 	JZ %n .zero
 .nonzero
-	%bool = ADD $32 #1 $32 #0
+	$32 %bool = ADD $32 #1 $32 #0
 	JMP .end
 .zero
-	%bool = ADD $32 #0 $32 #0
+	$32 %bool = ADD $32 #0 $32 #0
 .end
 	RET
 }`
@@ -135,7 +135,7 @@ func TestEmptyFunctionGeneration(t *testing.T) {
 
 func TestNoReturnFunctionGeneration(t *testing.T) {
 	src := `func @noReturn {
-				%n = ADD $32 #1 $32 #2
+				$32 %n = ADD $32 #1 $32 #2
 			}`
 	function, results := generateFunctionFromSource(t, src)
 	assert.False(t, results.IsEmpty())
