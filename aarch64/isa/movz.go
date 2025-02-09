@@ -24,7 +24,7 @@ type MovzDefinition struct{}
 func (MovzDefinition) BuildInstruction(
 	info *gen.InstructionInfo,
 ) (gen.BaseInstruction, core.ResultList) {
-	results := aarch64translation.AssertArgumentsBetween(info, 2, 2)
+	results := aarch64translation.AssertArgumentsBetween(info, 2, 3)
 	if !results.IsEmpty() {
 		return nil, results
 	}
