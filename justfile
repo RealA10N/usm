@@ -12,10 +12,7 @@ test:
 	{{GO}} test ./...
 
 cover:
-	#!/usr/bin/env bash
-	set -euxo pipefail
-
-	courtney -v -o={{COVERPROFILE}} | richgo testfilter
+	{{GO}} test -coverprofile={{COVERPROFILE}} ./...
 
 fmt:
 	{{GO}} mod tidy
@@ -28,6 +25,5 @@ cloc:
 
 setup:
 	{{GO}} install github.com/kyoh86/richgo@v0.3.12
-	{{GO}} install github.com/dave/courtney@v0.4.3
 	{{PY}} -m pip install --upgrade pip
 	{{PY}} -m pip install mdformat
