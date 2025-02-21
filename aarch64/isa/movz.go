@@ -55,3 +55,7 @@ func (MovzDefinition) BuildInstruction(
 		instructions.MOVZ(Xd, imm, shift),
 	}, core.ResultList{}
 }
+
+func NewMovzInstructionDefinition() gen.InstructionDefinition {
+	return MovzDefinition{}
+}
