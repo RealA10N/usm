@@ -103,27 +103,6 @@ func ArgumentToAarch64GPRegister(
 	return RegisterToAarch64GPRegister(register.Register)
 }
 
-func RegisterToAarch64GPRegister(
-	register *gen.RegisterInfo,
-) (registers.GPRegister, core.ResultList) {
-	name := register.Name[1:]
-	numStr := name[1:]
-	num, err := strconv.ParseUint(numStr, 10, 64)
-	gpr := registers.GPRegister(num)
-
-	if name[0] != 'X' || err != nil || gpr.Validate() != nil {
-		return 0, list.FromSingle(core.Result{
-			{
-				Type:     core.ErrorResult,
-				Message:  "Expected Aarch64 General Purpose register",
-				Location: &register.Declaration,
-			},
-		})
-	}
-
-	return gpr, core.ResultList{}
-}
-
 func ArgumentToBigInt(
 	argument gen.ArgumentInfo,
 ) (*big.Int, core.ResultList) {
