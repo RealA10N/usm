@@ -7,7 +7,7 @@ import (
 func NewManagerCreators() gen.ManagerCreators {
 	return gen.ManagerCreators{
 		RegisterManagerCreator: NewRegisterManager,
-		LabelManagerCreator:    NewLabelManager,
+		LabelManagerCreator:    gen.NewLabelMap,
 		TypeManagerCreator:     NewTypeManager,
 	}
 }
