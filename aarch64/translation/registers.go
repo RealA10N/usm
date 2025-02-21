@@ -12,6 +12,10 @@ import (
 func RegisterNameToAarch64GPRegister(
 	name string,
 ) (registers.GPRegister, bool) {
+	if len(name) < 2 {
+		return 0, false
+	}
+
 	numStr := name[1:]
 	num, err := strconv.ParseUint(numStr, 10, 64)
 	gpr := registers.GPRegister(num)
