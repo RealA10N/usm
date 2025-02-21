@@ -1,56 +1,33 @@
 package managers
 
 import (
-	"strings"
-
-	"alon.kr/x/list"
-	"alon.kr/x/usm/core"
+	"alon.kr/x/faststringmap"
 	"alon.kr/x/usm/gen"
-	"alon.kr/x/usm/parse"
 	usm64isa "alon.kr/x/usm/usm64/isa"
 )
 
-// TODO: optimization: implement using alon.kr/x/faststringmap
-type InstructionMap map[string]gen.InstructionDefinition
-
-func (m *InstructionMap) GetInstructionDefinition(
-	name string,
-	node parse.InstructionNode,
-) (gen.InstructionDefinition, core.ResultList) {
-	key := strings.ToLower(name)
-	instDef, ok := (*m)[key]
-	if !ok {
-		return nil, list.FromSingle(core.Result{{
-			Type:     core.ErrorResult,
-			Message:  "Undefined instruction",
-			Location: &node.Operator,
-		}})
-	}
-	return instDef, core.ResultList{}
-}
-
 func NewInstructionManager() gen.InstructionManager {
-	return gen.InstructionManager(
-		&InstructionMap{
-
+	return gen.NewInstructionMap(
+		[]faststringmap.MapEntry[gen.InstructionDefinition]{
 			// mov
-			"":    usm64isa.NewMoveInstructionDefinition(),
-			"mov": usm64isa.NewMoveInstructionDefinition(),
+			{Key: "", Value: usm64isa.NewMoveInstructionDefinition()},
+			{Key: "mov", Value: usm64isa.NewMoveInstructionDefinition()},
 
 			// arithmetic
-			"add": usm64isa.NewAddInstructionDefinition(),
+			{Key: "add", Value: usm64isa.NewAddInstructionDefinition()},
 
 			// control flow
-			"j":   usm64isa.NewJumpInstructionDefinition(),
-			"jz":  usm64isa.NewJumpZeroInstructionDefinition(),
-			"jnz": usm64isa.NewJumpNotZeroInstructionDefinition(),
+			{Key: "j", Value: usm64isa.NewJumpInstructionDefinition()},
+			{Key: "jz", Value: usm64isa.NewJumpZeroInstructionDefinition()},
+			{Key: "jnz", Value: usm64isa.NewJumpNotZeroInstructionDefinition()},
 
 			// SSA
-			"phi": usm64isa.NewPhiInstructionDefinition(),
+			{Key: "phi", Value: usm64isa.NewPhiInstructionDefinition()},
 
 			// debug
-			"put":  usm64isa.NewPutInstructionDefinition(),
-			"term": usm64isa.NewTerminateInstructionDefinition(),
+			{Key: "put", Value: usm64isa.NewPutInstructionDefinition()},
+			{Key: "term", Value: usm64isa.NewTerminateInstructionDefinition()},
 		},
+		false,
 	)
 }
