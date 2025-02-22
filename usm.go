@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	aarch64instructions "alon.kr/x/aarch64codegen/instructions"
+	aarch64managers "alon.kr/x/usm/aarch64/managers"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 	"alon.kr/x/usm/lex"
@@ -158,6 +160,50 @@ func ssaCommand(cmd *cobra.Command, args []string) {
 	fmt.Print(info.String())
 }
 
+func aarch64Command(cmd *cobra.Command, args []string) {
+	view, err := core.ReadSource(cmd.InOrStdin())
+	if err != nil {
+		fmt.Printf("Error reading source: %v\n", err)
+		os.Exit(1)
+	}
+
+	tokens, err := lex.NewTokenizer().Tokenize(view)
+	if err != nil {
+		fmt.Printf("Error tokenizing: %v\n", err)
+		os.Exit(1)
+	}
+
+	tknView := parse.NewTokenView(tokens)
+	node, result := parse.NewFileParser().Parse(&tknView)
+	if result != nil {
+		printResultAndExit(view, result)
+	}
+
+	ctx := aarch64managers.NewGenerationContext()
+	generator := gen.NewFileGenerator()
+	info, results := generator.Generate(ctx, view.Ctx(), node)
+	if !results.IsEmpty() {
+		printResultsAndExit(view, results)
+	}
+
+	instructions := info.Functions[0].CollectInstructions()
+	for _, instruction := range instructions {
+		inst, ok := instruction.Instruction.(aarch64instructions.Instruction)
+		if !ok {
+			printResultAndExit(view, core.Result{
+				{
+					Type:    core.InternalErrorResult,
+					Message: "Instruction is not an AArch64 instruction",
+				},
+			})
+		}
+
+		fmt.Printf("%s %x\n", inst.String(), inst.Binary())
+	}
+
+	os.Exit(0)
+}
+
 func main() {
 	rootCmd := &cobra.Command{
 		Use:   "usm",
@@ -195,10 +241,20 @@ func main() {
 		PreRunE: setInputSource,
 		Run:     ssaCommand,
 	}
+
+	aarch64Cmd := &cobra.Command{
+		Use:     "aarch64 [file]",
+		Short:   "Generate AArch64 instructions",
+		Args:    cobra.MaximumNArgs(1),
+		PreRunE: setInputSource,
+		Run:     aarch64Command,
+	}
+
 	rootCmd.AddCommand(lexCmd)
 	rootCmd.AddCommand(fmtCmd)
 	rootCmd.AddCommand(emuCmd)
 	rootCmd.AddCommand(ssaCmd)
+	rootCmd.AddCommand(aarch64Cmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
