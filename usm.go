@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	aarch64instructions "alon.kr/x/aarch64codegen/instructions"
 	aarch64managers "alon.kr/x/usm/aarch64/managers"
+	aarch64translation "alon.kr/x/usm/aarch64/translation"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 	"alon.kr/x/usm/lex"
@@ -186,19 +186,26 @@ func aarch64Command(cmd *cobra.Command, args []string) {
 		printResultsAndExit(view, results)
 	}
 
-	instructions := info.Functions[0].CollectInstructions()
-	for _, instruction := range instructions {
-		inst, ok := instruction.Instruction.(aarch64instructions.Instruction)
-		if !ok {
-			printResultAndExit(view, core.Result{
-				{
-					Type:    core.InternalErrorResult,
-					Message: "Instruction is not an AArch64 instruction",
-				},
-			})
-		}
+	object, results := aarch64translation.FileToMachoObject(info)
+	if !results.IsEmpty() {
+		printResultsAndExit(view, results)
+	}
 
-		fmt.Printf("%s %x\n", inst.String(), inst.Binary())
+	outputFilepath := filepath.Base(inputFilepath)
+	ext := filepath.Ext(inputFilepath)
+	outputFilename := outputFilepath[:len(outputFilepath)-len(ext)] + ".o"
+
+	file, err := os.Create(outputFilename)
+	if err != nil {
+		fmt.Printf("Error creating output file: %v\n", err)
+		os.Exit(1)
+	}
+	defer file.Close()
+
+	_, err = file.Write(object)
+	if err != nil {
+		fmt.Printf("Error writing to output file: %v\n", err)
+		os.Exit(1)
 	}
 
 	os.Exit(0)
