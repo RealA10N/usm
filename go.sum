@@ -4,12 +4,16 @@ alon.kr/x/faststringmap v0.0.0-20241117165103-5662ddd92b26 h1:sbHgDrA+fbPX3SPAUO
 alon.kr/x/faststringmap v0.0.0-20241117165103-5662ddd92b26/go.mod h1:dPORoTvAFIehHRaI/lfJV3eT6PL5tY7fpAtxzz7rQVw=
 alon.kr/x/list v0.0.0-20241203223347-3173d76828c0 h1:NedGw3ZJMKT9Y4RByuogGfBEXT4st8eX/XO5frezx6o=
 alon.kr/x/list v0.0.0-20241203223347-3173d76828c0/go.mod h1:7syBFMuVmxetKppmlKe6nQlp2BRueprI1r8/d7GB7fs=
+alon.kr/x/macho v0.0.0-20250122172329-4edcf4bdd969 h1:nGQKKbocyVE+w04AUPAiKJsbxLCRqebYOaDswTUSJU8=
+alon.kr/x/macho v0.0.0-20250122172329-4edcf4bdd969/go.mod h1:sT6z7P9btF+g0GlLTrX5uneSCQIu7Zyu+2pji7jEDs8=
 alon.kr/x/set v0.0.0-20250105200711-55a9ad95f635 h1:qSmfYQ1/emk5FQ9GF1rEsDTzPHHICrwojgfXCmszdww=
 alon.kr/x/set v0.0.0-20250105200711-55a9ad95f635/go.mod h1:w/EwjsTCmkQk+vENh7DJ8PnVbIMSTMWQnSBqV7bUs4I=
 alon.kr/x/stack v0.0.0-20241231201659-c96903670d6f h1:Dj3XxhTOp2giWUqOeI+7/1T2vGL39Ws7XbuaOtmv5/M=
 alon.kr/x/stack v0.0.0-20241231201659-c96903670d6f/go.mod h1:q0qaNr8gsV5IpV3vbjWF1CoGJK1+b1x4UcqaAtDmF9A=
 alon.kr/x/view v0.0.0-20241117132723-5c30dbef3c86 h1:Wp3skgdAxmqVEJBO5rqlwVvVsSgsG1LiH8ltbJjD4f0=
 alon.kr/x/view v0.0.0-20241117132723-5c30dbef3c86/go.mod h1:d52sTAJJ2e9k+DyAk6kgX4WuLk41HjfGZJuQEpF1KQU=
+alon.kr/x/writertoutils v1.3.0 h1:RLYCHndg17OdayzuvKTcW2II+UypeWm4g1+mBpnqUmM=
+alon.kr/x/writertoutils v1.3.0/go.mod h1:D/whbqra9MZR98gt9+F3U9LORsFqYtYkum53pQ27Vlc=
 github.com/cpuguy83/go-md2man/v2 v2.0.4/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
