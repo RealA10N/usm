@@ -24,25 +24,28 @@ type MovzDefinition struct{}
 func (MovzDefinition) BuildInstruction(
 	info *gen.InstructionInfo,
 ) (gen.BaseInstruction, core.ResultList) {
-	results := aarch64translation.AssertArgumentsBetween(info, 2, 3)
+	results := core.ResultList{}
+
+	curResults := aarch64translation.AssertTargetsExactly(info, 1)
+	results.Extend(&curResults)
+
+	curResults = aarch64translation.AssertArgumentsBetween(info, 1, 2)
+	results.Extend(&curResults)
+
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
-	Xd, curResults := aarch64translation.ArgumentToAarch64GPRegister(
-		info.Arguments[0],
-	)
+	Xd, curResults := aarch64translation.TargetToAarch64GPRegister(info.Targets[0])
 	results.Extend(&curResults)
 
-	imm, curResults := aarch64translation.ArgumentToAarch64Immediate16(
-		info.Arguments[1],
-	)
+	imm, curResults := aarch64translation.ArgumentToAarch64Immediate16(info.Arguments[0])
 	results.Extend(&curResults)
 
 	shift := instructions.MovShift0
-	if len(info.Arguments) > 2 {
+	if len(info.Arguments) > 1 {
 		shift, curResults = aarch64translation.ArgumentToAarch64MovShift(
-			info.Arguments[2],
+			info.Arguments[1],
 		)
 		results.Extend(&curResults)
 	}
