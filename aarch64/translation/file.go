@@ -37,7 +37,7 @@ func FileToMachoObject(file *gen.FileInfo) ([]byte, core.ResultList) {
 		}
 
 		symbol := nlist64_builders.SectionNlist64Builder{
-			Name:        "_" + function.Name,
+			Name:        "_" + function.Name[1:],
 			Type:        nlist64.ExternalSymbol,
 			Section:     1,
 			Offset:      offset,
