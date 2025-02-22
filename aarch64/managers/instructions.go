@@ -10,6 +10,7 @@ func NewInstructionManager() gen.InstructionManager {
 	return gen.NewInstructionMap(
 		[]faststringmap.MapEntry[gen.InstructionDefinition]{
 			{Key: "movz", Value: aarch64isa.NewMovzInstructionDefinition()},
+			{Key: "ret", Value: aarch64isa.NewRetInstructionDefinition()},
 		},
 		false,
 	)
