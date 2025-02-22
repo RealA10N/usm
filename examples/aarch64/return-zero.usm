@@ -1,0 +1,4 @@
+func $64 @returnzero {
+    $64 %X0 = MOVZ $64 #0
+    RET
+}
