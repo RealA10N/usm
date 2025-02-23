@@ -6,7 +6,7 @@ require (
 	alon.kr/x/aarch64codegen v0.0.0-20250208154601-95698b4bcdcf
 	alon.kr/x/faststringmap v0.0.0-20241117165103-5662ddd92b26
 	alon.kr/x/list v0.0.0-20241203223347-3173d76828c0
-	alon.kr/x/macho v0.0.0-20250122172329-4edcf4bdd969
+	alon.kr/x/macho v0.0.0-20250223221041-f8d79ee3c9c1
 	alon.kr/x/set v0.0.0-20250105200711-55a9ad95f635
 	alon.kr/x/stack v0.0.0-20241231201659-c96903670d6f
 	alon.kr/x/view v0.0.0-20241117132723-5c30dbef3c86

@@ -5,6 +5,7 @@ import (
 
 	"alon.kr/x/macho/builder"
 	"alon.kr/x/macho/header"
+	"alon.kr/x/macho/load/build_version"
 	"alon.kr/x/macho/load/nlist64"
 	nlist64_builders "alon.kr/x/macho/load/nlist64/builders"
 	"alon.kr/x/macho/load/section64"
@@ -72,9 +73,17 @@ func FileToMachoObject(file *gen.FileInfo) ([]byte, core.ResultList) {
 		Symbols: symbols,
 	}
 
+	buildVersionBuilder := build_version.BuildVersionBuilder{
+		Platform: build_version.PlatformMacOS,
+	}
+
 	machoBuilder := builder.MachoBuilder{
-		Header:   headerBuilder,
-		Commands: []builder.CommandBuilder{segmentBuilder, symtabBuilder},
+		Header: headerBuilder,
+		Commands: []builder.CommandBuilder{
+			segmentBuilder,
+			symtabBuilder,
+			buildVersionBuilder,
+		},
 	}
 
 	buffer := new(bytes.Buffer)
