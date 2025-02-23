@@ -1,8 +1,6 @@
-package managers
+package aarch64managers
 
-import (
-	"alon.kr/x/usm/gen"
-)
+import "alon.kr/x/usm/gen"
 
 func NewManagerCreators() gen.ManagerCreators {
 	return gen.ManagerCreators{

@@ -18,6 +18,15 @@ func (f *FunctionInfo) CollectBasicBlocks() []*BasicBlockInfo {
 	return blocks
 }
 
+func (f *FunctionInfo) CollectInstructions() []*InstructionInfo {
+	instructions := make([]*InstructionInfo, 0)
+	for block := f.EntryBlock; block != nil; block = block.NextBlock {
+		instructions = append(instructions, block.Instructions...)
+	}
+
+	return instructions
+}
+
 func (i *FunctionInfo) String() string {
 	s := "func "
 	for _, target := range i.Targets {
