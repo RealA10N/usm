@@ -11,6 +11,7 @@ type PhiInstructionDescriptor struct {
 	PhiInstruction
 	base *gen.RegisterInfo
 }
+
 type FunctionSsaInfo struct {
 	*gen.FunctionInfo
 
@@ -178,21 +179,46 @@ func (i *FunctionSsaInfo) RenameRegisters() core.ResultList {
 		if isPop {
 			reachingSet.popBlock()
 		} else {
+			// We have currently entered a new basic block in the dominator tree
+			// traversal.
 			reachingSet.pushBlock()
+
 			basicBlockIndex := event
 			basicBlock := i.BasicBlocks[basicBlockIndex]
+
+			// Now, we let the specific implementation to handle the renaming
+			// of the basic block registers (arguments and targets). We pass
+			// the reaching definition set that we have built so far, and
+			// the implementation should use it to query what is the live
+			// definition of each register in the current basic block.
 			results := i.SsaConstructionScheme.RenameBasicBlock(basicBlock, reachingSet)
 			if !results.IsEmpty() {
 				return results
 			}
 
+			// Now that the basic block has been renamed, we update all phi
+			// instructions that are directly dominated by the current basic
+			// block about the register that is live in the current basic block,
+			// (which is possibly defined in the current basic block).
 			basicBlockDominatorTreeNode := i.DominatorJoinGraph.DominatorTree.Nodes[basicBlockIndex]
 			for _, childIndex := range basicBlockDominatorTreeNode.ForwardEdges {
 				for _, phiDescriptor := range i.PhiInstructionsPerBlock[childIndex] {
 					renamed := reachingSet.GetReachingDefinition(phiDescriptor.base)
-					results := phiDescriptor.AddForwardingRegister(basicBlock, renamed)
-					if !results.IsEmpty() {
-						return results
+
+					// If renamed == nil, it means that definition of the register
+					// is undefined if reached from the current basic block.
+					// Since we assume that the original representation is well
+					// formed (no usage of undefined registers), we assume that
+					// this means we can't reach the current basic block from
+					// this child. (since otherwise on this path this register
+					// value is undefined). So we just do not add the forwarding
+					// register to the phi instruction.
+
+					if renamed != nil {
+						results := phiDescriptor.AddForwardingRegister(basicBlock, renamed)
+						if !results.IsEmpty() {
+							return results
+						}
 					}
 				}
 			}
