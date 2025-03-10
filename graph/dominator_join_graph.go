@@ -30,7 +30,9 @@ func newJoinGraph(g *Graph, d *DominatorTree) Graph {
 //
 // Note if your purpose is to compute the dominator frontier of a set of multiple
 // nodes, or the iterated dominator frontier, there are better methods then
-// calling calling this method multiple time, resulting in a quadratic time.
+// calling this method multiple times, resulting in a quadratic time.
+// See the IteratedDominatorFrontier method for more information.
+//
 // For more information, see https://doi.org/10.1145/199448.199464
 func (g *DominatorJoinGraph) DominatorFrontier(node uint) []uint {
 	frontier := []uint{}
