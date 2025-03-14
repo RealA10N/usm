@@ -260,6 +260,8 @@ func (g *FunctionGenerator) generateBasicBlocks(
 		return nil, results
 	}
 
+	entryBasicBlock.AppendInstruction(instructions[0])
+
 	currentBasicBlock := entryBasicBlock
 	for i := 1; i < instructionCount; i++ {
 		currentInstruction := instructions[i]
