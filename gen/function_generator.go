@@ -195,6 +195,43 @@ func (g *FunctionGenerator) getInstructionBranchingEdges(
 	return forwardEdges, backwardEdges, core.ResultList{}
 }
 
+// Creates new basic blocks from an instruction, and returns the *last* basic
+// block in the created chain.
+//
+// If more than one basic block is created, all except the last one should not
+// contain any instructions. Notice that this function only creates the basic
+// blocks, but does not propagate them with instructions (even not with the
+// provided instruction).
+func createBasicBlocksFromLabels(
+	ctx *FunctionGenerationContext,
+	function *FunctionInfo,
+	previousBlock *BasicBlockInfo,
+	labels []*LabelInfo,
+) (*BasicBlockInfo, core.ResultList) {
+
+	if len(labels) == 0 {
+		// Generate a label for the new basic block.
+		label := ctx.Labels.GenerateLabel()
+		results := ctx.Labels.NewLabel(label)
+		if !results.IsEmpty() {
+			return nil, results
+		}
+		labels = append(labels, label)
+	}
+
+	for _, label := range labels {
+		newBasicBlock := NewEmptyBasicBlockInfo(function)
+		newBasicBlock.SetLabel(label)
+
+		if previousBlock != nil {
+			previousBlock.AppendBasicBlock(newBasicBlock)
+		}
+		previousBlock = newBasicBlock
+	}
+
+	return previousBlock, core.ResultList{}
+}
+
 func (g *FunctionGenerator) generateBasicBlocks(
 	ctx *FunctionGenerationContext,
 	instructions []*InstructionInfo,
@@ -212,10 +249,18 @@ func (g *FunctionGenerator) generateBasicBlocks(
 		return nil, results
 	}
 
-	entryBasicBlock := NewEmptyBasicBlockInfo(function)
-	currentBasicBlock := entryBasicBlock
-	currentBasicBlock.AppendInstruction(instructions[0])
+	entryBasicBlock, results := createBasicBlocksFromLabels(
+		ctx,
+		function,
+		nil,
+		labels.InstructionIndexToLabels[0],
+	)
 
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	currentBasicBlock := entryBasicBlock
 	for i := 1; i < instructionCount; i++ {
 		currentInstruction := instructions[i]
 		previousInstructionBranches := forwardBranchingEdges[i-1]
@@ -225,19 +270,14 @@ func (g *FunctionGenerator) generateBasicBlocks(
 		shouldStartNewBlock := previousInstructionBranches || branchingToCurrentInstruction || hasLabels
 
 		if shouldStartNewBlock {
-			if !hasLabels {
-				// Generate a label for the new basic block.
-				label := ctx.Labels.GenerateLabel(currentBasicBlock)
-				function.Labels.NewLabel(label)
-				instructionLabels = append(instructionLabels, label)
-			}
-
-			for _, label := range instructionLabels {
-				newBasicBlock := NewEmptyBasicBlockInfo(function)
-				newBasicBlock.SetLabel(label)
-
-				currentBasicBlock.AppendBasicBlock(newBasicBlock)
-				currentBasicBlock = newBasicBlock
+			currentBasicBlock, results = createBasicBlocksFromLabels(
+				ctx,
+				function,
+				currentBasicBlock,
+				instructionLabels,
+			)
+			if !results.IsEmpty() {
+				return nil, results
 			}
 		}
 

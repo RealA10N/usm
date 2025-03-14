@@ -50,9 +50,9 @@ func (g *LabelDefinitionGenerator) Generate(
 		Declaration: declaration,
 	}
 
-	result := ctx.Labels.NewLabel(newLabelInfo)
-	if result != nil {
-		return nil, list.FromSingle(result)
+	results := ctx.Labels.NewLabel(newLabelInfo)
+	if !results.IsEmpty() {
+		return nil, results
 	}
 
 	return newLabelInfo, core.ResultList{}
