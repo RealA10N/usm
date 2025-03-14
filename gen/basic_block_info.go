@@ -34,17 +34,21 @@ func (b *BasicBlockInfo) SetLabel(label *LabelInfo) {
 }
 
 func (b *BasicBlockInfo) AppendInstruction(instruction *InstructionInfo) {
+	instruction.BasicBlockInfo = b
 	b.Instructions = append(b.Instructions, instruction)
 }
 
 func (b *BasicBlockInfo) PrependInstruction(instruction *InstructionInfo) {
 	// TODO: convert instructions to a linked list.
+	instruction.BasicBlockInfo = b
 	b.Instructions = append([]*InstructionInfo{instruction}, b.Instructions...)
 }
 
 func (b *BasicBlockInfo) RemoveInstruction(
 	instruction *InstructionInfo,
 ) (ok bool) {
+	instruction.BasicBlockInfo = nil
+
 	instructionIndex := slices.Index(b.Instructions, instruction)
 	if instructionIndex == -1 {
 		return false
