@@ -32,6 +32,34 @@ func $64 @fib $64 %n {
 - **Modern Syntax**: Clean, readable syntax that maintains the power of assembly
 - **Unlimited Registers**: No artificial limits on register count or naming
 
+## Use Cases
+
+USM transcends the role of a mere assembly language, functioning as a
+comprehensive framework for systems programming and compiler design:
+
+### Optimization and Transformation of Code
+
+USM's framework enables implementing any instruction set in its syntax,
+providing a powerful foundation for compiler development. When an ISA is
+implemented in USM, it automatically gains access to a rich set of optimizations
+including dead code elimination, liveness analysis, and SSA transformations.
+Developers can define custom optimization passes or create transformations
+between different instruction sets, such as compiling a virtual ISA to
+hardware-specific code like x86_64.
+
+### Enhanced Assembly Programming
+
+When writing low-level code for existing architectures like Aarch64 or x86_64
+using the USM syntax, USM offers significant advantages:
+
+- Strong type checking prevents common assembly errors
+- Modern developer tooling including formatters and linters
+- Static analysis capabilities not available in traditional assemblers
+
+The power of USM lies in its flexibility - serving equally well as a robust
+assembly language and as a framework for creating compiler infrastructure
+components.
+
 ## Similar Projects
 
 - [LLVM](https://github.com/llvm/llvm-project) - A full-featured compiler
