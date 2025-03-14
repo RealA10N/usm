@@ -126,8 +126,8 @@ func DeadCodeElimination(function *gen.FunctionInfo) core.ResultList {
 				ok := block.RemoveInstruction(instruction)
 				if !ok {
 					results.Append(core.Result{{
-						Type:     core.ErrorResult,
-						Message:  "Failed to remove instruction",
+						Type:     core.InternalErrorResult,
+						Message:  "Failed to eliminate instruction",
 						Location: instruction.Declaration,
 					}})
 				}
