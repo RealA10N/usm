@@ -31,7 +31,7 @@ func (i *PhiInstruction) AddForwardingRegister(
 	block *gen.BasicBlockInfo,
 	register *gen.RegisterInfo,
 ) core.ResultList {
-	labelArgument := gen.NewLabelArgumentInfo(block.GetRepresentingLabel())
+	labelArgument := gen.NewLabelArgumentInfo(block.Label)
 	registerArgument := gen.NewRegisterArgument(register)
 	i.Arguments = append(i.Arguments, labelArgument, &registerArgument)
 	return core.ResultList{}

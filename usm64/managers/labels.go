@@ -18,9 +18,9 @@ func (m *LabelMap) GetLabel(name string) *gen.LabelInfo {
 	return val
 }
 
-func (m *LabelMap) NewLabel(label *gen.LabelInfo) core.Result {
+func (m *LabelMap) NewLabel(label *gen.LabelInfo) core.ResultList {
 	(*m)[label.Name] = label
-	return nil
+	return core.ResultList{}
 }
 
 func generateRandomLabelName() (string, error) {
@@ -33,18 +33,13 @@ func generateRandomLabelName() (string, error) {
 	return ".L" + hex.EncodeToString(b), nil
 }
 
-func (m *LabelMap) GenerateLabel(block *gen.BasicBlockInfo) *gen.LabelInfo {
+func (m *LabelMap) GenerateLabel() *gen.LabelInfo {
 	name, err := generateRandomLabelName()
 	for err != nil || m.GetLabel(name) != nil {
 		name, err = generateRandomLabelName()
 	}
 
-	label := &gen.LabelInfo{
-		Name:       name,
-		BasicBlock: block,
-	}
-
-	return label
+	return &gen.LabelInfo{Name: name}
 }
 
 func NewLabelManager() gen.LabelManager {
