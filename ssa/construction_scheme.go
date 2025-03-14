@@ -127,6 +127,8 @@ func (s *ReachingDefinitionsSet) popBlock() {
 }
 
 type PhiInstruction interface {
+	gen.BaseInstruction
+
 	AddForwardingRegister(
 		*gen.BasicBlockInfo,
 		*gen.RegisterInfo,

@@ -7,9 +7,45 @@ import (
 	"alon.kr/x/usm/graph"
 )
 
-type PhiInstructionDescriptor struct {
-	PhiInstruction
+type forwardingRegisterDescriptor struct {
+	block   *gen.BasicBlockInfo
+	renamed *gen.RegisterInfo
+}
+
+type phiInstructionDescriptor struct {
+	// The new phi instruction.
+	instruction PhiInstruction
+
+	// The original base register that this phi instruction is a definition for.
 	base *gen.RegisterInfo
+
+	// Pairs of (block, renamed register) that this phi instruction receives.
+	// There should be one pair for each block that has a forward edge to the
+	// block in which this phi instruction is inserted.
+	forwards []forwardingRegisterDescriptor
+}
+
+func (p *phiInstructionDescriptor) AddForwardingRegister(
+	block *gen.BasicBlockInfo,
+	renamed *gen.RegisterInfo,
+) {
+	p.forwards = append(p.forwards, forwardingRegisterDescriptor{block, renamed})
+}
+
+// Move the forwarding registers to the phi instruction.
+//
+// We use this separation, and not directly modify the phi instruction, to not
+// add arguments to the phi instruction before it was processed itself, which
+// will result in some weird behavior.
+func (p *phiInstructionDescriptor) CommitForwardingRegisters() core.ResultList {
+	results := core.ResultList{}
+	for _, forward := range p.forwards {
+		curResults := p.instruction.AddForwardingRegister(forward.block, forward.renamed)
+		results.Extend(&curResults)
+	}
+
+	p.forwards = nil
+	return results
 }
 
 type FunctionSsaInfo struct {
@@ -29,7 +65,7 @@ type FunctionSsaInfo struct {
 	//
 	// Initially, this slice is empty for each block, and each new phi instruction
 	// which we create is inserted to to corresponding block's slice.
-	PhiInstructionsPerBlock [][]PhiInstructionDescriptor
+	PhiInstructionsPerBlock [][]phiInstructionDescriptor
 
 	BaseRegisters []*gen.RegisterInfo
 
@@ -58,7 +94,7 @@ func NewFunctionSsaInfo(
 		SsaConstructionScheme:   ssaConstructionScheme,
 		BasicBlocks:             basicBlocks,
 		BasicBlocksToIndex:      basicBlockToIndex,
-		PhiInstructionsPerBlock: make([][]PhiInstructionDescriptor, len(basicBlocks)),
+		PhiInstructionsPerBlock: make([][]phiInstructionDescriptor, len(basicBlocks)),
 		BaseRegisters:           baseRegisters,
 		RegistersToIndex:        registersToIndex,
 		ControlFlowGraph:        &graph,
@@ -148,9 +184,9 @@ func (i *FunctionSsaInfo) InsertPhiInstructions() core.ResultList {
 			if !results.IsEmpty() {
 				return results
 			}
-			descriptor := PhiInstructionDescriptor{
-				PhiInstruction: phi,
-				base:           register,
+			descriptor := phiInstructionDescriptor{
+				instruction: phi,
+				base:        register,
 			}
 			i.PhiInstructionsPerBlock[blockIndex] = append(
 				i.PhiInstructionsPerBlock[blockIndex],
@@ -167,6 +203,19 @@ func (i *FunctionSsaInfo) deleteBaseRegisters() core.ResultList {
 		curResults := i.Registers.DeleteRegister(register)
 		results.Extend(&curResults)
 	}
+	return results
+}
+
+func (i *FunctionSsaInfo) commitPhiInstructions() core.ResultList {
+	results := core.ResultList{}
+
+	for _, perBasicBlockPhiInstructions := range i.PhiInstructionsPerBlock {
+		for _, phiDescriptor := range perBasicBlockPhiInstructions {
+			curResults := phiDescriptor.CommitForwardingRegisters()
+			results.Extend(&curResults)
+		}
+	}
+
 	return results
 }
 
@@ -197,12 +246,13 @@ func (i *FunctionSsaInfo) RenameRegisters() core.ResultList {
 			}
 
 			// Now that the basic block has been renamed, we update all phi
-			// instructions that are directly dominated by the current basic
-			// block about the register that is live in the current basic block,
-			// (which is possibly defined in the current basic block).
-			basicBlockDominatorTreeNode := i.DominatorJoinGraph.DominatorTree.Nodes[basicBlockIndex]
-			for _, childIndex := range basicBlockDominatorTreeNode.ForwardEdges {
-				for _, phiDescriptor := range i.PhiInstructionsPerBlock[childIndex] {
+			// instructions in blocks that can be reached from the current block,
+			// to forward them with the definition of the register if coming=
+			// from the current block.
+			forwardEdgeIndices := i.ControlFlowGraph.Nodes[basicBlockIndex].ForwardEdges
+			for _, childIndex := range forwardEdgeIndices {
+				for idx := range i.PhiInstructionsPerBlock[childIndex] {
+					phiDescriptor := &i.PhiInstructionsPerBlock[childIndex][idx]
 					renamed := reachingSet.GetReachingDefinition(phiDescriptor.base)
 
 					// If renamed == nil, it means that definition of the register
@@ -215,10 +265,7 @@ func (i *FunctionSsaInfo) RenameRegisters() core.ResultList {
 					// register to the phi instruction.
 
 					if renamed != nil {
-						results := phiDescriptor.AddForwardingRegister(basicBlock, renamed)
-						if !results.IsEmpty() {
-							return results
-						}
+						phiDescriptor.AddForwardingRegister(basicBlock, renamed)
 					}
 				}
 			}
@@ -226,6 +273,11 @@ func (i *FunctionSsaInfo) RenameRegisters() core.ResultList {
 	}
 
 	results := i.deleteBaseRegisters()
+	if !results.IsEmpty() {
+		return results
+	}
+
+	results = i.commitPhiInstructions()
 	if !results.IsEmpty() {
 		return results
 	}
