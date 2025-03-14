@@ -79,12 +79,12 @@ func (m *LabelMap) GetLabel(name string) *gen.LabelInfo {
 	return val
 }
 
-func (m *LabelMap) NewLabel(label *gen.LabelInfo) core.Result {
+func (m *LabelMap) NewLabel(label *gen.LabelInfo) core.ResultList {
 	(*m)[label.Name] = label
-	return nil
+	return core.ResultList{}
 }
 
-func (m *LabelMap) GenerateLabel(block *gen.BasicBlockInfo) *gen.LabelInfo {
+func (m *LabelMap) GenerateLabel() *gen.LabelInfo {
 	return &gen.LabelInfo{
 		Name: ".L" + fmt.Sprint(len(*m)),
 	}
