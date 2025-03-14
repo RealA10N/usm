@@ -1,6 +1,10 @@
 package gen
 
-import "alon.kr/x/usm/core"
+import (
+	"slices"
+
+	"alon.kr/x/usm/core"
+)
 
 type RegisterInfo struct {
 	// The name of the register, as it appears in the source code.
