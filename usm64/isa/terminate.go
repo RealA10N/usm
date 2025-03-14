@@ -8,7 +8,9 @@ import (
 	usm64core "alon.kr/x/usm/usm64/core"
 )
 
-type TerminateInstruction struct{}
+type TerminateInstruction struct {
+	CriticalInstruction
+}
 
 func (i *TerminateInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleReturn: true}, core.ResultList{}

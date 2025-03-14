@@ -8,6 +8,7 @@ import (
 
 type JumpInstruction struct {
 	baseInstruction
+	CriticalInstruction
 }
 
 func (i *JumpInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
