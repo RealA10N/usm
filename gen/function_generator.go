@@ -226,6 +226,11 @@ func createBasicBlocksFromLabels(
 		if previousBlock != nil {
 			previousBlock.AppendBasicBlock(newBasicBlock)
 		}
+
+		if function.EntryBlock == nil {
+			function.EntryBlock = newBasicBlock
+		}
+
 		previousBlock = newBasicBlock
 	}
 
@@ -237,7 +242,7 @@ func (g *FunctionGenerator) generateBasicBlocks(
 	instructions []*InstructionInfo,
 	function *FunctionInfo,
 	labels functionLabelData,
-) (*BasicBlockInfo, core.ResultList) {
+) core.ResultList {
 	instructionCount := len(instructions)
 
 	forwardBranchingEdges, backwardBranchingEdges, results := g.getInstructionBranchingEdges(
@@ -246,7 +251,7 @@ func (g *FunctionGenerator) generateBasicBlocks(
 	)
 
 	if !results.IsEmpty() {
-		return nil, results
+		return results
 	}
 
 	entryBasicBlock, results := createBasicBlocksFromLabels(
@@ -257,7 +262,7 @@ func (g *FunctionGenerator) generateBasicBlocks(
 	)
 
 	if !results.IsEmpty() {
-		return nil, results
+		return results
 	}
 
 	entryBasicBlock.AppendInstruction(instructions[0])
@@ -279,7 +284,7 @@ func (g *FunctionGenerator) generateBasicBlocks(
 				instructionLabels,
 			)
 			if !results.IsEmpty() {
-				return nil, results
+				return results
 			}
 		}
 
@@ -293,13 +298,13 @@ func (g *FunctionGenerator) generateBasicBlocks(
 
 		steps, results := lastInstruction.Instruction.PossibleNextSteps()
 		if !results.IsEmpty() {
-			return nil, results
+			return results
 		}
 
 		if steps.PossibleContinue {
 			nextBasicBlock := currentBasicBlock.NextBlock
 			if nextBasicBlock == nil {
-				return nil, list.FromSingle(core.Result{
+				return list.FromSingle(core.Result{
 					{
 						Type:     core.ErrorResult,
 						Message:  "Unexpected instruction to end a function",
@@ -322,7 +327,7 @@ func (g *FunctionGenerator) generateBasicBlocks(
 		}
 	}
 
-	return entryBasicBlock, core.ResultList{}
+	return core.ResultList{}
 }
 
 func (g *FunctionGenerator) Generate(
@@ -370,7 +375,7 @@ func (g *FunctionGenerator) Generate(
 		}})
 	}
 
-	entryBlock, results := g.generateBasicBlocks(
+	results = g.generateBasicBlocks(
 		funcCtx,
 		instructions,
 		function,
@@ -381,6 +386,5 @@ func (g *FunctionGenerator) Generate(
 		return nil, results
 	}
 
-	function.EntryBlock = entryBlock
 	return function, core.ResultList{}
 }
