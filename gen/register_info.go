@@ -48,6 +48,12 @@ func (i *RegisterInfo) AddDefinition(info *InstructionInfo) {
 	i.Definitions = append(i.Definitions, info)
 }
 
+func (i *RegisterInfo) RemoveDefinition(info *InstructionInfo) {
+	if idx := slices.Index(i.Definitions, info); idx != -1 {
+		i.Definitions = slices.Delete(i.Definitions, idx, idx+1)
+	}
+}
+
 func (i *RegisterInfo) AddUsage(info *InstructionInfo) {
 	i.Usages = append(i.Usages, info)
 }

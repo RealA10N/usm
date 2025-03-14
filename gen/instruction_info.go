@@ -54,6 +54,15 @@ func (i *InstructionInfo) AppendTarget(targets ...*TargetInfo) {
 	i.Targets = append(i.Targets, targets...)
 }
 
+func (i *InstructionInfo) SwitchTarget(
+	target *TargetInfo,
+	newRegister *RegisterInfo,
+) {
+	target.Register.RemoveDefinition(i)
+	target.Register = newRegister
+	target.Register.AddDefinition(i)
+}
+
 func (i *InstructionInfo) AppendArgument(arguments ...ArgumentInfo) {
 	i.Arguments = append(i.Arguments, arguments...)
 }
