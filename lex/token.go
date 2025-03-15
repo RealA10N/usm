@@ -57,9 +57,9 @@ var tokenNames = map[TokenType]string{
 func (tkn TokenType) String() string {
 	name, ok := tokenNames[tkn]
 	if !ok {
-		name = "?"
+		return "?"
 	}
-	return fmt.Sprintf("<%s>", name)
+	return name
 }
 
 type Token struct {
@@ -68,14 +68,11 @@ type Token struct {
 }
 
 func (tkn Token) String(ctx core.SourceContext) string {
-	typeName, ok := tokenNames[tkn.Type]
-	if !ok {
-		typeName = "?"
-	}
+	typeName := tkn.Type.String()
 
 	if tkn.View.Len() > 0 {
 		return fmt.Sprintf(`<%s "%s">`, typeName, string(tkn.View.Raw(ctx)))
 	} else {
-		return fmt.Sprintf(typeName)
+		return fmt.Sprintf(`<%s>`, typeName)
 	}
 }
