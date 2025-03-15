@@ -14,38 +14,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// OptimizationTestCase represents a test case for an optimization.
-type OptimizationTestCase struct {
-	Name         string
-	InputPath    string
-	ExpectedPath string
-}
+const (
+	InputFuncName    = "@input"
+	ExpectedFuncName = "@expected"
+)
 
 // OptimizationTestFunc is a function that applies an optimization to a function.
 type OptimizationTestFunc func(*gen.FunctionInfo) core.ResultList
-
-// generateFunctionFromSource is a test utility function that parses and generates
-// a function from the given source code using the usm64 ISA.
-func generateFunctionFromSource(
-	t *testing.T,
-	source string,
-) (*gen.FunctionInfo, core.ResultList) {
-	t.Helper()
-
-	ctx := usm64managers.NewGenerationContext()
-	src := core.NewSourceView(source)
-	fileCtx := gen.CreateFileContext(ctx, src.Ctx())
-
-	tkns, err := lex.NewTokenizer().Tokenize(src)
-	assert.NoError(t, err)
-
-	tknView := parse.NewTokenView(tkns)
-	node, result := parse.NewFunctionParser().Parse(&tknView)
-	assert.Nil(t, result)
-
-	generator := gen.NewFunctionGenerator()
-	return generator.Generate(fileCtx, node)
-}
 
 // readSourceFile reads a source file and returns its contents.
 func readSourceFile(t *testing.T, path string) string {
@@ -57,91 +32,102 @@ func readSourceFile(t *testing.T, path string) string {
 	return string(content)
 }
 
-// findTestCases finds all test cases in the given directory.
+// findTestPaths finds all test cases in the given directory.
 // The directory structure is flat:
-// testdata/optimization_name/testname_input.usm
-// testdata/optimization_name/testname_expected.usm
-func findTestCases(t *testing.T, optimizationName string) []OptimizationTestCase {
+// testdata/optimization_name/testname.usm
+// Each test file should contain exactly two functions: @input and @expected
+func findTestPaths(t *testing.T, optimizationName string) []string {
 	t.Helper()
 
 	basePath := filepath.Join("testdata", optimizationName)
 	entries, err := os.ReadDir(basePath)
 	assert.NoError(t, err, "Failed to read directory: %s", basePath)
 
-	// Map to store test cases by name
-	testCaseMap := make(map[string]OptimizationTestCase)
+	var testPaths []string
 
-	// Find all input and expected files
+	// Find all test files
 	for _, entry := range entries {
 		if entry.IsDir() {
-			continue
+			t.Fatalf("Unexpected nested directory found: %s", entry.Name())
 		}
 
-		fileName := entry.Name()
-
-		// Parse the file name to get the test name and type (input or expected)
-		if strings.HasSuffix(fileName, "_input.usm") {
-			testName := strings.TrimSuffix(fileName, "_input.usm")
-			inputPath := filepath.Join(basePath, fileName)
-
-			// Create or update the test case
-			testCase, exists := testCaseMap[testName]
-			if !exists {
-				testCase = OptimizationTestCase{Name: testName}
-			}
-			testCase.InputPath = inputPath
-			testCaseMap[testName] = testCase
-		} else if strings.HasSuffix(fileName, "_expected.usm") {
-			testName := strings.TrimSuffix(fileName, "_expected.usm")
-			expectedPath := filepath.Join(basePath, fileName)
-
-			// Create or update the test case
-			testCase, exists := testCaseMap[testName]
-			if !exists {
-				testCase = OptimizationTestCase{Name: testName}
-			}
-			testCase.ExpectedPath = expectedPath
-			testCaseMap[testName] = testCase
-		}
+		testPath := filepath.Join(basePath, entry.Name())
+		testPaths = append(testPaths, testPath)
 	}
 
-	// Convert the map to a slice of test cases
-	var testCases []OptimizationTestCase
-	for _, testCase := range testCaseMap {
-		// Ensure each test case has both input and expected files
-		if testCase.InputPath == "" {
-			t.Errorf("Test case %q is missing input file", testCase.Name)
-		} else if testCase.ExpectedPath == "" {
-			t.Errorf("Test case %q is missing expected file", testCase.Name)
-		} else {
-			testCases = append(testCases, testCase)
-		}
-	}
+	return testPaths
+}
 
-	return testCases
+// generateFileInfo parses and generates a file internal representation from the
+// source code.
+func generateFileInfo(t *testing.T, source string) *gen.FileInfo {
+	t.Helper()
+
+	srcView := core.NewSourceView(source)
+
+	tkns, err := lex.NewTokenizer().Tokenize(srcView)
+	assert.NoError(t, err)
+
+	tknView := parse.NewTokenView(tkns)
+	fileNode, result := parse.NewFileParser().Parse(&tknView)
+	assert.Nil(t, result)
+
+	ctx := usm64managers.NewGenerationContext()
+	generator := gen.NewFileGenerator()
+	info, results := generator.Generate(ctx, srcView.Ctx(), fileNode)
+	assert.True(t, results.IsEmpty(), "Failed to generate file info")
+
+	return info
+}
+
+// extractTestFunctions extracts the @input and @expected functions from the
+// file info.
+func extractTestFunctions(
+	t *testing.T,
+	file *gen.FileInfo,
+) (*gen.FunctionInfo, *gen.FunctionInfo) {
+	t.Helper()
+	inputFunc := file.GetFunction(InputFuncName)
+	assert.NotNil(t, inputFunc, "Failed to extract @input function")
+
+	expectedFunc := file.GetFunction(ExpectedFuncName)
+	assert.NotNil(t, expectedFunc, "Failed to extract @expected function")
+
+	return inputFunc, expectedFunc
 }
 
 // RunOptimizationTests runs all test cases for the given optimization.
-func RunOptimizationTests(t *testing.T, optimizationName string, optimizationFunc OptimizationTestFunc) {
-	testCases := findTestCases(t, optimizationName)
-	assert.NotEmpty(t, testCases, "No test cases found for optimization: %s", optimizationName)
+func RunOptimizationTests(
+	t *testing.T,
+	optimizationName string,
+	optimizationFunc OptimizationTestFunc,
+) {
+	testPaths := findTestPaths(t, optimizationName)
+	assert.NotEmpty(t, testPaths, "No test cases found for optimization: %s", optimizationName)
 
-	for _, tc := range testCases {
-		t.Run(tc.Name, func(t *testing.T) {
-			// Read input and expected source
-			inputSource := readSourceFile(t, tc.InputPath)
-			expectedSource := readSourceFile(t, tc.ExpectedPath)
+	for _, testPath := range testPaths {
+		testName := filepath.Base(testPath)
+		testName = strings.TrimSuffix(testName, filepath.Ext(testName))
 
-			// Generate function from input source
-			function, results := generateFunctionFromSource(t, inputSource)
-			assert.True(t, results.IsEmpty(), "Failed to generate function from input source")
+		t.Run(testName, func(t *testing.T) {
+			source := readSourceFile(t, testPath)
 
-			// Apply optimization
-			results = optimizationFunc(function)
+			// Extract input and expected functions
+			file := generateFileInfo(t, source)
+			inputFunc, expectedFunc := extractTestFunctions(t, file)
+
+			// Apply optimization to the input function
+			results := optimizationFunc(inputFunc)
 			assert.True(t, results.IsEmpty(), "Optimization returned errors")
 
 			// Compare the optimized function with the expected function
-			assert.Equal(t, expectedSource, function.String())
+			inputFunc.Name = ExpectedFuncName
+			assert.Equal(
+				t,
+				expectedFunc.String(),
+				inputFunc.String(),
+				"Function bodies should match after optimization",
+			)
 		})
 	}
 }
