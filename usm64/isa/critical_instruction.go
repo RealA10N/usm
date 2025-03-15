@@ -8,3 +8,9 @@ type CriticalInstruction struct{}
 func (i *CriticalInstruction) IsCritical() bool {
 	return true
 }
+
+type NotCriticalInstruction struct{}
+
+func (i *NotCriticalInstruction) IsCritical() bool {
+	return false
+}

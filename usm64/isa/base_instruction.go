@@ -14,10 +14,6 @@ func newBaseInstruction(info *gen.InstructionInfo) baseInstruction {
 	return baseInstruction{info}
 }
 
-func (i *baseInstruction) IsCritical() bool {
-	return false
-}
-
 func (i *baseInstruction) Uses() []*gen.RegisterInfo {
 	arguments := i.InstructionInfo.Arguments
 	registers := []*gen.RegisterInfo{}

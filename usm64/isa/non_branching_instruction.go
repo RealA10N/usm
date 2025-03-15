@@ -7,6 +7,7 @@ import (
 
 type nonBranchingInstruction struct {
 	baseInstruction
+	NotCriticalInstruction
 }
 
 func newNonBranchingInstruction(info *gen.InstructionInfo) nonBranchingInstruction {
