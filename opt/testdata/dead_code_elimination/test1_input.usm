@@ -1,0 +1,7 @@
+func @main {
+.entry
+	$64 %a = $64 #0
+	$64 %b = $64 #1
+	PUT %a
+	TERM
+}
