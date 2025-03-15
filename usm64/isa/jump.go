@@ -24,7 +24,7 @@ func (i *JumpInstruction) Emulate(
 }
 
 func (i *JumpInstruction) String() string {
-	return "JMP"
+	return "J"
 }
 
 func NewJumpInstruction(
