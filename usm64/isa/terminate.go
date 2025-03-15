@@ -8,7 +8,10 @@ import (
 	usm64core "alon.kr/x/usm/usm64/core"
 )
 
-type TerminateInstruction struct{}
+type TerminateInstruction struct {
+	baseInstruction
+	CriticalInstruction
+}
 
 func (i *TerminateInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleReturn: true}, core.ResultList{}
@@ -29,7 +32,9 @@ func (i *TerminateInstruction) Emulate(
 func NewTerminateInstruction(
 	info *gen.InstructionInfo,
 ) (gen.BaseInstruction, core.ResultList) {
-	return gen.BaseInstruction(&TerminateInstruction{}), core.ResultList{}
+	return gen.BaseInstruction(&TerminateInstruction{
+		baseInstruction: newBaseInstruction(info),
+	}), core.ResultList{}
 }
 
 func NewTerminateInstructionDefinition() gen.InstructionDefinition {

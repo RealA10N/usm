@@ -11,3 +11,14 @@ func (i *FileInfo) String() string {
 	}
 	return s
 }
+
+// GetFunction returns the function with the given name, or nil if it does not
+// exist.
+func (i *FileInfo) GetFunction(name string) *FunctionInfo {
+	for _, function := range i.Functions {
+		if function.Name == name {
+			return function
+		}
+	}
+	return nil
+}
