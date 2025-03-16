@@ -16,11 +16,12 @@ func $64 @fib $64 %n {
 .loop
     %n = sub %n $64 #1
     jz %n .end
+    $64 %next = add %cur %prev
     %prev = %cur
-    %cur = add %cur %prev
+    %cur = %next
     j .loop
 .end
-    ret %c
+    ret %cur
 }
 ```
 
