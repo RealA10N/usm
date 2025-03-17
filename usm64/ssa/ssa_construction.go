@@ -5,7 +5,7 @@ import (
 
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
-	"alon.kr/x/usm/ssa"
+	"alon.kr/x/usm/opt/ssa"
 	usm64isa "alon.kr/x/usm/usm64/isa"
 )
 
