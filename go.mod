@@ -3,6 +3,7 @@ module alon.kr/x/usm
 go 1.23.0
 
 require (
+	alon.kr/x/graph v0.0.0-20250317193500-0d0ab28c52f2
 	alon.kr/x/list v0.0.0-20241203223347-3173d76828c0
 	alon.kr/x/set v0.0.0-20250105200711-55a9ad95f635
 	alon.kr/x/stack v0.0.0-20241231201659-c96903670d6f

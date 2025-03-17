@@ -1,10 +1,10 @@
 package ssa
 
 import (
+	"alon.kr/x/graph"
 	"alon.kr/x/set"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
-	"alon.kr/x/usm/graph"
 )
 
 type forwardingRegisterDescriptor struct {
