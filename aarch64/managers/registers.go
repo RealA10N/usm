@@ -7,7 +7,7 @@ import (
 	"alon.kr/x/usm/gen"
 )
 
-const numOfRegisters = registers.XZR + 1
+const numOfRegisters = registers.GPRegisterXZR + 1
 
 // Currently, only 64 bit registers are supported in aarch64.
 // There are 31 general purpose registers, named X0-X30, and one zero register,

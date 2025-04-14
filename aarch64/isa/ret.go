@@ -37,7 +37,7 @@ func (RetDefinition) BuildInstruction(
 		return nil, results
 	}
 
-	Xn := registers.X30
+	Xn := registers.GPRegisterX30
 	if len(info.Arguments) > 0 {
 		Xn, curResults = aarch64translation.ArgumentToAarch64GPRegister(info.Arguments[0])
 		results.Extend(&curResults)

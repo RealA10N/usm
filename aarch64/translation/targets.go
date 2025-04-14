@@ -31,3 +31,9 @@ func TargetToAarch64GPRegister(
 ) (registers.GPRegister, core.ResultList) {
 	return RegisterToAarch64GPRegister(target.Register)
 }
+
+func TargetToAarch64GPorSPRegister(
+	target *gen.TargetInfo,
+) (registers.GPorSPRegister, core.ResultList) {
+	return RegisterToAarch64GPOrSPRegister(target.Register)
+}

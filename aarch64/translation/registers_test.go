@@ -13,10 +13,10 @@ func TestValidNameToGPRegister(t *testing.T) {
 		name     string
 		register registers.GPRegister
 	}{
-		{"%X0", registers.X0},
-		{"%X1", registers.X1},
-		{"%X30", registers.X30},
-		{"%XZR", registers.XZR},
+		{"%X0", registers.GPRegisterX0},
+		{"%X1", registers.GPRegisterX1},
+		{"%X30", registers.GPRegisterX30},
+		{"%XZR", registers.GPRegisterXZR},
 	}
 
 	for _, pair := range validNames {

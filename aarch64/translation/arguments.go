@@ -103,6 +103,22 @@ func ArgumentToAarch64GPRegister(
 	return RegisterToAarch64GPRegister(register.Register)
 }
 
+func ArgumentToAarch64GPorSPRegister(
+	argument gen.ArgumentInfo,
+) (registers.GPorSPRegister, core.ResultList) {
+	register, ok := argument.(*gen.RegisterArgumentInfo)
+	if !ok {
+		return 0, list.FromSingle(core.Result{
+			{
+				Type:     core.ErrorResult,
+				Message:  "Expected register argument",
+				Location: argument.Declaration(),
+			},
+		})
+	}
+	return RegisterToAarch64GPOrSPRegister(register.Register)
+}
+
 func ArgumentToBigInt(
 	argument gen.ArgumentInfo,
 ) (*big.Int, core.ResultList) {
@@ -120,6 +136,50 @@ func ArgumentToBigInt(
 	return imm.Value, core.ResultList{}
 }
 
+func ArgumentToAarch64Immediate12(
+	argument gen.ArgumentInfo,
+) (immediates.Immediate12, core.ResultList) {
+	// TODO: remove code duplication with other immediate types.
+
+	results := AssertIntegerTypeOfSize(*argument.GetType(), big.NewInt(12))
+	if !results.IsEmpty() {
+		return 0, results
+	}
+
+	bigInt, results := ArgumentToBigInt(argument)
+	if !results.IsEmpty() {
+		return 0, results
+	}
+
+	return BigIntToAarch64Immediate12(argument.Declaration(), bigInt)
+}
+
+func BigIntToAarch64Immediate12(
+	view *core.UnmanagedSourceView,
+	bigInt *big.Int,
+) (value immediates.Immediate12, results core.ResultList) {
+	isInvalid := bigInt.Sign() < 0 || bigInt.BitLen() > 12
+	if isInvalid {
+		goto fail
+	}
+
+	value = immediates.Immediate12(bigInt.Uint64())
+	if value.Validate() != nil {
+		goto fail
+	}
+
+	return
+
+fail:
+	return 0, list.FromSingle(core.Result{
+		{
+			Type:     core.ErrorResult,
+			Message:  "Expected 12-bit unsigned integer",
+			Location: view,
+		},
+	})
+}
+
 func ArgumentToAarch64Immediate16(
 	argument gen.ArgumentInfo,
 ) (immediates.Immediate16, core.ResultList) {
@@ -133,9 +193,6 @@ func ArgumentToAarch64Immediate16(
 		return 0, results
 	}
 
-	// TODO: improve this. We are computing and passing the argument declaration
-	// only for better error reporting, which adds an unnecessary overhead in
-	// the happy flow.
 	return BigIntToAarch64Immediate16(argument.Declaration(), bigInt)
 }
 
