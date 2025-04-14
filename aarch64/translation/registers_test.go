@@ -16,6 +16,7 @@ func TestValidNameToGPRegister(t *testing.T) {
 		{"X0", registers.X0},
 		{"X1", registers.X1},
 		{"X30", registers.X30},
+		{"XZR", registers.XZR},
 	}
 
 	for _, pair := range validNames {
@@ -26,7 +27,7 @@ func TestValidNameToGPRegister(t *testing.T) {
 }
 
 func TestInvalidNameToGPRegister(t *testing.T) {
-	invalidNames := []string{"X31", "Y0", "", "0", "x0"}
+	invalidNames := []string{"X31", "Y0", "", "0", "x0", "X01"}
 	for _, name := range invalidNames {
 		_, ok := aarch64translation.RegisterNameToAarch64GPRegister(name)
 		assert.False(t, ok)

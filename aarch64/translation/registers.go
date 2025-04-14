@@ -1,26 +1,59 @@
 package aarch64translation
 
 import (
-	"strconv"
-
 	"alon.kr/x/aarch64codegen/registers"
+	"alon.kr/x/faststringmap"
 	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 )
 
+// A mapping of USM register names to Aarch64 general purpose registers.
+// This is used to convert USM register names to Aarch64 register.
+//
+// We use such mapping to avoid ambiguity in register names: this way, we
+// explicitly DON'T allow register names like "X01" (prefixed with zeros),
+// "x1" (lowercase 'x'), or "X31" (use "XZR" instead).
+var registerNameToAarch64GPRegister = faststringmap.NewMap(
+	[]faststringmap.MapEntry[registers.GPRegister]{
+		{Key: "X0", Value: registers.X0},
+		{Key: "X1", Value: registers.X1},
+		{Key: "X2", Value: registers.X2},
+		{Key: "X3", Value: registers.X3},
+		{Key: "X4", Value: registers.X4},
+		{Key: "X5", Value: registers.X5},
+		{Key: "X6", Value: registers.X6},
+		{Key: "X7", Value: registers.X7},
+		{Key: "X8", Value: registers.X8},
+		{Key: "X9", Value: registers.X9},
+		{Key: "X10", Value: registers.X10},
+		{Key: "X11", Value: registers.X11},
+		{Key: "X12", Value: registers.X12},
+		{Key: "X13", Value: registers.X13},
+		{Key: "X14", Value: registers.X14},
+		{Key: "X15", Value: registers.X15},
+		{Key: "X16", Value: registers.X16},
+		{Key: "X17", Value: registers.X17},
+		{Key: "X18", Value: registers.X18},
+		{Key: "X19", Value: registers.X19},
+		{Key: "X20", Value: registers.X20},
+		{Key: "X21", Value: registers.X21},
+		{Key: "X22", Value: registers.X22},
+		{Key: "X23", Value: registers.X23},
+		{Key: "X24", Value: registers.X24},
+		{Key: "X25", Value: registers.X25},
+		{Key: "X26", Value: registers.X26},
+		{Key: "X27", Value: registers.X27},
+		{Key: "X28", Value: registers.X28},
+		{Key: "X29", Value: registers.X29},
+		{Key: "X30", Value: registers.X30},
+		{Key: "XZR", Value: registers.XZR},
+	})
+
 func RegisterNameToAarch64GPRegister(
 	name string,
 ) (registers.GPRegister, bool) {
-	if len(name) < 2 {
-		return 0, false
-	}
-
-	numStr := name[1:]
-	num, err := strconv.ParseUint(numStr, 10, 64)
-	gpr := registers.GPRegister(num)
-	ok := name[0] == 'X' && err == nil && gpr.Validate() == nil
-	return gpr, ok
+	return registerNameToAarch64GPRegister.LookupString(name)
 }
 
 func RegisterToAarch64GPRegister(
