@@ -42,7 +42,7 @@ func AssertIntegerTypeOfSize(
 		return list.FromSingle(core.Result{
 			{
 				Type:     core.ErrorResult,
-				Message:  fmt.Sprintf("Expected integer type $%s", expectedSize.String()),
+				Message:  fmt.Sprintf("Expected integer type \"$%s\"", expectedSize.String()),
 				Location: typ.Declaration,
 			},
 		})
