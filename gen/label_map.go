@@ -20,7 +20,7 @@ func (m *LabelMap) GetLabel(name string) *LabelInfo {
 	return val
 }
 
-func (m *LabelMap) NewLabel(label *gen.LabelInfo) core.ResultList {
+func (m *LabelMap) NewLabel(label *LabelInfo) core.ResultList {
 	(*m)[label.Name] = label
 	return core.ResultList{}
 }
@@ -35,13 +35,13 @@ func generateRandomLabelName() (string, error) {
 	return ".L" + hex.EncodeToString(b), nil
 }
 
-func (m *LabelMap) GenerateLabel() *gen.LabelInfo {
+func (m *LabelMap) GenerateLabel() *LabelInfo {
 	name, err := generateRandomLabelName()
 	for err != nil || m.GetLabel(name) != nil {
 		name, err = generateRandomLabelName()
 	}
 
-	return &gen.LabelInfo{Name: name}
+	return &LabelInfo{Name: name}
 }
 
 func NewLabelMap() LabelManager {

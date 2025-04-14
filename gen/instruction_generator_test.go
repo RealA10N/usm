@@ -20,7 +20,7 @@ func (i *AddInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
 }
 
-func (i *AddInstruction) String() string {
+func (i *AddInstruction) Operator() string {
 	return "ADD"
 }
 
@@ -75,7 +75,7 @@ func (i *RetInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleReturn: true}, core.ResultList{}
 }
 
-func (i *RetInstruction) String() string {
+func (i *RetInstruction) Operator() string {
 	return "RET"
 }
 
@@ -109,7 +109,7 @@ func (i *JumpInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	}, core.ResultList{}
 }
 
-func (i *JumpInstruction) String() string {
+func (i *JumpInstruction) Operator() string {
 	return "JMP"
 }
 
@@ -144,7 +144,7 @@ func (i *JumpZeroInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList
 	}, core.ResultList{}
 }
 
-func (i *JumpZeroInstruction) String() string {
+func (i *JumpZeroInstruction) Operator() string {
 	return "JZ"
 }
 
