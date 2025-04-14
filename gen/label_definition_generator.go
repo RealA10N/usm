@@ -12,17 +12,17 @@ import (
 // and return an error if a label with the same name already exists.
 type LabelDefinitionGenerator struct{}
 
-func NewLabelDefinitionGenerator() LabelContextGenerator[
+func NewLabelDefinitionGenerator() FunctionContextGenerator[
 	parse.LabelNode,
 	*LabelInfo,
 ] {
-	return LabelContextGenerator[parse.LabelNode, *LabelInfo](
+	return FunctionContextGenerator[parse.LabelNode, *LabelInfo](
 		&LabelDefinitionGenerator{},
 	)
 }
 
 func (g *LabelDefinitionGenerator) Generate(
-	ctx *LabelGenerationContext,
+	ctx *FunctionGenerationContext,
 	node parse.LabelNode,
 ) (*LabelInfo, core.ResultList) {
 	name := nodeToSourceString(ctx.FileGenerationContext, node)
@@ -50,9 +50,9 @@ func (g *LabelDefinitionGenerator) Generate(
 		Declaration: declaration,
 	}
 
-	result := ctx.Labels.NewLabel(newLabelInfo)
-	if result != nil {
-		return nil, list.FromSingle(result)
+	results := ctx.Labels.NewLabel(newLabelInfo)
+	if !results.IsEmpty() {
+		return nil, results
 	}
 
 	return newLabelInfo, core.ResultList{}

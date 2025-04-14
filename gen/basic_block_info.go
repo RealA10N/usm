@@ -1,8 +1,11 @@
 package gen
 
+import "slices"
+
 type BasicBlockInfo struct {
 	*FunctionInfo
 
+	Label        *LabelInfo
 	Instructions []*InstructionInfo
 
 	ForwardEdges  []*BasicBlockInfo
@@ -12,33 +15,11 @@ type BasicBlockInfo struct {
 }
 
 func (i *BasicBlockInfo) String() string {
-	s := ""
+	s := i.Label.String() + "\n"
 	for _, instruction := range i.Instructions {
-		s += instruction.String() + "\n"
+		s += "\t" + instruction.String() + "\n"
 	}
 	return s
-}
-
-func (i *BasicBlockInfo) AppendLabel(label *LabelInfo) {
-	i.Instructions[0].AppendLabels(label)
-}
-
-// Get a single label instance that represents the basic block, if it exists.
-// If the basic block has multiple labels, the function will return one of
-// them arbitrary.
-// If the block does not have labels pointing to it, returns nil.
-func (i *BasicBlockInfo) GetRepresentingLabel() *LabelInfo {
-	firstInstruction := i.Instructions[0]
-	labels := firstInstruction.Labels
-
-	if len(labels) == 0 {
-		label := i.FunctionInfo.Labels.GenerateLabel(i)
-		i.FunctionInfo.Labels.NewLabel(label)
-		i.AppendLabel(label)
-		return label
-	}
-
-	return labels[0]
 }
 
 func NewEmptyBasicBlockInfo(function *FunctionInfo) *BasicBlockInfo {
@@ -47,19 +28,34 @@ func NewEmptyBasicBlockInfo(function *FunctionInfo) *BasicBlockInfo {
 	}
 }
 
+func (b *BasicBlockInfo) SetLabel(label *LabelInfo) {
+	b.Label = label
+	label.linkToBasicBlock(b)
+}
+
 func (b *BasicBlockInfo) AppendInstruction(instruction *InstructionInfo) {
+	instruction.BasicBlockInfo = b
 	b.Instructions = append(b.Instructions, instruction)
-	instruction.linkToBasicBlock(b)
 }
 
 func (b *BasicBlockInfo) PrependInstruction(instruction *InstructionInfo) {
-	if len(b.Instructions) > 0 {
-		b.Instructions[0].MoveLabels(instruction)
+	// TODO: convert instructions to a linked list.
+	instruction.BasicBlockInfo = b
+	b.Instructions = append([]*InstructionInfo{instruction}, b.Instructions...)
+}
+
+func (b *BasicBlockInfo) RemoveInstruction(
+	instruction *InstructionInfo,
+) (ok bool) {
+	instruction.BasicBlockInfo = nil
+
+	instructionIndex := slices.Index(b.Instructions, instruction)
+	if instructionIndex == -1 {
+		return false
 	}
 
-	// TODO: convert instructions to a linked list.
-	b.Instructions = append([]*InstructionInfo{instruction}, b.Instructions...)
-	instruction.linkToBasicBlock(b)
+	b.Instructions = slices.Delete(b.Instructions, instructionIndex, instructionIndex+1)
+	return true
 }
 
 func (b *BasicBlockInfo) AppendBasicBlock(otherBlock *BasicBlockInfo) {

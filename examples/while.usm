@@ -1,0 +1,9 @@
+func @main {
+    $64 %n = $64 #0
+.loop
+    $64 %n = add %n $64 #1
+    put %n
+    $64 %cond = add %n $64 #-10
+    jnz %cond .loop
+    term
+}

@@ -12,9 +12,6 @@ type InstructionInfo struct {
 	// The arguments of the instruction.
 	Arguments []ArgumentInfo
 
-	// The labels that point directly to this instruction.
-	Labels []*LabelInfo
-
 	// The actual instruction information, which is ISA specific.
 	Instruction BaseInstruction
 
@@ -31,16 +28,8 @@ func NewEmptyInstructionInfo(
 		BasicBlockInfo: nil,
 		Targets:        []*TargetInfo{},
 		Arguments:      []ArgumentInfo{},
-		Labels:         []*LabelInfo{},
 		Instruction:    nil,
 		Declaration:    declaration,
-	}
-}
-
-func (i *InstructionInfo) linkToBasicBlock(basicBlock *BasicBlockInfo) {
-	i.BasicBlockInfo = basicBlock
-	for _, label := range i.Labels {
-		label.linkToBasicBlock(basicBlock)
 	}
 }
 
@@ -54,20 +43,17 @@ func (i *InstructionInfo) AppendTarget(targets ...*TargetInfo) {
 	i.Targets = append(i.Targets, targets...)
 }
 
+func (i *InstructionInfo) SwitchTarget(
+	target *TargetInfo,
+	newRegister *RegisterInfo,
+) {
+	target.Register.RemoveDefinition(i)
+	target.Register = newRegister
+	target.Register.AddDefinition(i)
+}
+
 func (i *InstructionInfo) AppendArgument(arguments ...ArgumentInfo) {
 	i.Arguments = append(i.Arguments, arguments...)
-}
-
-func (i *InstructionInfo) AppendLabels(labels ...*LabelInfo) {
-	i.Labels = append(i.Labels, labels...)
-	for _, label := range labels {
-		label.linkToBasicBlock(i.BasicBlockInfo)
-	}
-}
-
-func (i *InstructionInfo) MoveLabels(targetInstruction *InstructionInfo) {
-	targetInstruction.AppendLabels(i.Labels...)
-	i.Labels = nil
 }
 
 // Updates the internal instruction instance to the provided one.
@@ -81,20 +67,20 @@ func (i *InstructionInfo) SetBaseInstruction(instruction BaseInstruction) {
 
 func (i *InstructionInfo) String() string {
 	s := ""
-	for _, label := range i.Labels {
-		s += label.String() + "\n"
-	}
-
-	s += "\t"
+	operator := i.Instruction.Operator()
 
 	if len(i.Targets) > 0 {
 		for _, target := range i.Targets {
 			s += target.String() + " "
 		}
-		s += "= "
+		s += "="
+
+		if len(operator) > 0 {
+			s += " "
+		}
 	}
 
-	s += i.Instruction.Operator()
+	s += operator
 
 	if len(i.Arguments) > 0 {
 		for _, argument := range i.Arguments {

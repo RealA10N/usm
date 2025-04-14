@@ -78,6 +78,13 @@ func (s *ReachingDefinitionsSet) GetReachingDefinition(
 	registerIndex := s.FunctionSsaInfo.RegistersToIndex[base]
 	stack := s.registerDefinitionStacks[registerIndex]
 	lastIndex := len(stack) - 1
+	if lastIndex < 0 {
+		// This theoretically should never happen, but in our implementation it
+		// does. This is because in the original paper it is assumed that all
+		// registers are implicitly defined at the entry of the function, but
+		// this is not the case in USM.
+		return nil
+	}
 	return stack[lastIndex]
 }
 
@@ -120,6 +127,8 @@ func (s *ReachingDefinitionsSet) popBlock() {
 }
 
 type PhiInstruction interface {
+	gen.BaseInstruction
+
 	AddForwardingRegister(
 		*gen.BasicBlockInfo,
 		*gen.RegisterInfo,

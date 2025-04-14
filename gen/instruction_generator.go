@@ -129,9 +129,6 @@ func (g *InstructionGenerator) Generate(
 	targets, curResults := g.generateTargets(&instCtx, node)
 	results.Extend(&curResults)
 
-	labels, curResults := g.generateLabels(&instCtx, node)
-	results.Extend(&curResults)
-
 	// Now it's time to check if we have any errors so far.
 	if !results.IsEmpty() {
 		return nil, results
@@ -139,7 +136,6 @@ func (g *InstructionGenerator) Generate(
 
 	instCtx.InstructionInfo.AppendTarget(targets...)
 	instCtx.InstructionInfo.AppendArgument(arguments...)
-	instCtx.InstructionInfo.AppendLabels(labels...)
 
 	instruction, results := instDef.BuildInstruction(instCtx.InstructionInfo)
 	if !results.IsEmpty() {

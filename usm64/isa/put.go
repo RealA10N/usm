@@ -10,6 +10,7 @@ import (
 
 type PutInstruction struct {
 	nonBranchingInstruction
+	CriticalInstruction
 }
 
 func (i *PutInstruction) Emulate(

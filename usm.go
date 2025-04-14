@@ -10,6 +10,7 @@ import (
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 	"alon.kr/x/usm/lex"
+	"alon.kr/x/usm/opt"
 	"alon.kr/x/usm/parse"
 	usm64core "alon.kr/x/usm/usm64/core"
 	"alon.kr/x/usm/usm64/managers"
@@ -152,6 +153,11 @@ func ssaCommand(cmd *cobra.Command, args []string) {
 
 	for _, function := range info.Functions {
 		results = usm64ssa.ConvertToSsaForm(function)
+		if !results.IsEmpty() {
+			printResultsAndExit(view, results)
+		}
+
+		results = opt.DeadCodeElimination(function)
 		if !results.IsEmpty() {
 			printResultsAndExit(view, results)
 		}

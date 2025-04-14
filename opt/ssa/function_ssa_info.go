@@ -1,16 +1,53 @@
 package ssa
 
 import (
+	"alon.kr/x/graph"
 	"alon.kr/x/set"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
-	"alon.kr/x/usm/graph"
 )
 
-type PhiInstructionDescriptor struct {
-	PhiInstruction
-	base *gen.RegisterInfo
+type forwardingRegisterDescriptor struct {
+	block   *gen.BasicBlockInfo
+	renamed *gen.RegisterInfo
 }
+
+type phiInstructionDescriptor struct {
+	// The new phi instruction.
+	instruction PhiInstruction
+
+	// The original base register that this phi instruction is a definition for.
+	base *gen.RegisterInfo
+
+	// Pairs of (block, renamed register) that this phi instruction receives.
+	// There should be one pair for each block that has a forward edge to the
+	// block in which this phi instruction is inserted.
+	forwards []forwardingRegisterDescriptor
+}
+
+func (p *phiInstructionDescriptor) AddForwardingRegister(
+	block *gen.BasicBlockInfo,
+	renamed *gen.RegisterInfo,
+) {
+	p.forwards = append(p.forwards, forwardingRegisterDescriptor{block, renamed})
+}
+
+// Move the forwarding registers to the phi instruction.
+//
+// We use this separation, and not directly modify the phi instruction, to not
+// add arguments to the phi instruction before it was processed itself, which
+// will result in some weird behavior.
+func (p *phiInstructionDescriptor) CommitForwardingRegisters() core.ResultList {
+	results := core.ResultList{}
+	for _, forward := range p.forwards {
+		curResults := p.instruction.AddForwardingRegister(forward.block, forward.renamed)
+		results.Extend(&curResults)
+	}
+
+	p.forwards = nil
+	return results
+}
+
 type FunctionSsaInfo struct {
 	*gen.FunctionInfo
 
@@ -28,7 +65,7 @@ type FunctionSsaInfo struct {
 	//
 	// Initially, this slice is empty for each block, and each new phi instruction
 	// which we create is inserted to to corresponding block's slice.
-	PhiInstructionsPerBlock [][]PhiInstructionDescriptor
+	PhiInstructionsPerBlock [][]phiInstructionDescriptor
 
 	BaseRegisters []*gen.RegisterInfo
 
@@ -57,7 +94,7 @@ func NewFunctionSsaInfo(
 		SsaConstructionScheme:   ssaConstructionScheme,
 		BasicBlocks:             basicBlocks,
 		BasicBlocksToIndex:      basicBlockToIndex,
-		PhiInstructionsPerBlock: make([][]PhiInstructionDescriptor, len(basicBlocks)),
+		PhiInstructionsPerBlock: make([][]phiInstructionDescriptor, len(basicBlocks)),
 		BaseRegisters:           baseRegisters,
 		RegistersToIndex:        registersToIndex,
 		ControlFlowGraph:        &graph,
@@ -147,9 +184,9 @@ func (i *FunctionSsaInfo) InsertPhiInstructions() core.ResultList {
 			if !results.IsEmpty() {
 				return results
 			}
-			descriptor := PhiInstructionDescriptor{
-				PhiInstruction: phi,
-				base:           register,
+			descriptor := phiInstructionDescriptor{
+				instruction: phi,
+				base:        register,
 			}
 			i.PhiInstructionsPerBlock[blockIndex] = append(
 				i.PhiInstructionsPerBlock[blockIndex],
@@ -169,6 +206,19 @@ func (i *FunctionSsaInfo) deleteBaseRegisters() core.ResultList {
 	return results
 }
 
+func (i *FunctionSsaInfo) commitPhiInstructions() core.ResultList {
+	results := core.ResultList{}
+
+	for _, perBasicBlockPhiInstructions := range i.PhiInstructionsPerBlock {
+		for _, phiDescriptor := range perBasicBlockPhiInstructions {
+			curResults := phiDescriptor.CommitForwardingRegisters()
+			results.Extend(&curResults)
+		}
+	}
+
+	return results
+}
+
 func (i *FunctionSsaInfo) RenameRegisters() core.ResultList {
 	reachingSet := NewReachingDefinitionsSet(i)
 	n := uint(len(i.BasicBlocks))
@@ -178,21 +228,44 @@ func (i *FunctionSsaInfo) RenameRegisters() core.ResultList {
 		if isPop {
 			reachingSet.popBlock()
 		} else {
+			// We have currently entered a new basic block in the dominator tree
+			// traversal.
 			reachingSet.pushBlock()
+
 			basicBlockIndex := event
 			basicBlock := i.BasicBlocks[basicBlockIndex]
+
+			// Now, we let the specific implementation to handle the renaming
+			// of the basic block registers (arguments and targets). We pass
+			// the reaching definition set that we have built so far, and
+			// the implementation should use it to query what is the live
+			// definition of each register in the current basic block.
 			results := i.SsaConstructionScheme.RenameBasicBlock(basicBlock, reachingSet)
 			if !results.IsEmpty() {
 				return results
 			}
 
-			basicBlockDominatorTreeNode := i.DominatorJoinGraph.DominatorTree.Nodes[basicBlockIndex]
-			for _, childIndex := range basicBlockDominatorTreeNode.ForwardEdges {
-				for _, phiDescriptor := range i.PhiInstructionsPerBlock[childIndex] {
+			// Now that the basic block has been renamed, we update all phi
+			// instructions in blocks that can be reached from the current block,
+			// to forward them with the definition of the register if coming=
+			// from the current block.
+			forwardEdgeIndices := i.ControlFlowGraph.Nodes[basicBlockIndex].ForwardEdges
+			for _, childIndex := range forwardEdgeIndices {
+				for idx := range i.PhiInstructionsPerBlock[childIndex] {
+					phiDescriptor := &i.PhiInstructionsPerBlock[childIndex][idx]
 					renamed := reachingSet.GetReachingDefinition(phiDescriptor.base)
-					results := phiDescriptor.AddForwardingRegister(basicBlock, renamed)
-					if !results.IsEmpty() {
-						return results
+
+					// If renamed == nil, it means that definition of the register
+					// is undefined if reached from the current basic block.
+					// Since we assume that the original representation is well
+					// formed (no usage of undefined registers), we assume that
+					// this means we can't reach the current basic block from
+					// this child. (since otherwise on this path this register
+					// value is undefined). So we just do not add the forwarding
+					// register to the phi instruction.
+
+					if renamed != nil {
+						phiDescriptor.AddForwardingRegister(basicBlock, renamed)
 					}
 				}
 			}
@@ -200,6 +273,11 @@ func (i *FunctionSsaInfo) RenameRegisters() core.ResultList {
 	}
 
 	results := i.deleteBaseRegisters()
+	if !results.IsEmpty() {
+		return results
+	}
+
+	results = i.commitPhiInstructions()
 	if !results.IsEmpty() {
 		return results
 	}

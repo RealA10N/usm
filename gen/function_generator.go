@@ -14,7 +14,7 @@ type FunctionGenerator struct {
 	FunctionGenerationScheme
 	InstructionGenerator     FunctionContextGenerator[parse.InstructionNode, *InstructionInfo]
 	ParameterGenerator       FunctionContextGenerator[parse.ParameterNode, *RegisterInfo]
-	LabelDefinitionGenerator LabelContextGenerator[parse.LabelNode, *LabelInfo]
+	LabelDefinitionGenerator FunctionContextGenerator[parse.LabelNode, *LabelInfo]
 	ReferencedTypeGenerator  FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 	TargetGenerator          FunctionContextGenerator[parse.TargetNode, *TargetInfo]
 }
@@ -71,29 +71,40 @@ func (g *FunctionGenerator) generateTargets(
 	return types, results
 }
 
+// A helper struct to store information about labels in a function.
+//
+// This is used to store the mapping from instruction index to labels, and
+// from label to instruction index, which are used when generating the basic
+// blocks of the function.
+type functionLabelData struct {
+	InstructionIndexToLabels map[int][]*LabelInfo
+	LabelToInstructionIndex  map[*LabelInfo]int
+}
+
 func (g *FunctionGenerator) collectLabelDefinitions(
 	ctx *FunctionGenerationContext,
 	instructions []parse.InstructionNode,
-) (map[*LabelInfo]uint, core.ResultList) {
+) (functionLabelData, core.ResultList) {
 	results := core.ResultList{}
-	labelToInstructionIndex := make(map[*LabelInfo]uint)
-
-	labelCtx := LabelGenerationContext{
-		FunctionGenerationContext: ctx,
-		CurrentInstructionIndex:   0,
-	}
+	indexToLabels := make(map[int][]*LabelInfo)
+	labelToIndex := make(map[*LabelInfo]int)
 
 	for i, instruction := range instructions {
 		for _, label := range instruction.Labels {
-			info, curResults := g.LabelDefinitionGenerator.Generate(&labelCtx, label)
-			labelToInstructionIndex[info] = uint(i)
+			info, curResults := g.LabelDefinitionGenerator.Generate(ctx, label)
 			results.Extend(&curResults)
-		}
 
-		labelCtx.CurrentInstructionIndex++
+			if curResults.IsEmpty() {
+				labelToIndex[info] = i
+				indexToLabels[i] = append(indexToLabels[i], info)
+			}
+		}
 	}
 
-	return labelToInstructionIndex, results
+	return functionLabelData{
+		InstructionIndexToLabels: indexToLabels,
+		LabelToInstructionIndex:  labelToIndex,
+	}, results
 }
 
 // Before actually generating the instructions, we iterate over instruction and
@@ -141,16 +152,16 @@ func (g *FunctionGenerator) generateInstructions(
 
 func (g *FunctionGenerator) getInstructionBranchingDestinations(
 	info *InstructionInfo,
-	labelToInstructionIndex map[*LabelInfo]uint,
-) ([]uint, core.ResultList) {
+	labels functionLabelData,
+) ([]int, core.ResultList) {
 	steps, results := info.Instruction.PossibleNextSteps()
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
-	destinationIndices := []uint{}
+	destinationIndices := []int{}
 	for _, label := range steps.PossibleBranches {
-		destinationIndex := labelToInstructionIndex[label]
+		destinationIndex := labels.LabelToInstructionIndex[label]
 		destinationIndices = append(destinationIndices, destinationIndex)
 	}
 
@@ -159,16 +170,16 @@ func (g *FunctionGenerator) getInstructionBranchingDestinations(
 
 func (g *FunctionGenerator) getInstructionBranchingEdges(
 	instructions []*InstructionInfo,
-	labelToInstructionIndex map[*LabelInfo]uint,
+	labels functionLabelData,
 ) ([]bool, []bool, core.ResultList) {
-	instructionCount := uint(len(instructions))
-
+	instructionCount := len(instructions)
 	forwardEdges := make([]bool, instructionCount)
 	backwardEdges := make([]bool, instructionCount)
-	for i := uint(0); i < instructionCount; i++ {
+
+	for i := 0; i < instructionCount; i++ {
 		destinationIndices, results := g.getInstructionBranchingDestinations(
 			instructions[i],
-			labelToInstructionIndex,
+			labels,
 		)
 
 		if !results.IsEmpty() {
@@ -184,36 +195,97 @@ func (g *FunctionGenerator) getInstructionBranchingEdges(
 	return forwardEdges, backwardEdges, core.ResultList{}
 }
 
+// Creates new basic blocks from an instruction, and returns the *last* basic
+// block in the created chain.
+//
+// If more than one basic block is created, all except the last one should not
+// contain any instructions. Notice that this function only creates the basic
+// blocks, but does not propagate them with instructions (even not with the
+// provided instruction).
+func createBasicBlocksFromLabels(
+	ctx *FunctionGenerationContext,
+	function *FunctionInfo,
+	previousBlock *BasicBlockInfo,
+	labels []*LabelInfo,
+) (*BasicBlockInfo, core.ResultList) {
+
+	if len(labels) == 0 {
+		// Generate a label for the new basic block.
+		label := ctx.Labels.GenerateLabel()
+		results := ctx.Labels.NewLabel(label)
+		if !results.IsEmpty() {
+			return nil, results
+		}
+		labels = append(labels, label)
+	}
+
+	for _, label := range labels {
+		newBasicBlock := NewEmptyBasicBlockInfo(function)
+		newBasicBlock.SetLabel(label)
+
+		if previousBlock != nil {
+			previousBlock.AppendBasicBlock(newBasicBlock)
+		}
+
+		if function.EntryBlock == nil {
+			function.EntryBlock = newBasicBlock
+		}
+
+		previousBlock = newBasicBlock
+	}
+
+	return previousBlock, core.ResultList{}
+}
+
 func (g *FunctionGenerator) generateBasicBlocks(
+	ctx *FunctionGenerationContext,
 	instructions []*InstructionInfo,
 	function *FunctionInfo,
-	labelToInstructionIndex map[*LabelInfo]uint,
-) (*BasicBlockInfo, core.ResultList) {
-	instructionCount := uint(len(instructions))
+	labels functionLabelData,
+) core.ResultList {
+	instructionCount := len(instructions)
 
 	forwardBranchingEdges, backwardBranchingEdges, results := g.getInstructionBranchingEdges(
 		instructions,
-		labelToInstructionIndex,
+		labels,
 	)
 
 	if !results.IsEmpty() {
-		return nil, results
+		return results
 	}
 
-	entryBasicBlock := NewEmptyBasicBlockInfo(function)
-	currentBasicBlock := entryBasicBlock
-	currentBasicBlock.AppendInstruction(instructions[0])
+	entryBasicBlock, results := createBasicBlocksFromLabels(
+		ctx,
+		function,
+		nil,
+		labels.InstructionIndexToLabels[0],
+	)
 
-	for i := uint(1); i < instructionCount; i++ {
+	if !results.IsEmpty() {
+		return results
+	}
+
+	entryBasicBlock.AppendInstruction(instructions[0])
+
+	currentBasicBlock := entryBasicBlock
+	for i := 1; i < instructionCount; i++ {
 		currentInstruction := instructions[i]
 		previousInstructionBranches := forwardBranchingEdges[i-1]
 		branchingToCurrentInstruction := backwardBranchingEdges[i]
-		shouldStartNewBlock := previousInstructionBranches || branchingToCurrentInstruction
+		instructionLabels := labels.InstructionIndexToLabels[i]
+		hasLabels := len(instructionLabels) > 0
+		shouldStartNewBlock := previousInstructionBranches || branchingToCurrentInstruction || hasLabels
 
 		if shouldStartNewBlock {
-			newBasicBlock := NewEmptyBasicBlockInfo(function)
-			currentBasicBlock.AppendBasicBlock(newBasicBlock)
-			currentBasicBlock = newBasicBlock
+			currentBasicBlock, results = createBasicBlocksFromLabels(
+				ctx,
+				function,
+				currentBasicBlock,
+				instructionLabels,
+			)
+			if !results.IsEmpty() {
+				return results
+			}
 		}
 
 		currentBasicBlock.AppendInstruction(currentInstruction)
@@ -226,13 +298,13 @@ func (g *FunctionGenerator) generateBasicBlocks(
 
 		steps, results := lastInstruction.Instruction.PossibleNextSteps()
 		if !results.IsEmpty() {
-			return nil, results
+			return results
 		}
 
 		if steps.PossibleContinue {
 			nextBasicBlock := currentBasicBlock.NextBlock
 			if nextBasicBlock == nil {
-				return nil, list.FromSingle(core.Result{
+				return list.FromSingle(core.Result{
 					{
 						Type:     core.ErrorResult,
 						Message:  "Unexpected instruction to end a function",
@@ -248,14 +320,14 @@ func (g *FunctionGenerator) generateBasicBlocks(
 		}
 
 		for _, label := range steps.PossibleBranches {
-			branchToInstructionIndex := labelToInstructionIndex[label]
+			branchToInstructionIndex := labels.LabelToInstructionIndex[label]
 			branchToInstruction := instructions[branchToInstructionIndex]
 			branchToBlock := branchToInstruction.BasicBlockInfo
 			currentBasicBlock.AppendForwardEdge(branchToBlock)
 		}
 	}
 
-	return entryBasicBlock, core.ResultList{}
+	return core.ResultList{}
 }
 
 func (g *FunctionGenerator) Generate(
@@ -271,7 +343,7 @@ func (g *FunctionGenerator) Generate(
 	targets, targetResults := g.generateTargets(funcCtx, node.Signature.Returns)
 	results.Extend(&targetResults)
 
-	labelToInstructionIndex, labelResults := g.collectLabelDefinitions(funcCtx, node.Instructions.Nodes)
+	labels, labelResults := g.collectLabelDefinitions(funcCtx, node.Instructions.Nodes)
 	results.Extend(&labelResults)
 
 	if !results.IsEmpty() {
@@ -303,16 +375,16 @@ func (g *FunctionGenerator) Generate(
 		}})
 	}
 
-	entryBlock, results := g.generateBasicBlocks(
+	results = g.generateBasicBlocks(
+		funcCtx,
 		instructions,
 		function,
-		labelToInstructionIndex,
+		labels,
 	)
 
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
-	function.EntryBlock = entryBlock
 	return function, core.ResultList{}
 }

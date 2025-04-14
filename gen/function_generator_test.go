@@ -40,6 +40,7 @@ func generateFunctionFromSource(
 
 func TestSimpleFunctionGeneration(t *testing.T) {
 	src := `func $32 @add $32 %a {
+.entry
 	$32 %b = ADD %a $32 #1
 	$32 %c = ADD %b %a
 	RET
@@ -91,6 +92,7 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 
 func TestIfElseFunctionGeneration(t *testing.T) {
 	src := `func @toBool $32 %n {
+.entry
 	JZ %n .zero
 .nonzero
 	$32 %bool = ADD $32 #1 $32 #0

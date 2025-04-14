@@ -1,6 +1,10 @@
 package gen
 
-import "alon.kr/x/usm/core"
+import (
+	"slices"
+
+	"alon.kr/x/usm/core"
+)
 
 type RegisterInfo struct {
 	// The name of the register, as it appears in the source code.
@@ -46,6 +50,12 @@ func (i *RegisterInfo) String() string {
 
 func (i *RegisterInfo) AddDefinition(info *InstructionInfo) {
 	i.Definitions = append(i.Definitions, info)
+}
+
+func (i *RegisterInfo) RemoveDefinition(info *InstructionInfo) {
+	if idx := slices.Index(i.Definitions, info); idx != -1 {
+		i.Definitions = slices.Delete(i.Definitions, idx, idx+1)
+	}
 }
 
 func (i *RegisterInfo) AddUsage(info *InstructionInfo) {

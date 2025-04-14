@@ -17,7 +17,7 @@ func NewFileGenerator() FileGenerator {
 	}
 }
 
-func (g *FileGenerator) createFileContext(
+func CreateFileContext(
 	ctx *GenerationContext,
 	source core.SourceContext,
 ) *FileGenerationContext {
@@ -60,7 +60,7 @@ func (g *FileGenerator) Generate(
 	node parse.FileNode,
 ) (*FileInfo, core.ResultList) {
 	var results core.ResultList
-	fileCtx := g.createFileContext(ctx, source)
+	fileCtx := CreateFileContext(ctx, source)
 
 	_, typeResults := g.generateTypesFromDeclarations(fileCtx, node.Types)
 	results.Extend(&typeResults)

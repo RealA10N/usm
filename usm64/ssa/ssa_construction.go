@@ -5,7 +5,7 @@ import (
 
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
-	"alon.kr/x/usm/ssa"
+	"alon.kr/x/usm/opt/ssa"
 	usm64isa "alon.kr/x/usm/usm64/isa"
 )
 
@@ -57,12 +57,13 @@ func (s *ConstructionScheme) renameArgument(
 }
 
 func (s *ConstructionScheme) renameTarget(
+	instruction *gen.InstructionInfo,
 	target *gen.TargetInfo,
 	reachingSet ssa.ReachingDefinitionsSet,
 ) core.ResultList {
 	baseRegister := target.Register
 	renamedRegister := reachingSet.RenameDefinitionRegister(baseRegister)
-	target.SwitchRegister(renamedRegister)
+	instruction.SwitchTarget(target, renamedRegister)
 	return core.ResultList{}
 }
 
@@ -80,7 +81,7 @@ func (s *ConstructionScheme) renameInstruction(
 
 	// Then, we define the new registers (targets).
 	for _, target := range instruction.Targets {
-		results := s.renameTarget(target, reachingSet)
+		results := s.renameTarget(instruction, target, reachingSet)
 		if !results.IsEmpty() {
 			return results
 		}

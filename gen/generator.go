@@ -73,17 +73,6 @@ type InstructionGenerationContext struct {
 	InstructionInfo *InstructionInfo
 }
 
-type LabelGenerationContext struct {
-	*FunctionGenerationContext
-
-	// The index of the instruction which is currently being iterated upon.
-	//
-	// Used in the pass before we generate the instruction instances, to
-	// go over the labels in a function and give each label a corresponding
-	// instruction index.
-	CurrentInstructionIndex core.UsmUint
-}
-
 // MARK: Generator
 
 type Generator[NodeT parse.Node, InfoT any] interface {
@@ -110,13 +99,6 @@ type FunctionContextGenerator[NodeT parse.Node, InfoT any] interface {
 type InstructionContextGenerator[NodeT parse.Node, InfoT any] interface {
 	Generate(
 		ctx *InstructionGenerationContext,
-		node NodeT,
-	) (info InfoT, results core.ResultList)
-}
-
-type LabelContextGenerator[NodeT parse.Node, InfoT any] interface {
-	Generate(
-		ctx *LabelGenerationContext,
 		node NodeT,
 	) (info InfoT, results core.ResultList)
 }

@@ -1,0 +1,17 @@
+func @input {
+.entry
+	$64 %a = $64 #0
+	$64 %b = ADD %a $64 #1
+	$64 %c = ADD %b $64 #1
+	PUT %c
+	TERM
+}
+
+func @expected {
+.entry
+	$64 %a = $64 #0
+	$64 %b = ADD %a $64 #1
+	$64 %c = ADD %b $64 #1
+	PUT %c
+	TERM
+}

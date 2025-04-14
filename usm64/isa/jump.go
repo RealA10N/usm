@@ -8,6 +8,7 @@ import (
 
 type JumpInstruction struct {
 	baseInstruction
+	CriticalInstruction
 }
 
 func (i *JumpInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
@@ -23,7 +24,7 @@ func (i *JumpInstruction) Emulate(
 }
 
 func (i *JumpInstruction) Operator() string {
-	return "JMP"
+	return "J"
 }
 
 func NewJumpInstruction(
