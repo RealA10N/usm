@@ -8,28 +8,24 @@ import (
 	"alon.kr/x/usm/gen"
 )
 
+type BaseAdd struct{}
+
+func (BaseAdd) Operator() string {
+	return "ADD"
+}
+
+func (BaseAdd) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
+	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
+}
+
 type Add struct {
+	BaseAdd
 	instructions.Add
 }
 
-func (Add) String() string {
-	return "ADD"
-}
-
-func (Add) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
-	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
-}
-
 type AddImm struct {
+	BaseAdd
 	instructions.AddImm
-}
-
-func (AddImm) String() string {
-	return "ADD"
-}
-
-func (AddImm) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
-	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
 }
 
 type AddDefinition struct{}
@@ -53,7 +49,7 @@ func (AddDefinition) buildRegisterVariant(
 		return nil, results
 	}
 
-	return Add{instructions.ADD(Xd, Xn, Xm)}, core.ResultList{}
+	return Add{Add: instructions.ADD(Xd, Xn, Xm)}, core.ResultList{}
 }
 
 func (AddDefinition) buildImmediateVariant(
@@ -76,7 +72,7 @@ func (AddDefinition) buildImmediateVariant(
 		return nil, results
 	}
 
-	return AddImm{instructions.ADDI(Xd, Xn, imm)}, core.ResultList{}
+	return AddImm{AddImm: instructions.ADDI(Xd, Xn, imm)}, core.ResultList{}
 }
 
 func (d AddDefinition) BuildInstruction(

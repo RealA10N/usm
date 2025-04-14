@@ -12,7 +12,7 @@ type Ret struct {
 	instructions.Ret
 }
 
-func (Ret) String() string {
+func (Ret) Operator() string {
 	return "RET"
 }
 

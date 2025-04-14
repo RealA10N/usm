@@ -11,7 +11,7 @@ type Movz struct {
 	instructions.Movz
 }
 
-func (Movz) String() string {
+func (Movz) Operator() string {
 	return "MOVZ"
 }
 

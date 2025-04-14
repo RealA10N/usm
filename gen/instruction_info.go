@@ -94,7 +94,7 @@ func (i *InstructionInfo) String() string {
 		s += "= "
 	}
 
-	s += i.Instruction.String()
+	s += i.Instruction.Operator()
 
 	if len(i.Arguments) > 0 {
 		for _, argument := range i.Arguments {

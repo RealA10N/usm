@@ -35,7 +35,7 @@ func (i *JumpZeroInstruction) Emulate(
 	}
 }
 
-func (i *JumpZeroInstruction) String() string {
+func (i *JumpZeroInstruction) Operator() string {
 	return "JZ"
 }
 

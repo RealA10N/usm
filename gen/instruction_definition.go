@@ -15,7 +15,7 @@ type BaseInstruction interface {
 
 	// Returns the string that represents the operator of the instruction.
 	// For example, for the add instruction this method would return "ADD".
-	String() string
+	Operator() string
 }
 
 // A basic instruction definition. This defines the logic that converts the

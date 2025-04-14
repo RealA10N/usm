@@ -23,7 +23,7 @@ func NewPhiInstruction(
 	return &PhiInstruction{newNonBranchingInstruction(info)}, core.ResultList{}
 }
 
-func (i *PhiInstruction) String() string {
+func (i *PhiInstruction) Operator() string {
 	return "PHI"
 }
 
