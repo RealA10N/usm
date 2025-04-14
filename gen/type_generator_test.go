@@ -44,7 +44,7 @@ func TestTypeAliasDeclaration(t *testing.T) {
 	assert.True(t, results.IsEmpty())
 	assert.NotNil(t, typeInfo)
 	assert.Equal(t, "$myType", string(typeInfo.Name))
-	assert.EqualValues(t, 4, typeInfo.Size)
+	assert.Zero(t, typeInfo.Size.Cmp(big.NewInt(32)))
 }
 
 func TestPointerTypeDeclaration(t *testing.T) {
@@ -130,7 +130,7 @@ func TestRepeatTypeDeclaration(t *testing.T) {
 	assert.True(t, results.IsEmpty())
 	assert.NotNil(t, typeInfo)
 	assert.Equal(t, "$myType", typeInfo.Name)
-	assert.EqualValues(t, 9, typeInfo.Size)
+	assert.Zero(t, typeInfo.Size.Cmp(big.NewInt(8*9)))
 }
 
 func TestAlreadyDefinedTypeDeclaration(t *testing.T) {

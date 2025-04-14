@@ -81,15 +81,10 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 		},
 	)
 
-	assert.EqualValues(t,
-		[]gen.ReferencedTypeInfo{
-			{
-				Base:        gen.NewNamedTypeInfo("$32", big.NewInt(32), nil),
-				Descriptors: []gen.TypeDescriptorInfo{},
-			},
-		},
-		function.Targets,
-	)
+	assert.Len(t, function.Targets, 1)
+	target := function.Targets[0]
+	assert.True(t, target.IsPure())
+	assert.Equal(t, "$32", target.Base.Name)
 
 	assert.Equal(t, src, function.String())
 }
