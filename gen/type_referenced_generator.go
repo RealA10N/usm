@@ -46,9 +46,11 @@ func (g *ReferencedTypeGenerator) Generate(
 		descriptors = append(descriptors, descriptorInfo)
 	}
 
+	v := node.View()
 	typeInfo := ReferencedTypeInfo{
 		Base:        baseType,
 		Descriptors: descriptors,
+		Declaration: &v,
 	}
 
 	return typeInfo, core.ResultList{}

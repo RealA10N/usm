@@ -1,6 +1,7 @@
 package gen_test
 
 import (
+	"math/big"
 	"testing"
 
 	"alon.kr/x/list"
@@ -196,7 +197,7 @@ func PrepareTestForInstructionGeneration(
 	node, result := parse.NewInstructionParser().Parse(&tknView)
 	assert.Nil(t, result)
 
-	intType := &gen.NamedTypeInfo{Name: "$32", Size: 4}
+	intType := gen.NewNamedTypeInfo("$32", big.NewInt(32), nil)
 	types := TypeMap{intType.Name: intType}
 
 	intTypeRef := gen.ReferencedTypeInfo{

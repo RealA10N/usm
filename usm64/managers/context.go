@@ -1,6 +1,8 @@
 package managers
 
 import (
+	"math/big"
+
 	"alon.kr/x/usm/gen"
 )
 
@@ -16,6 +18,6 @@ func NewGenerationContext() *gen.GenerationContext {
 	return &gen.GenerationContext{
 		ManagerCreators: NewManagerCreators(),
 		Instructions:    NewInstructionManager(),
-		PointerSize:     8,
+		PointerSize:     big.NewInt(64),
 	}
 }

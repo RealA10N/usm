@@ -123,6 +123,11 @@ func ArgumentToBigInt(
 func ArgumentToAarch64Immediate16(
 	argument gen.ArgumentInfo,
 ) (immediates.Immediate16, core.ResultList) {
+	results := AssertIntegerTypeOfSize(*argument.GetType(), big.NewInt(16))
+	if !results.IsEmpty() {
+		return 0, results
+	}
+
 	bigInt, results := ArgumentToBigInt(argument)
 	if !results.IsEmpty() {
 		return 0, results

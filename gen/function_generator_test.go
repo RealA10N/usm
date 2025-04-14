@@ -1,6 +1,7 @@
 package gen_test
 
 import (
+	"math/big"
 	"testing"
 
 	"alon.kr/x/usm/core"
@@ -25,7 +26,7 @@ func generateFunctionFromSource(
 	node, result := parse.NewFunctionParser().Parse(&tknView)
 	assert.Nil(t, result)
 
-	intType := &gen.NamedTypeInfo{Name: "$32", Size: 4}
+	intType := gen.NewNamedTypeInfo("$32", big.NewInt(32), nil)
 
 	ctx := &gen.FileGenerationContext{
 		GenerationContext: &testGenerationContext,
@@ -83,7 +84,7 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 	assert.EqualValues(t,
 		[]gen.ReferencedTypeInfo{
 			{
-				Base:        &gen.NamedTypeInfo{Name: "$32", Size: 4},
+				Base:        gen.NewNamedTypeInfo("$32", big.NewInt(32), nil),
 				Descriptors: []gen.TypeDescriptorInfo{},
 			},
 		},

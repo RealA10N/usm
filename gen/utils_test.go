@@ -2,6 +2,7 @@ package gen_test
 
 import (
 	"fmt"
+	"math/big"
 
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
@@ -24,12 +25,8 @@ func (m *TypeMap) NewType(typ *gen.NamedTypeInfo) core.Result {
 	return nil
 }
 
-func (m *TypeMap) newBuiltinType(name string, size core.UsmUint) core.Result {
-	info := &gen.NamedTypeInfo{
-		Name:        name,
-		Size:        size,
-		Declaration: &core.UnmanagedSourceView{},
-	}
+func (m *TypeMap) newBuiltinType(name string, size *big.Int) core.Result {
+	info := gen.NewNamedTypeInfo(name, size, nil)
 	return m.NewType(info)
 }
 
@@ -116,5 +113,5 @@ var testManagerCreators = gen.ManagerCreators{
 var testGenerationContext = gen.GenerationContext{
 	ManagerCreators: testManagerCreators,
 	Instructions:    testInstructionSet,
-	PointerSize:     314, // An arbitrary, unique value.
+	PointerSize:     big.NewInt(314), // An arbitrary, unique value.
 }

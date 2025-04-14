@@ -1,21 +1,40 @@
 package aarch64managers
 
 import (
+	"math/big"
+
+	aarch64translation "alon.kr/x/usm/aarch64/translation"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 )
 
-// Aarch64 currently only supports the 64 bit type, named "$64".
 type Aarch64TypeManager struct {
-	BaseType *gen.NamedTypeInfo
+	// A lazy cache that contains all the integer types that have already been
+	// declared and used.
+	// This is a mapping of the full type name, e.g. "$64".
+	IntegerTypes map[string]*gen.NamedTypeInfo
+}
+
+func (m *Aarch64TypeManager) createNewIntegerType(
+	name string,
+	size *big.Int,
+) *gen.NamedTypeInfo {
+	newType := gen.NewNamedTypeInfo(name, size, nil)
+	m.IntegerTypes[name] = newType
+	return newType
 }
 
 func (m *Aarch64TypeManager) GetType(name string) *gen.NamedTypeInfo {
-	if name == m.BaseType.Name {
-		return m.BaseType
-	} else {
-		return nil
+	typ, ok := m.IntegerTypes[name]
+	if ok {
+		return typ
 	}
+
+	if size := aarch64translation.TypeNameToSize(name); size != nil {
+		return m.createNewIntegerType(name, size)
+	}
+
+	return nil
 }
 
 func (m *Aarch64TypeManager) NewType(*gen.NamedTypeInfo) core.Result {
@@ -29,10 +48,6 @@ func (m *Aarch64TypeManager) NewType(*gen.NamedTypeInfo) core.Result {
 
 func NewTypeManager() gen.TypeManager {
 	return &Aarch64TypeManager{
-		BaseType: &gen.NamedTypeInfo{
-			Name:        "$64",
-			Size:        8,
-			Declaration: nil,
-		},
+		IntegerTypes: make(map[string]*gen.NamedTypeInfo),
 	}
 }

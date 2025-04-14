@@ -1,6 +1,7 @@
 package gen_test
 
 import (
+	"math/big"
 	"testing"
 
 	"alon.kr/x/usm/core"
@@ -11,7 +12,7 @@ import (
 
 func TestTypeAliasDeclaration(t *testing.T) {
 	typeManager := make(TypeMap)
-	typeManager.newBuiltinType("$32", 4)
+	typeManager.newBuiltinType("$32", big.NewInt(32))
 
 	view := core.NewSourceView("type $myType $32")
 	unmanaged := view.Unmanaged()
@@ -48,7 +49,7 @@ func TestTypeAliasDeclaration(t *testing.T) {
 
 func TestPointerTypeDeclaration(t *testing.T) {
 	typeManager := make(TypeMap)
-	typeManager.newBuiltinType("$8", 1)
+	typeManager.newBuiltinType("$8", big.NewInt(8))
 
 	view := core.NewSourceView("type $myType $8 *")
 	unmanaged := view.Unmanaged()
@@ -91,7 +92,7 @@ func TestPointerTypeDeclaration(t *testing.T) {
 
 func TestRepeatTypeDeclaration(t *testing.T) {
 	typeManager := make(TypeMap)
-	typeManager.newBuiltinType("$8", 1)
+	typeManager.newBuiltinType("$8", big.NewInt(8))
 
 	view := core.NewSourceView("type $myType $8 ^9")
 	unmanaged := view.Unmanaged()
@@ -134,12 +135,10 @@ func TestRepeatTypeDeclaration(t *testing.T) {
 
 func TestAlreadyDefinedTypeDeclaration(t *testing.T) {
 	typeManager := make(TypeMap)
-	typeManager.newBuiltinType("$32", 4)
-	intTypeInfo := gen.NamedTypeInfo{
-		Name: "$int",
-		Size: 8,
-	}
-	typeManager.NewType(&intTypeInfo)
+	typeManager.newBuiltinType("$32", big.NewInt(32))
+
+	intTypeInfo := gen.NewNamedTypeInfo("$int", big.NewInt(32), nil)
+	typeManager.NewType(intTypeInfo)
 
 	view := core.NewSourceView("type $int $32")
 	unmanaged := view.Unmanaged()
@@ -197,7 +196,7 @@ func TestAlreadyDefinedTypeDeclaration(t *testing.T) {
 
 func TestRepeatTypeTooLarge(t *testing.T) {
 	typeManager := make(TypeMap)
-	typeManager.newBuiltinType("$32", 4)
+	typeManager.newBuiltinType("$32", big.NewInt(32))
 
 	v := core.NewSourceView("type $tooLarge { $32 ^1_000_000_000 ^1_000_000_000 }")
 	unmanaged := v.Unmanaged()

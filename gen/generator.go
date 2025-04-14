@@ -1,6 +1,8 @@
 package gen
 
 import (
+	"math/big"
+
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/parse"
 )
@@ -33,7 +35,7 @@ type GenerationContext struct {
 	//
 	// TODO: I'm not sure that we need this information in this step of the
 	//   compilation. Can we compile without it, and leave it to the ISA?
-	PointerSize core.UsmUint
+	PointerSize *big.Int
 }
 
 type FileGenerationContext struct {
