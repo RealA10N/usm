@@ -4,22 +4,27 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	aarch64instructions "alon.kr/x/aarch64codegen/instructions"
+	aarch64codegen "alon.kr/x/usm/aarch64/codegen"
+	aarch64core "alon.kr/x/usm/aarch64/core"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 )
 
-func FunctionToBinaryData(function *gen.FunctionInfo) ([]byte, core.ResultList) {
+func FunctionCodegen(
+	fileCtx *aarch64codegen.FileCodegenContext,
+	function *gen.FunctionInfo,
+	buffer *bytes.Buffer,
+) core.ResultList {
 	results := core.ResultList{}
 	instructions := function.CollectInstructions()
 	aarch64Instructions := make(
-		[]aarch64instructions.Instruction,
+		[]aarch64core.Instruction,
 		0,
 		len(instructions),
 	)
 
 	for _, instruction := range instructions {
-		aarchInstruction, ok := instruction.Instruction.(aarch64instructions.Instruction)
+		aarchInstruction, ok := instruction.Instruction.(aarch64core.Instruction)
 		if ok {
 			aarch64Instructions = append(aarch64Instructions, aarchInstruction)
 		} else {
@@ -34,13 +39,14 @@ func FunctionToBinaryData(function *gen.FunctionInfo) ([]byte, core.ResultList) 
 	}
 
 	if !results.IsEmpty() {
-		return nil, results
+		return results
 	}
 
-	data := bytes.Buffer{}
+	funcCtx := aarch64codegen.NewFunctionCodegenContext(fileCtx, function)
 	for _, instruction := range aarch64Instructions {
-		binary.Write(&data, binary.LittleEndian, instruction.Binary())
+		binaryInst := instruction.Generate(funcCtx)
+		binary.Write(buffer, binary.LittleEndian, binaryInst.Binary())
 	}
 
-	return data.Bytes(), core.ResultList{}
+	return core.ResultList{}
 }

@@ -12,46 +12,46 @@ import (
 	"alon.kr/x/macho/load/segment64"
 	"alon.kr/x/macho/load/symtab"
 	"alon.kr/x/macho/load/symtab/symbol"
+	aarch64codegen "alon.kr/x/usm/aarch64/codegen"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 )
 
-func FileToMachoObject(file *gen.FileInfo) ([]byte, core.ResultList) {
-	headerBuilder := header.MachoHeaderBuilder{
-		Magic:      header.Magic64Bit,
-		CpuType:    header.Arm64CpuType,
-		CpuSubType: header.AllArmProcessors,
-		FileType:   header.Object,
+func FileCodegen(
+	fileCtx *aarch64codegen.FileCodegenContext,
+	file *gen.FileInfo,
+	buffer *bytes.Buffer,
+) core.ResultList {
+	for _, function := range file.Functions {
+		results := FunctionCodegen(fileCtx, function, buffer)
+		if !results.IsEmpty() {
+			return results
+		}
 	}
 
+	return core.ResultList{}
+}
+
+func FileToMachoObject(file *gen.FileInfo) ([]byte, core.ResultList) {
+	fileCtx := aarch64codegen.NewFileCodegenContext(file)
+
 	data := bytes.Buffer{}
+	results := FileCodegen(fileCtx, file, &data)
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
 	symbols := []symbol.SymbolBuilder{}
-	offset := uint64(0)
-	results := core.ResultList{}
-
 	for _, function := range file.Functions {
-		functionData, curResults := FunctionToBinaryData(function)
-		results.Extend(&curResults)
-
-		if !results.IsEmpty() {
-			continue
-		}
-
 		symbol := nlist64_builders.SectionNlist64Builder{
 			Name:        "_" + function.Name[1:],
 			Type:        nlist64.ExternalSymbol,
 			Section:     1,
-			Offset:      offset,
+			Offset:      fileCtx.FunctionOffsets[function],
 			Description: nlist64.ReferenceFlagUndefinedNonLazy,
 		}
 
 		symbols = append(symbols, symbol)
-		data.Write(functionData)
-		offset += uint64(len(functionData))
-	}
-
-	if !results.IsEmpty() {
-		return nil, results
 	}
 
 	sectionBuilder := section64.Section64Builder{
@@ -75,6 +75,13 @@ func FileToMachoObject(file *gen.FileInfo) ([]byte, core.ResultList) {
 
 	buildVersionBuilder := build_version.BuildVersionBuilder{
 		Platform: build_version.PlatformMacOS,
+	}
+
+	headerBuilder := header.MachoHeaderBuilder{
+		Magic:      header.Magic64Bit,
+		CpuType:    header.Arm64CpuType,
+		CpuSubType: header.AllArmProcessors,
+		FileType:   header.Object,
 	}
 
 	machoBuilder := builder.MachoBuilder{
