@@ -44,7 +44,11 @@ func FunctionCodegen(
 
 	funcCtx := aarch64codegen.NewFunctionCodegenContext(fileCtx, function)
 	for _, instruction := range aarch64Instructions {
-		binaryInst := instruction.Generate(funcCtx)
+		binaryInst, results := instruction.Generate(funcCtx)
+		if !results.IsEmpty() {
+			return results
+		}
+
 		binary.Write(buffer, binary.LittleEndian, binaryInst.Binary())
 	}
 

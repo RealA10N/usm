@@ -24,8 +24,10 @@ type Add struct {
 	instructions.Add
 }
 
-func (i Add) Generate(*aarch64codegen.FunctionCodegenContext) instructions.Instruction {
-	return i
+func (i Add) Generate(
+	*aarch64codegen.FunctionCodegenContext,
+) (instructions.Instruction, core.ResultList) {
+	return i, core.ResultList{}
 }
 
 type AddImm struct {
@@ -33,8 +35,10 @@ type AddImm struct {
 	instructions.AddImm
 }
 
-func (i AddImm) Generate(*aarch64codegen.FunctionCodegenContext) instructions.Instruction {
-	return i
+func (i AddImm) Generate(
+	*aarch64codegen.FunctionCodegenContext,
+) (instructions.Instruction, core.ResultList) {
+	return i, core.ResultList{}
 }
 
 type AddDefinition struct{}

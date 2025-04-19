@@ -20,8 +20,10 @@ func (Movz) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
 }
 
-func (i Movz) Generate(*aarch64codegen.FunctionCodegenContext) instructions.Instruction {
-	return i
+func (i Movz) Generate(
+	*aarch64codegen.FunctionCodegenContext,
+) (instructions.Instruction, core.ResultList) {
+	return i, core.ResultList{}
 }
 
 type MovzDefinition struct{}

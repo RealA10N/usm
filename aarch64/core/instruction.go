@@ -3,6 +3,7 @@ package aarch64core
 import (
 	"alon.kr/x/aarch64codegen/instructions"
 	aarch64codegen "alon.kr/x/usm/aarch64/codegen"
+	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 )
 
@@ -11,5 +12,7 @@ type Instruction interface {
 
 	// Converts the abstract instruction representation into a concrete binary
 	// instruction.
-	Generate(*aarch64codegen.FunctionCodegenContext) instructions.Instruction
+	Generate(
+		*aarch64codegen.FunctionCodegenContext,
+	) (instructions.Instruction, core.ResultList)
 }

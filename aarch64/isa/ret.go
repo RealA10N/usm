@@ -21,8 +21,10 @@ func (Ret) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleReturn: true}, core.ResultList{}
 }
 
-func (i Ret) Generate(*aarch64codegen.FunctionCodegenContext) instructions.Instruction {
-	return i
+func (i Ret) Generate(
+	*aarch64codegen.FunctionCodegenContext,
+) (instructions.Instruction, core.ResultList) {
+	return i, core.ResultList{}
 }
 
 type RetDefinition struct{}
