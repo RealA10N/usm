@@ -3,6 +3,7 @@ package aarch64isa
 import (
 	"alon.kr/x/aarch64codegen/instructions"
 	"alon.kr/x/aarch64codegen/registers"
+	aarch64core "alon.kr/x/usm/aarch64/core"
 	aarch64translation "alon.kr/x/usm/aarch64/translation"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
@@ -20,7 +21,7 @@ func (Ret) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleReturn: true}, core.ResultList{}
 }
 
-func (i Ret) Generate(*FunctionCodegenContext) instructions.Instruction {
+func (i Ret) Generate(*aarch64core.FunctionCodegenContext) instructions.Instruction {
 	return i
 }
 
