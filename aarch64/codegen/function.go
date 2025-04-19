@@ -24,6 +24,7 @@ func NewFunctionCodegenContext(
 		basicBlockOffsets[block] = offset
 
 		// In AArch64, each instruction is of constant size of 4 bytes.
+		// TODO: handle overflow?
 		offset += uint64(block.Size()) * 4
 	}
 

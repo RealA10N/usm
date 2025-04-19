@@ -16,7 +16,7 @@ func NewFileCodegenContext(file *gen.FileInfo) *FileCodegenContext {
 	offset := uint64(0)
 	for _, function := range file.Functions {
 		functionOffsets[function] = offset
-		functionSize := uint64(function.Size() * 4) // TODO: handle overflow?
+		functionSize := uint64(function.Size()) * 4 // TODO: handle overflow?
 		offset += functionSize
 	}
 
