@@ -27,6 +27,11 @@ func (f *FunctionInfo) CollectInstructions() []*InstructionInfo {
 	return instructions
 }
 
+// Returns the number of instructions in the function.
+func (f *FunctionInfo) Size() int {
+	return len(f.CollectInstructions())
+}
+
 func (i *FunctionInfo) String() string {
 	s := "func "
 	for _, target := range i.Targets {

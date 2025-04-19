@@ -28,6 +28,11 @@ func NewEmptyBasicBlockInfo(function *FunctionInfo) *BasicBlockInfo {
 	}
 }
 
+// Returns the number of instructions in the basic block.
+func (b *BasicBlockInfo) Size() int {
+	return len(b.Instructions)
+}
+
 func (b *BasicBlockInfo) SetLabel(label *LabelInfo) {
 	b.Label = label
 	label.linkToBasicBlock(b)
