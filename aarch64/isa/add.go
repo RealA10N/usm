@@ -23,9 +23,17 @@ type Add struct {
 	instructions.Add
 }
 
+func (i Add) Generate(*FunctionCodegenContext) instructions.Instruction {
+	return i
+}
+
 type AddImm struct {
 	BaseAdd
 	instructions.AddImm
+}
+
+func (i AddImm) Generate(*FunctionCodegenContext) instructions.Instruction {
+	return i
 }
 
 type AddDefinition struct{}

@@ -20,6 +20,10 @@ func (Ret) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleReturn: true}, core.ResultList{}
 }
 
+func (i Ret) Generate(*FunctionCodegenContext) instructions.Instruction {
+	return i
+}
+
 type RetDefinition struct{}
 
 func (RetDefinition) BuildInstruction(

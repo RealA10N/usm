@@ -19,6 +19,10 @@ func (Movz) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
 }
 
+func (i Movz) Generate(*FunctionCodegenContext) instructions.Instruction {
+	return i
+}
+
 type MovzDefinition struct{}
 
 func (MovzDefinition) BuildInstruction(
