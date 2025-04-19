@@ -22,7 +22,7 @@ func (Ret) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 }
 
 func (i Ret) Generate(
-	*aarch64codegen.FunctionCodegenContext,
+	*aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
 	return i, core.ResultList{}
 }

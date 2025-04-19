@@ -290,3 +290,18 @@ func ArgumentToAarch64MovShift(
 
 	return BigIntToAarch64MovShift(argument.Declaration(), bigInt)
 }
+
+func ArgumentToLabelInfo(argument gen.ArgumentInfo) (*gen.LabelInfo, core.ResultList) {
+	label, ok := argument.(*gen.LabelArgumentInfo)
+	if !ok {
+		return nil, list.FromSingle(core.Result{
+			{
+				Type:     core.ErrorResult,
+				Message:  "Expected label argument",
+				Location: argument.Declaration(),
+			},
+		})
+	}
+
+	return label.Label, core.ResultList{}
+}

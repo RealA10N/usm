@@ -21,7 +21,7 @@ func (Movz) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 }
 
 func (i Movz) Generate(
-	*aarch64codegen.FunctionCodegenContext,
+	*aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
 	return i, core.ResultList{}
 }

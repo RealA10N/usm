@@ -17,26 +17,11 @@ import (
 	"alon.kr/x/usm/gen"
 )
 
-func FileCodegen(
-	fileCtx *aarch64codegen.FileCodegenContext,
-	file *gen.FileInfo,
-	buffer *bytes.Buffer,
-) core.ResultList {
-	for _, function := range file.Functions {
-		results := FunctionCodegen(fileCtx, function, buffer)
-		if !results.IsEmpty() {
-			return results
-		}
-	}
-
-	return core.ResultList{}
-}
-
 func FileToMachoObject(file *gen.FileInfo) ([]byte, core.ResultList) {
 	fileCtx := aarch64codegen.NewFileCodegenContext(file)
 
 	data := bytes.Buffer{}
-	results := FileCodegen(fileCtx, file, &data)
+	results := fileCtx.Codegen(&data)
 	if !results.IsEmpty() {
 		return nil, results
 	}

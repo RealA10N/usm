@@ -25,7 +25,7 @@ type Add struct {
 }
 
 func (i Add) Generate(
-	*aarch64codegen.FunctionCodegenContext,
+	*aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
 	return i, core.ResultList{}
 }

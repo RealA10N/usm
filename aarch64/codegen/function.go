@@ -1,35 +1,50 @@
 package aarch64codegen
 
-import "alon.kr/x/usm/gen"
+import (
+	"bytes"
+
+	"alon.kr/x/usm/core"
+	"alon.kr/x/usm/gen"
+)
 
 // FunctionCodegenContext contains information about the code generation
 // context for a specific function.
 type FunctionCodegenContext struct {
-	FileCodegenContext *FileCodegenContext
+	*FileCodegenContext
+	*gen.FunctionInfo
 
 	// The offset of each basic block in the function, relative to the function
 	// entry point.
 	BasicBlockOffsets map[*gen.BasicBlockInfo]uint64
 }
 
-func NewFunctionCodegenContext(
-	fileCtx *FileCodegenContext,
-	function *gen.FunctionInfo,
-) *FunctionCodegenContext {
-	basicBlocks := function.CollectBasicBlocks()
-	basicBlockOffsets := make(map[*gen.BasicBlockInfo]uint64, len(basicBlocks))
+func (ctx *FunctionCodegenContext) newInstructionCodegenContext(
+	instruction *gen.InstructionInfo,
+	instructionOffsetInFunction uint64,
+) *InstructionCodegenContext {
+	return &InstructionCodegenContext{
+		FunctionCodegenContext:      ctx,
+		InstructionInfo:             instruction,
+		InstructionOffsetInFunction: instructionOffsetInFunction,
+	}
+}
 
-	offset := uint64(0)
-	for _, block := range basicBlocks {
-		basicBlockOffsets[block] = offset
+func (ctx *FunctionCodegenContext) Codegen(
+	buffer *bytes.Buffer,
+) core.ResultList {
+	instructions := ctx.FunctionInfo.CollectInstructions()
+	for idx, inst := range instructions {
+		instOffset := uint64(idx * 4) // TODO: handle overflow?
+		instCtx := ctx.newInstructionCodegenContext(
+			inst,
+			instOffset,
+		)
 
-		// In AArch64, each instruction is of constant size of 4 bytes.
-		// TODO: handle overflow?
-		offset += uint64(block.Size()) * 4
+		results := instCtx.Codegen(buffer)
+		if !results.IsEmpty() {
+			return results
+		}
 	}
 
-	return &FunctionCodegenContext{
-		FileCodegenContext: fileCtx,
-		BasicBlockOffsets:  basicBlockOffsets,
-	}
+	return core.ResultList{}
 }
