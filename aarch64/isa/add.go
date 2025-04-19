@@ -1,6 +1,7 @@
 package aarch64isa
 
 import (
+	"alon.kr/x/aarch64codegen/immediates"
 	"alon.kr/x/aarch64codegen/instructions"
 	"alon.kr/x/list"
 	aarch64codegen "alon.kr/x/usm/aarch64/codegen"
@@ -62,7 +63,9 @@ func (AddDefinition) buildRegisterVariant(
 		return nil, results
 	}
 
-	return Add{Add: instructions.ADD(Xd, Xn, Xm)}, core.ResultList{}
+	return Add{
+		Add: instructions.ADD(Xd, Xn, Xm, immediates.DoNotSetFlags),
+	}, core.ResultList{}
 }
 
 func (AddDefinition) buildImmediateVariant(
@@ -85,7 +88,9 @@ func (AddDefinition) buildImmediateVariant(
 		return nil, results
 	}
 
-	return AddImm{AddImm: instructions.ADDI(Xd, Xn, imm)}, core.ResultList{}
+	return AddImm{
+		AddImm: instructions.ADDI(Xd, Xn, imm, immediates.DoNotSetFlags),
+	}, core.ResultList{}
 }
 
 func (d AddDefinition) BuildInstruction(
