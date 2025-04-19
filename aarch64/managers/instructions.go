@@ -12,6 +12,7 @@ func NewInstructionManager() gen.InstructionManager {
 			{Key: "movz", Value: aarch64isa.NewMovzInstructionDefinition()},
 			{Key: "ret", Value: aarch64isa.NewRetInstructionDefinition()},
 			{Key: "add", Value: aarch64isa.NewAddInstructionDefinition()},
+			{Key: "b", Value: aarch64isa.NewBranchInstructionDefinition()},
 		},
 		false,
 	)
