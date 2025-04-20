@@ -14,7 +14,7 @@ type Branch struct {
 }
 
 func (b Branch) Operator() string {
-	return "B"
+	return "b"
 }
 func (b Branch) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{

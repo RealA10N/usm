@@ -16,7 +16,7 @@ type Bcond struct {
 }
 
 func (b Bcond) Operator() string {
-	return "B." + b.Condition.String()
+	return "b." + b.Condition.String()
 }
 
 func (b Bcond) PossibleNextSteps() (gen.StepInfo, core.ResultList) {

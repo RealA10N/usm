@@ -13,7 +13,7 @@ import (
 type BaseAdd struct{}
 
 func (BaseAdd) Operator() string {
-	return "ADD"
+	return "add"
 }
 
 func (BaseAdd) PossibleNextSteps() (gen.StepInfo, core.ResultList) {

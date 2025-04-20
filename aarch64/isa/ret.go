@@ -14,7 +14,7 @@ type Ret struct {
 }
 
 func (Ret) Operator() string {
-	return "RET"
+	return "ret"
 }
 
 func (Ret) PossibleNextSteps() (gen.StepInfo, core.ResultList) {

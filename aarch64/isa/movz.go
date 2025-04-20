@@ -13,7 +13,7 @@ type Movz struct {
 }
 
 func (Movz) Operator() string {
-	return "MOVZ"
+	return "movz"
 }
 
 func (Movz) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
