@@ -25,3 +25,15 @@ func Uint64DiffToOffset26Align4(
 
 	return immediates.NewOffset26Align4(diff32)
 }
+
+func Uint64DiffToOffset19Align4(
+	dst, src uint64,
+) (immediates.Offset19Align4, error) {
+	diff := int64(dst) - int64(src)
+	diff32, ok := int64toInt32(diff)
+	if !ok {
+		return 0, fmt.Errorf("offset %v does not fit in 19 bits", diff)
+	}
+
+	return immediates.NewOffset19Align4(diff32)
+}

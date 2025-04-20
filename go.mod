@@ -3,7 +3,7 @@ module alon.kr/x/usm
 go 1.23.0
 
 require (
-	alon.kr/x/aarch64codegen v0.0.0-20250419153258-b38ad40f9b7c
+	alon.kr/x/aarch64codegen v0.0.0-20250420200320-da97d04a6117
 	alon.kr/x/faststringmap v0.0.0-20241117165103-5662ddd92b26
 	alon.kr/x/graph v0.0.0-20250319212444-dd67d0281ab7
 	alon.kr/x/list v0.0.0-20241203223347-3173d76828c0
