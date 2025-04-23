@@ -10,43 +10,43 @@ import (
 	"alon.kr/x/usm/gen"
 )
 
-type BaseAdd struct{}
+type BaseSub struct{}
 
-func (BaseAdd) Operator() string {
-	return "add"
+func (BaseSub) Operator() string {
+	return "sub"
 }
 
-func (BaseAdd) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
+func (BaseSub) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
 }
 
-type Add struct {
-	BaseAdd
-	instructions.Add
+type Sub struct {
+	BaseSub
+	instructions.Sub
 }
 
-func (i Add) Generate(
+func (i Sub) Generate(
 	*aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
 	return i, core.ResultList{}
 }
 
-type AddImm struct {
-	BaseAdd
-	instructions.AddImm
+type SubImm struct {
+	BaseSub
+	instructions.SubImm
 }
 
-func (i AddImm) Generate(
+func (i SubImm) Generate(
 	*aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
 	return i, core.ResultList{}
 }
 
-type AddDefinition struct {
+type SubDefinition struct {
 	immediates.SetFlags
 }
 
-func (d AddDefinition) buildRegisterVariant(
+func (d SubDefinition) buildRegisterVariant(
 	info *gen.InstructionInfo,
 ) (gen.BaseInstruction, core.ResultList) {
 	results := core.ResultList{}
@@ -65,18 +65,18 @@ func (d AddDefinition) buildRegisterVariant(
 		return nil, results
 	}
 
-	return Add{
-		Add: instructions.ADD(Xd, Xn, Xm, d.SetFlags),
+	return Sub{
+		Sub: instructions.SUB(Xd, Xn, Xm, d.SetFlags),
 	}, core.ResultList{}
 }
 
-func (AddDefinition) buildImmediateVariant(
+func (SubDefinition) buildImmediateVariant(
 	info *gen.InstructionInfo,
 ) (gen.BaseInstruction, core.ResultList) {
 
 	results := core.ResultList{}
 
-	Xd, curResults := aarch64translation.TargetToAarch64GPorSPRegister(info.Targets[0])
+	Xd, curResults := aarch64translation.TargetToAarch64GPRegister(info.Targets[0])
 	results.Extend(&results)
 
 	Xn, curResults := aarch64translation.ArgumentToAarch64GPorSPRegister(info.Arguments[0])
@@ -90,12 +90,12 @@ func (AddDefinition) buildImmediateVariant(
 		return nil, results
 	}
 
-	return AddImm{
-		AddImm: instructions.ADDI(Xd, Xn, imm, immediates.DoNotSetFlags),
+	return SubImm{
+		SubImm: instructions.SUBI(Xd, Xn, imm),
 	}, core.ResultList{}
 }
 
-func (d AddDefinition) BuildInstruction(
+func (d SubDefinition) BuildInstruction(
 	info *gen.InstructionInfo,
 ) (gen.BaseInstruction, core.ResultList) {
 	results := core.ResultList{}
@@ -121,13 +121,13 @@ func (d AddDefinition) BuildInstruction(
 		return nil, list.FromSingle(core.Result{
 			{
 				Type:     core.ErrorResult,
-				Message:  "Second \"add\" argument must be a register or immediate",
+				Message:  "Second \"sub\" argument must be a register or immediate",
 				Location: info.Arguments[1].Declaration(),
 			},
 		})
 	}
 }
 
-func NewAddInstructionDefinition(setFlags immediates.SetFlags) gen.InstructionDefinition {
-	return AddDefinition{SetFlags: setFlags}
+func NewSubInstructionDefinition(setFlags immediates.SetFlags) gen.InstructionDefinition {
+	return SubDefinition{SetFlags: setFlags}
 }

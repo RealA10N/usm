@@ -1,4 +1,4 @@
-func @loop {
+func @main {
 .loop
     B .loop
 }

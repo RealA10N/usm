@@ -1,0 +1,12 @@
+func @main {
+    %x0 = movz $16 #0xffff
+    %x1 = movz $16 #0
+.loop
+    %xzr = subs %x0 %x1
+    b.eq .end
+
+    %x1 = add %x1 $12 #1
+    b .loop
+.end
+    RET
+}
