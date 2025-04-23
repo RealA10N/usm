@@ -52,8 +52,8 @@ func (m *RegisterMap) DeleteRegister(register *gen.RegisterInfo) core.ResultList
 	return core.ResultList{}
 }
 
-func (m *RegisterMap) Size() uint {
-	return uint(len(*m))
+func (m *RegisterMap) Size() int {
+	return len(*m)
 }
 
 func (m *RegisterMap) GetAllRegisters() []*gen.RegisterInfo {

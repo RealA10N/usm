@@ -48,15 +48,8 @@ func (m *Aarch64RegisterManager) DeleteRegister(reg *gen.RegisterInfo) core.Resu
 	return core.ResultList{}
 }
 
-func (m *Aarch64RegisterManager) Size() uint {
-	size := uint(0)
-	for _, register := range m.registers {
-		if register != nil {
-			size++
-		}
-	}
-
-	return size
+func (m *Aarch64RegisterManager) Size() int {
+	return len(m.registers)
 }
 
 func (m *Aarch64RegisterManager) GetAllRegisters() []*gen.RegisterInfo {
