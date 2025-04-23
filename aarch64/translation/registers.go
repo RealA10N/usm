@@ -12,9 +12,9 @@ import (
 	"github.com/agnivade/levenshtein"
 )
 
-var x0toX30RegisterNames = []string{"%X0", "%X1", "%X2", "%X3", "%X4", "%X5", "%X6", "%X7", "%X8", "%X9", "%X10", "%X11", "%X12", "%X13", "%X14", "%X15", "%X16", "%X17", "%X18", "%X19", "%X20", "%X21", "%X22", "%X23", "%X24", "%X25", "%X26", "%X27", "%X28", "%X29", "%X30"}
-var validGPRegisterNames = append(append([]string{}, x0toX30RegisterNames...), "%XZR")
-var validGPorSPRegisterNames = append(append([]string{}, x0toX30RegisterNames...), "%SP")
+var x0toX30RegisterNames = []string{"%x0", "%x1", "%x2", "%x3", "%x4", "%x5", "%x6", "%x7", "%x8", "%x9", "%x10", "%x11", "%x12", "%x13", "%x14", "%x15", "%x16", "%x17", "%x18", "%x19", "%x20", "%x21", "%x22", "%x23", "%x24", "%x25", "%x26", "%x27", "%x28", "%x29", "%x30"}
+var validGPRegisterNames = append(append([]string{}, x0toX30RegisterNames...), "%xzr")
+var validGPorSPRegisterNames = append(append([]string{}, x0toX30RegisterNames...), "%sp")
 
 func newStringMapFromKeys[T ~uint8](keys []string) faststringmap.Map[T] {
 	entries := make([]faststringmap.MapEntry[T], len(keys))

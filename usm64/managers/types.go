@@ -28,7 +28,7 @@ func (m *TypeMap) NewType(*gen.NamedTypeInfo) core.Result {
 	}
 }
 
-func NewTypeManager() gen.TypeManager {
+func NewTypeManager(*gen.GenerationContext) gen.TypeManager {
 	return &TypeMap{
 		BaseType: gen.NewNamedTypeInfo("$64", big.NewInt(64), nil),
 	}

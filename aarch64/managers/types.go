@@ -46,7 +46,7 @@ func (m *Aarch64TypeManager) NewType(*gen.NamedTypeInfo) core.Result {
 	}
 }
 
-func NewTypeManager() gen.TypeManager {
+func NewTypeManager(*gen.GenerationContext) gen.TypeManager {
 	return &Aarch64TypeManager{
 		IntegerTypes: make(map[string]*gen.NamedTypeInfo),
 	}

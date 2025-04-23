@@ -37,6 +37,6 @@ func (m *RegisterMap) GetAllRegisters() []*gen.RegisterInfo {
 	return registers
 }
 
-func NewRegisterManager() gen.RegisterManager {
+func NewRegisterManager(*gen.FileGenerationContext) gen.RegisterManager {
 	return &RegisterMap{}
 }

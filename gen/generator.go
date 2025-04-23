@@ -10,9 +10,9 @@ import (
 // MARK: Context
 
 type ManagerCreators struct {
-	RegisterManagerCreator func() RegisterManager
-	LabelManagerCreator    func() LabelManager
-	TypeManagerCreator     func() TypeManager
+	RegisterManagerCreator func(*FileGenerationContext) RegisterManager
+	LabelManagerCreator    func(*FileGenerationContext) LabelManager
+	TypeManagerCreator     func(*GenerationContext) TypeManager
 }
 
 // This structure is the most broad level of generation context.

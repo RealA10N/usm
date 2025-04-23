@@ -44,6 +44,6 @@ func (m *LabelMap) GenerateLabel() *LabelInfo {
 	return &LabelInfo{Name: name}
 }
 
-func NewLabelMap() LabelManager {
+func NewLabelMap(*FileGenerationContext) LabelManager {
 	return &LabelMap{}
 }

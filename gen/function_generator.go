@@ -36,8 +36,8 @@ func (g *FunctionGenerator) createFunctionContext(
 ) *FunctionGenerationContext {
 	return &FunctionGenerationContext{
 		FileGenerationContext: ctx,
-		Registers:             ctx.RegisterManagerCreator(),
-		Labels:                ctx.LabelManagerCreator(),
+		Registers:             ctx.RegisterManagerCreator(ctx),
+		Labels:                ctx.LabelManagerCreator(ctx),
 	}
 }
 

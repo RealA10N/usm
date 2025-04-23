@@ -2,6 +2,7 @@ package aarch64managers
 
 import (
 	"alon.kr/x/aarch64codegen/registers"
+	"alon.kr/x/list"
 	aarch64translation "alon.kr/x/usm/aarch64/translation"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
@@ -29,23 +30,23 @@ func (m *Aarch64RegisterManager) GetRegister(name string) *gen.RegisterInfo {
 }
 
 func (m *Aarch64RegisterManager) NewRegister(reg *gen.RegisterInfo) core.ResultList {
-	gpr, results := aarch64translation.RegisterToAarch64GPRegister(reg)
-	if !results.IsEmpty() {
-		return results
-	}
-
-	m.registers[gpr] = reg
-	return core.ResultList{}
+	return list.FromSingle(core.Result{
+		{
+			Type:     core.ErrorResult,
+			Message:  "AArch64 does not allow defining new registers",
+			Location: &reg.Declaration,
+		},
+	})
 }
 
 func (m *Aarch64RegisterManager) DeleteRegister(reg *gen.RegisterInfo) core.ResultList {
-	gpr, results := aarch64translation.RegisterToAarch64GPRegister(reg)
-	if !results.IsEmpty() {
-		return results
-	}
-
-	m.registers[gpr] = nil
-	return core.ResultList{}
+	return list.FromSingle(core.Result{
+		{
+			Type:     core.InternalErrorResult,
+			Message:  "Trying to delete a register in AArch64",
+			Location: &reg.Declaration,
+		},
+	})
 }
 
 func (m *Aarch64RegisterManager) Size() int {
@@ -61,6 +62,20 @@ func (m *Aarch64RegisterManager) GetAllRegisters() []*gen.RegisterInfo {
 	return registers
 }
 
-func NewRegisterManager() gen.RegisterManager {
-	return &Aarch64RegisterManager{}
+func NewRegisterManager(fileCtx *gen.FileGenerationContext) gen.RegisterManager {
+	type64 := fileCtx.Types.GetType("$64")
+	regs := [numOfRegisters]*gen.RegisterInfo{}
+
+	for gpr := registers.GPRegister(0); gpr < numOfRegisters; gpr++ {
+		info := gen.NewRegisterInfo(
+			"%"+gpr.String(),
+			gen.ReferencedTypeInfo{Base: type64},
+		)
+
+		regs[gpr] = info
+	}
+
+	return &Aarch64RegisterManager{
+		registers: regs,
+	}
 }

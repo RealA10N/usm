@@ -49,20 +49,16 @@ func (g *ParameterGenerator) Generate(
 		ctx.FileGenerationContext,
 		node.Type,
 	)
+
 	results.Extend(&typeResults)
+	if !results.IsEmpty() {
+		return nil, results
+	}
 
 	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	if registerInfo != nil {
-		registerResults := newRegisterAlreadyDefinedResult(
-			node.View(),
-			registerInfo.Declaration,
-		)
-		results.Extend(&registerResults)
-	}
-
-	if !results.IsEmpty() {
-		return nil, results
+		return registerInfo, core.ResultList{}
 	}
 
 	registerInfo = &RegisterInfo{

@@ -99,13 +99,13 @@ var testInstructionSet = gen.InstructionManager(
 )
 
 var testManagerCreators = gen.ManagerCreators{
-	LabelManagerCreator: func() gen.LabelManager {
+	LabelManagerCreator: func(*gen.FileGenerationContext) gen.LabelManager {
 		return gen.LabelManager(&LabelMap{})
 	},
-	RegisterManagerCreator: func() gen.RegisterManager {
+	RegisterManagerCreator: func(*gen.FileGenerationContext) gen.RegisterManager {
 		return gen.RegisterManager(&RegisterMap{})
 	},
-	TypeManagerCreator: func() gen.TypeManager {
+	TypeManagerCreator: func(*gen.GenerationContext) gen.TypeManager {
 		return gen.TypeManager(&TypeMap{})
 	},
 }

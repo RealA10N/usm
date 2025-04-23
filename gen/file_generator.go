@@ -24,7 +24,7 @@ func CreateFileContext(
 	return &FileGenerationContext{
 		GenerationContext: ctx,
 		SourceContext:     source,
-		Types:             ctx.TypeManagerCreator(),
+		Types:             ctx.TypeManagerCreator(ctx),
 	}
 }
 
