@@ -67,3 +67,29 @@ func Immediate12InstructionToAarch64(
 
 	return
 }
+
+// Immediate12GPRegisterTargetInstructionToAarch64 converts a binary instruction
+// with its target as GPRegister, first argument as a GPorSPRegister and its
+// second argument as an Immediate12 to it's codegen representation.
+//
+// Assumes that the number of targets and arguments has already been validated
+// using the ValidateBinaryInstruction function.
+func Immediate12GPRegisterTargetInstructionToAarch64(
+	info *gen.InstructionInfo,
+) (
+	Xd registers.GPRegister,
+	Xn registers.GPorSPRegister,
+	imm immediates.Immediate12,
+	results core.ResultList,
+) {
+	Xd, curResults := TargetToAarch64GPRegister(info.Targets[0])
+	results.Extend(&curResults)
+
+	Xn, curResults = ArgumentToAarch64GPorSPRegister(info.Arguments[0])
+	results.Extend(&curResults)
+
+	imm, curResults = ArgumentToAarch64Immediate12(info.Arguments[1])
+	results.Extend(&curResults)
+
+	return
+}

@@ -15,6 +15,7 @@ func NewInstructionManager() gen.InstructionManager {
 
 			// Arithmetic
 			{Key: "add", Value: aarch64isa.NewAddInstructionDefinition()},
+			{Key: "adds", Value: aarch64isa.NewAddsInstructionDefinition()},
 
 			// Control flow
 			{Key: "b", Value: aarch64isa.NewBranchInstructionDefinition()},
