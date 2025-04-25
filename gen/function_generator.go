@@ -343,12 +343,13 @@ func (g *FunctionGenerator) Generate(
 	name := ViewToSourceString(funcCtx.FileGenerationContext, node.Signature.Identifier)
 
 	function := &FunctionInfo{
-		Name:       name,
-		EntryBlock: nil, // will be defined later.
-		Registers:  funcCtx.Registers,
-		Labels:     funcCtx.Labels,
-		Parameters: parameters,
-		Targets:    targets,
+		Name:        name,
+		Declaration: &node.UnmanagedSourceView,
+		EntryBlock:  nil, // will be defined later.
+		Registers:   funcCtx.Registers,
+		Labels:      funcCtx.Labels,
+		Parameters:  parameters,
+		Targets:     targets,
 	}
 
 	instructions, results := g.generateInstructions(funcCtx, node.Instructions.Nodes)

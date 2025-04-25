@@ -1,7 +1,11 @@
 package gen
 
+import "alon.kr/x/usm/core"
+
 type FunctionInfo struct {
-	Name       string
+	Name        string
+	Declaration *core.UnmanagedSourceView
+
 	EntryBlock *BasicBlockInfo
 	Registers  RegisterManager
 	Labels     LabelManager
