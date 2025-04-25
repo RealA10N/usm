@@ -9,15 +9,12 @@ import (
 )
 
 type Movz struct {
+	NonBranchingInstruction
 	instructions.Movz
 }
 
 func (Movz) Operator() string {
 	return "movz"
-}
-
-func (Movz) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
-	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
 }
 
 func (i Movz) Generate(
@@ -62,7 +59,7 @@ func (MovzDefinition) BuildInstruction(
 	}
 
 	return Movz{
-		instructions.MOVZ(Xd, imm, shift),
+		Movz: instructions.MOVZ(Xd, imm, shift),
 	}, core.ResultList{}
 }
 

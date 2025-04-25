@@ -10,14 +10,12 @@ import (
 	"alon.kr/x/usm/gen"
 )
 
-type BaseSub struct{}
+type BaseSub struct {
+	NonBranchingInstruction
+}
 
 func (BaseSub) Operator() string {
 	return "sub"
-}
-
-func (BaseSub) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
-	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
 }
 
 type Sub struct {

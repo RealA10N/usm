@@ -9,14 +9,12 @@ import (
 	"alon.kr/x/usm/gen"
 )
 
-type BaseAdd struct{}
+type BaseAdd struct {
+	NonBranchingInstruction
+}
 
 func (BaseAdd) Operator() string {
 	return "add"
-}
-
-func (BaseAdd) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
-	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
 }
 
 type AddReg struct {
