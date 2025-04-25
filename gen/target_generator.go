@@ -45,7 +45,7 @@ func (g *TargetGenerator) Generate(
 	ctx *FunctionGenerationContext,
 	node parse.TargetNode,
 ) (*TargetInfo, core.ResultList) {
-	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
+	registerName := NodeToSourceString(ctx.FileGenerationContext, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	nodeView := node.View()
 

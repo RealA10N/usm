@@ -1,6 +1,7 @@
 package gen_test
 
 import (
+	"math/big"
 	"testing"
 
 	"alon.kr/x/usm/core"
@@ -19,7 +20,7 @@ func TestUndefinedRegisterArgument(t *testing.T) {
 			FileGenerationContext: &gen.FileGenerationContext{
 				GenerationContext: &gen.GenerationContext{
 					Instructions: &InstructionMap{},
-					PointerSize:  8,
+					PointerSize:  big.NewInt(64),
 				},
 				SourceContext: src.Ctx(),
 				Types:         &TypeMap{},

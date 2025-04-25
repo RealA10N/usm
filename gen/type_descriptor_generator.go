@@ -1,6 +1,8 @@
 package gen
 
 import (
+	"math/big"
+
 	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/parse"
@@ -29,19 +31,19 @@ func NewDescriptorGenerator() FileContextGenerator[parse.TypeDecoratorNode, Type
 func (g *DescriptorGenerator) parseDescriptorAmount(
 	ctx *FileGenerationContext,
 	decorator parse.TypeDecoratorNode,
-) (core.UsmUint, core.ResultList) {
+) (*big.Int, core.ResultList) {
 	if decorator.Len() <= 1 {
 		// 1 is the default amount for type decorators, when no explicit amount
 		// is provided.
-		return 1, core.ResultList{}
+		return big.NewInt(1), core.ResultList{}
 	}
 
 	numView := decorator.Subview(1, decorator.Len())
-	numStr := viewToSourceString(ctx, numView)
-	num, err := core.ParseUint(numStr)
+	numStr := ViewToSourceString(ctx, numView)
+	num, ok := new(big.Int).SetString(numStr, 10)
 
-	if err != nil {
-		return 0, list.FromSingle(core.Result{
+	if !ok || num.Sign() < 0 {
+		return nil, list.FromSingle(core.Result{
 			{
 				Type:     core.ErrorResult,
 				Message:  "Failed to parse number in type decorator",
@@ -49,7 +51,7 @@ func (g *DescriptorGenerator) parseDescriptorAmount(
 			},
 			{
 				Type:    core.HintResult,
-				Message: "Should be a positive, decimal number",
+				Message: "Should be a non-negative, decimal number",
 			},
 		})
 	}

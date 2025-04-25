@@ -67,7 +67,7 @@ func (i *InstructionInfo) SetBaseInstruction(instruction BaseInstruction) {
 
 func (i *InstructionInfo) String() string {
 	s := ""
-	operator := i.Instruction.String()
+	operator := i.Instruction.Operator()
 
 	if len(i.Targets) > 0 {
 		for _, target := range i.Targets {

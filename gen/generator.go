@@ -1,6 +1,8 @@
 package gen
 
 import (
+	"math/big"
+
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/parse"
 )
@@ -8,9 +10,9 @@ import (
 // MARK: Context
 
 type ManagerCreators struct {
-	RegisterManagerCreator func() RegisterManager
-	LabelManagerCreator    func() LabelManager
-	TypeManagerCreator     func() TypeManager
+	RegisterManagerCreator func(*FileGenerationContext) RegisterManager
+	LabelManagerCreator    func(*FileGenerationContext) LabelManager
+	TypeManagerCreator     func(*GenerationContext) TypeManager
 }
 
 // This structure is the most broad level of generation context.
@@ -33,7 +35,17 @@ type GenerationContext struct {
 	//
 	// TODO: I'm not sure that we need this information in this step of the
 	//   compilation. Can we compile without it, and leave it to the ISA?
-	PointerSize core.UsmUint
+	PointerSize *big.Int
+}
+
+func (ctx *GenerationContext) NewFileGenerationContext(
+	source core.SourceContext,
+) *FileGenerationContext {
+	return &FileGenerationContext{
+		GenerationContext: ctx,
+		SourceContext:     source,
+		Types:             ctx.TypeManagerCreator(ctx),
+	}
 }
 
 type FileGenerationContext struct {
@@ -48,6 +60,14 @@ type FileGenerationContext struct {
 	Types TypeManager
 
 	// TODO: add globals, variables, constants.
+}
+
+func (ctx *FileGenerationContext) NewFunctionGenerationContext() *FunctionGenerationContext {
+	return &FunctionGenerationContext{
+		FileGenerationContext: ctx,
+		Registers:             ctx.RegisterManagerCreator(ctx),
+		Labels:                ctx.LabelManagerCreator(ctx),
+	}
 }
 
 type FunctionGenerationContext struct {
@@ -103,16 +123,16 @@ type InstructionContextGenerator[NodeT parse.Node, InfoT any] interface {
 
 // MARK: Utils
 
-func viewToSourceString(
+func ViewToSourceString(
 	ctx *FileGenerationContext,
 	view core.UnmanagedSourceView,
 ) string {
 	return string(view.Raw(ctx.SourceContext))
 }
 
-func nodeToSourceString(
+func NodeToSourceString(
 	ctx *FileGenerationContext,
 	node parse.Node,
 ) string {
-	return viewToSourceString(ctx, node.View())
+	return ViewToSourceString(ctx, node.View())
 }

@@ -17,7 +17,7 @@ type RegisterManager interface {
 	DeleteRegister(reg *RegisterInfo) core.ResultList
 
 	// Returns the number of currently registered registers.
-	Size() uint
+	Size() int
 
 	// Returns all of the currently registered registers, as a slice.
 	GetAllRegisters() []*RegisterInfo

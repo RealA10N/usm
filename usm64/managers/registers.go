@@ -25,8 +25,8 @@ func (m *RegisterMap) DeleteRegister(reg *gen.RegisterInfo) core.ResultList {
 	return core.ResultList{}
 }
 
-func (m *RegisterMap) Size() uint {
-	return uint(len(*m))
+func (m *RegisterMap) Size() int {
+	return len(*m)
 }
 
 func (m *RegisterMap) GetAllRegisters() []*gen.RegisterInfo {
@@ -37,6 +37,6 @@ func (m *RegisterMap) GetAllRegisters() []*gen.RegisterInfo {
 	return registers
 }
 
-func NewRegisterManager() gen.RegisterManager {
+func NewRegisterManager(*gen.FileGenerationContext) gen.RegisterManager {
 	return &RegisterMap{}
 }

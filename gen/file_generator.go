@@ -17,17 +17,6 @@ func NewFileGenerator() FileGenerator {
 	}
 }
 
-func CreateFileContext(
-	ctx *GenerationContext,
-	source core.SourceContext,
-) *FileGenerationContext {
-	return &FileGenerationContext{
-		GenerationContext: ctx,
-		SourceContext:     source,
-		Types:             ctx.TypeManagerCreator(),
-	}
-}
-
 func (g *FileGenerator) generateTypesFromDeclarations(
 	ctx *FileGenerationContext,
 	nodes []parse.TypeDeclarationNode,
@@ -60,7 +49,7 @@ func (g *FileGenerator) Generate(
 	node parse.FileNode,
 ) (*FileInfo, core.ResultList) {
 	var results core.ResultList
-	fileCtx := CreateFileContext(ctx, source)
+	fileCtx := ctx.NewFileGenerationContext(source)
 
 	_, typeResults := g.generateTypesFromDeclarations(fileCtx, node.Types)
 	results.Extend(&typeResults)

@@ -1,7 +1,7 @@
 package gen
 
 import (
-	"strconv"
+	"math/big"
 
 	"alon.kr/x/usm/core"
 )
@@ -26,13 +26,11 @@ func (t TypeDescriptorType) String() string {
 
 type TypeDescriptorInfo struct {
 	Type   TypeDescriptorType
-	Amount core.UsmUint
+	Amount *big.Int
 }
 
 func (i TypeDescriptorInfo) String() string {
-	amount := i.Amount
-	strconv.Itoa(int(i.Amount)) // TODO: remove type conversion. Use bigint instead?
-	return i.Type.String() + strconv.Itoa(int(amount))
+	return i.Type.String() + i.Amount.String()
 }
 
 // A referenced type is a combination of a basic type with (possibly zero)
@@ -44,6 +42,8 @@ type ReferencedTypeInfo struct {
 	// A pointer to the base, named type that this type reference refers to.
 	Base        *NamedTypeInfo
 	Descriptors []TypeDescriptorInfo
+
+	Declaration *core.UnmanagedSourceView
 }
 
 func (t ReferencedTypeInfo) String() string {
@@ -53,6 +53,10 @@ func (t ReferencedTypeInfo) String() string {
 	}
 
 	return s
+}
+
+func (t ReferencedTypeInfo) IsPure() bool {
+	return len(t.Descriptors) == 0
 }
 
 func (info ReferencedTypeInfo) Equal(other ReferencedTypeInfo) bool {

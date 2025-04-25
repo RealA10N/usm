@@ -33,7 +33,7 @@ func (i *AddInstruction) Emulate(
 	return ctx.ContinueToNextInstruction()
 }
 
-func (i *AddInstruction) String() string {
+func (i *AddInstruction) Operator() string {
 	return "ADD"
 }
 

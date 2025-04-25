@@ -23,7 +23,7 @@ func (i *JumpInstruction) Emulate(
 	return ctx.JumpToLabel(labelArgument.Label)
 }
 
-func (i *JumpInstruction) String() string {
+func (i *JumpInstruction) Operator() string {
 	return "J"
 }
 

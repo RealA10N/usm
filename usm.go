@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	aarch64managers "alon.kr/x/usm/aarch64/managers"
+	aarch64translation "alon.kr/x/usm/aarch64/translation"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 	"alon.kr/x/usm/lex"
@@ -164,6 +166,57 @@ func ssaCommand(cmd *cobra.Command, args []string) {
 	fmt.Print(info.String())
 }
 
+func aarch64Command(cmd *cobra.Command, args []string) {
+	view, err := core.ReadSource(cmd.InOrStdin())
+	if err != nil {
+		fmt.Printf("Error reading source: %v\n", err)
+		os.Exit(1)
+	}
+
+	tokens, err := lex.NewTokenizer().Tokenize(view)
+	if err != nil {
+		fmt.Printf("Error tokenizing: %v\n", err)
+		os.Exit(1)
+	}
+
+	tknView := parse.NewTokenView(tokens)
+	node, result := parse.NewFileParser().Parse(&tknView)
+	if result != nil {
+		printResultAndExit(view, result)
+	}
+
+	ctx := aarch64managers.NewGenerationContext()
+	generator := gen.NewFileGenerator()
+	info, results := generator.Generate(ctx, view.Ctx(), node)
+	if !results.IsEmpty() {
+		printResultsAndExit(view, results)
+	}
+
+	object, results := aarch64translation.FileToMachoObject(info)
+	if !results.IsEmpty() {
+		printResultsAndExit(view, results)
+	}
+
+	outputFilepath := filepath.Base(inputFilepath)
+	ext := filepath.Ext(inputFilepath)
+	outputFilename := outputFilepath[:len(outputFilepath)-len(ext)] + ".o"
+
+	file, err := os.Create(outputFilename)
+	if err != nil {
+		fmt.Printf("Error creating output file: %v\n", err)
+		os.Exit(1)
+	}
+	defer file.Close()
+
+	_, err = file.Write(object)
+	if err != nil {
+		fmt.Printf("Error writing to output file: %v\n", err)
+		os.Exit(1)
+	}
+
+	os.Exit(0)
+}
+
 func main() {
 	rootCmd := &cobra.Command{
 		Use:   "usm",
@@ -201,10 +254,20 @@ func main() {
 		PreRunE: setInputSource,
 		Run:     ssaCommand,
 	}
+
+	aarch64Cmd := &cobra.Command{
+		Use:     "aarch64 [file]",
+		Short:   "Generate AArch64 instructions",
+		Args:    cobra.MaximumNArgs(1),
+		PreRunE: setInputSource,
+		Run:     aarch64Command,
+	}
+
 	rootCmd.AddCommand(lexCmd)
 	rootCmd.AddCommand(fmtCmd)
 	rootCmd.AddCommand(emuCmd)
 	rootCmd.AddCommand(ssaCmd)
+	rootCmd.AddCommand(aarch64Cmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

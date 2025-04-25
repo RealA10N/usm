@@ -1,16 +1,18 @@
-package managers
+package gen
 
 import (
 	"crypto/rand"
 	"encoding/hex"
 
 	"alon.kr/x/usm/core"
-	"alon.kr/x/usm/gen"
 )
 
-type LabelMap map[string]*gen.LabelInfo
+// LabelMap is a naive and default implementation of the LabelManger interface.
+// It uses a simple go builtin map to store label information, using label names
+// as keys.
+type LabelMap map[string]*LabelInfo
 
-func (m *LabelMap) GetLabel(name string) *gen.LabelInfo {
+func (m *LabelMap) GetLabel(name string) *LabelInfo {
 	val, ok := (*m)[name]
 	if !ok {
 		return nil
@@ -18,7 +20,7 @@ func (m *LabelMap) GetLabel(name string) *gen.LabelInfo {
 	return val
 }
 
-func (m *LabelMap) NewLabel(label *gen.LabelInfo) core.ResultList {
+func (m *LabelMap) NewLabel(label *LabelInfo) core.ResultList {
 	(*m)[label.Name] = label
 	return core.ResultList{}
 }
@@ -33,15 +35,15 @@ func generateRandomLabelName() (string, error) {
 	return ".L" + hex.EncodeToString(b), nil
 }
 
-func (m *LabelMap) GenerateLabel() *gen.LabelInfo {
+func (m *LabelMap) GenerateLabel() *LabelInfo {
 	name, err := generateRandomLabelName()
 	for err != nil || m.GetLabel(name) != nil {
 		name, err = generateRandomLabelName()
 	}
 
-	return &gen.LabelInfo{Name: name}
+	return &LabelInfo{Name: name}
 }
 
-func NewLabelManager() gen.LabelManager {
+func NewLabelMap(*FileGenerationContext) LabelManager {
 	return &LabelMap{}
 }

@@ -25,7 +25,7 @@ func (i *PutInstruction) Emulate(
 	return ctx.ContinueToNextInstruction()
 }
 
-func (i *PutInstruction) String() string {
+func (i *PutInstruction) Operator() string {
 	return "PUT"
 }
 

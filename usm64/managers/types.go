@@ -1,6 +1,8 @@
 package managers
 
 import (
+	"math/big"
+
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 )
@@ -26,12 +28,8 @@ func (m *TypeMap) NewType(*gen.NamedTypeInfo) core.Result {
 	}
 }
 
-func NewTypeManager() gen.TypeManager {
+func NewTypeManager(*gen.GenerationContext) gen.TypeManager {
 	return &TypeMap{
-		BaseType: &gen.NamedTypeInfo{
-			Name:        "$64",
-			Size:        8,
-			Declaration: nil,
-		},
+		BaseType: gen.NewNamedTypeInfo("$64", big.NewInt(64), nil),
 	}
 }

@@ -18,6 +18,11 @@ const (
 	InternalErrorResult
 	WarningResult
 	HintResult
+
+	// Internal debugging error messages or strings that are not shown to the
+	// user by default.
+	// TODO: add support for printing these.
+	DebugResult
 )
 
 type Result []ResultDetails

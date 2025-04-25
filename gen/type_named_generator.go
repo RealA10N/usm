@@ -1,6 +1,8 @@
 package gen
 
 import (
+	"math/big"
+
 	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/parse"
@@ -22,28 +24,18 @@ func (g *NamedTypeGenerator) calculateTypeSize(
 	ctx *FileGenerationContext,
 	node parse.TypeNode,
 	typeInfo ReferencedTypeInfo,
-) (core.UsmUint, core.ResultList) {
-	size := core.UsmUint(typeInfo.Base.Size)
+) (*big.Int, core.ResultList) {
+	size := new(big.Int).Set(typeInfo.Base.Size)
 
 	for _, descriptor := range typeInfo.Descriptors {
 		switch descriptor.Type {
 		case PointerTypeDescriptor:
-			size = ctx.PointerSize
+			size.Set(ctx.PointerSize)
 		case RepeatTypeDescriptor:
-			var ok bool
-			size, ok = core.Mul(size, descriptor.Amount)
-			if !ok {
-				v := node.View()
-				return 0, list.FromSingle(core.Result{{
-					Type:     core.ErrorResult,
-					Message:  "Type size overflow",
-					Location: &v,
-				}})
-			}
+			size.Mul(size, descriptor.Amount)
 		default:
-			// notest
 			v := node.View()
-			return 0, list.FromSingle(core.Result{{
+			return nil, list.FromSingle(core.Result{{
 				Type:     core.InternalErrorResult,
 				Message:  "Unknown type descriptor",
 				Location: &v,
@@ -58,7 +50,7 @@ func (g *NamedTypeGenerator) Generate(
 	ctx *FileGenerationContext,
 	node parse.TypeDeclarationNode,
 ) (*NamedTypeInfo, core.ResultList) {
-	identifier := viewToSourceString(ctx, node.Identifier)
+	identifier := ViewToSourceString(ctx, node.Identifier)
 	declaration := node.View()
 
 	typeInfo := ctx.Types.GetType(identifier)

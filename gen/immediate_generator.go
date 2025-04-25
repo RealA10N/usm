@@ -43,7 +43,7 @@ func (g *ImmediateArgumentGenerator) Generate(
 	}
 
 	immediate.Start += 1 // to skip the '#' character
-	valueStr := nodeToSourceString(ctx.FileGenerationContext, immediate)
+	valueStr := NodeToSourceString(ctx.FileGenerationContext, immediate)
 	value, ok := new(big.Int).SetString(valueStr, 0)
 	if !ok {
 		v := immediate.View()

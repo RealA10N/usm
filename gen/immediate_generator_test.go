@@ -22,7 +22,7 @@ func TestImmediateValueArgument(t *testing.T) {
 		},
 	}
 
-	intType := &gen.NamedTypeInfo{Name: "$32", Size: 4}
+	intType := gen.NewNamedTypeInfo("$32", big.NewInt(32), nil)
 	types := TypeMap{intType.Name: intType}
 
 	ctx := gen.InstructionGenerationContext{

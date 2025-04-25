@@ -31,16 +31,6 @@ func NewFunctionGenerator() FileContextGenerator[parse.FunctionNode, *FunctionIn
 	)
 }
 
-func (g *FunctionGenerator) createFunctionContext(
-	ctx *FileGenerationContext,
-) *FunctionGenerationContext {
-	return &FunctionGenerationContext{
-		FileGenerationContext: ctx,
-		Registers:             ctx.RegisterManagerCreator(),
-		Labels:                ctx.LabelManagerCreator(),
-	}
-}
-
 func (g *FunctionGenerator) createParameterRegisters(
 	ctx *FunctionGenerationContext,
 	parameters []parse.ParameterNode,
@@ -335,7 +325,7 @@ func (g *FunctionGenerator) Generate(
 	node parse.FunctionNode,
 ) (*FunctionInfo, core.ResultList) {
 	var results core.ResultList
-	funcCtx := g.createFunctionContext(ctx)
+	funcCtx := ctx.NewFunctionGenerationContext()
 
 	parameters, paramResults := g.createParameterRegisters(funcCtx, node.Signature.Parameters)
 	results.Extend(&paramResults)
@@ -350,7 +340,7 @@ func (g *FunctionGenerator) Generate(
 		return nil, results
 	}
 
-	name := viewToSourceString(funcCtx.FileGenerationContext, node.Signature.Identifier)
+	name := ViewToSourceString(funcCtx.FileGenerationContext, node.Signature.Identifier)
 
 	function := &FunctionInfo{
 		Name:       name,

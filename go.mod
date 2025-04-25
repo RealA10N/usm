@@ -3,17 +3,22 @@ module alon.kr/x/usm
 go 1.23.0
 
 require (
+	alon.kr/x/aarch64codegen v0.0.0-20250423211537-52c2f85d1367
+	alon.kr/x/faststringmap v0.0.0-20250425112818-35d6525968e3
 	alon.kr/x/graph v0.0.0-20250319212444-dd67d0281ab7
 	alon.kr/x/list v0.0.0-20241203223347-3173d76828c0
+	alon.kr/x/macho v0.0.0-20250223221041-f8d79ee3c9c1
 	alon.kr/x/set v0.0.0-20250319203758-c0328d5645c9
 	alon.kr/x/stack v0.0.0-20241231201659-c96903670d6f
 	alon.kr/x/view v0.0.0-20241117132723-5c30dbef3c86
+	github.com/agnivade/levenshtein v1.2.1
 	github.com/fatih/color v1.18.0
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.10.0
 )
 
 require (
+	alon.kr/x/writertoutils v1.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect

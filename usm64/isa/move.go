@@ -25,7 +25,7 @@ func (i *MoveInstruction) Emulate(
 	return ctx.ContinueToNextInstruction()
 }
 
-func (i *MoveInstruction) String() string {
+func (i *MoveInstruction) Operator() string {
 	return ""
 }
 

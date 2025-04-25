@@ -17,7 +17,7 @@ func (i *TerminateInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultLis
 	return gen.StepInfo{PossibleReturn: true}, core.ResultList{}
 }
 
-func (i *TerminateInstruction) String() string {
+func (i *TerminateInstruction) Operator() string {
 	return "TERM"
 }
 

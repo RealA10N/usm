@@ -36,7 +36,7 @@ func (i *JumpNotZeroInstruction) Emulate(
 	}
 }
 
-func (i *JumpNotZeroInstruction) String() string {
+func (i *JumpNotZeroInstruction) Operator() string {
 	return "JNZ"
 }
 
