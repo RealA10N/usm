@@ -14,10 +14,7 @@ func NewInstructionManager() gen.InstructionManager {
 			{Key: "movz", Value: aarch64isa.NewMovzInstructionDefinition()},
 
 			// Arithmetic
-			{Key: "add", Value: aarch64isa.NewAddInstructionDefinition(immediates.DoNotSetFlags)},
-			{Key: "adds", Value: aarch64isa.NewAddInstructionDefinition(immediates.DoSetFlags)},
-			{Key: "sub", Value: aarch64isa.NewSubInstructionDefinition(immediates.DoNotSetFlags)},
-			{Key: "subs", Value: aarch64isa.NewSubInstructionDefinition(immediates.DoSetFlags)},
+			{Key: "add", Value: aarch64isa.NewAddInstructionDefinition()},
 
 			// Control flow
 			{Key: "b", Value: aarch64isa.NewBranchInstructionDefinition()},
