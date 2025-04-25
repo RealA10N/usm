@@ -25,7 +25,7 @@ func (g *LabelDefinitionGenerator) Generate(
 	ctx *FunctionGenerationContext,
 	node parse.LabelNode,
 ) (*LabelInfo, core.ResultList) {
-	name := nodeToSourceString(ctx.FileGenerationContext, node)
+	name := NodeToSourceString(ctx.FileGenerationContext, node)
 	labelInfo := ctx.Labels.GetLabel(name)
 	declaration := node.View()
 

@@ -22,7 +22,7 @@ func (g *ReferencedTypeGenerator) Generate(
 	ctx *FileGenerationContext,
 	node parse.TypeNode,
 ) (ReferencedTypeInfo, core.ResultList) {
-	baseIdentifier := viewToSourceString(ctx, node.Identifier)
+	baseIdentifier := ViewToSourceString(ctx, node.Identifier)
 	baseType := ctx.Types.GetType(baseIdentifier)
 
 	if baseType == nil {

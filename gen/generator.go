@@ -38,6 +38,16 @@ type GenerationContext struct {
 	PointerSize *big.Int
 }
 
+func (ctx *GenerationContext) NewFileGenerationContext(
+	source core.SourceContext,
+) *FileGenerationContext {
+	return &FileGenerationContext{
+		GenerationContext: ctx,
+		SourceContext:     source,
+		Types:             ctx.TypeManagerCreator(ctx),
+	}
+}
+
 type FileGenerationContext struct {
 	*GenerationContext
 
@@ -50,6 +60,14 @@ type FileGenerationContext struct {
 	Types TypeManager
 
 	// TODO: add globals, variables, constants.
+}
+
+func (ctx *FileGenerationContext) NewFunctionGenerationContext() *FunctionGenerationContext {
+	return &FunctionGenerationContext{
+		FileGenerationContext: ctx,
+		Registers:             ctx.RegisterManagerCreator(ctx),
+		Labels:                ctx.LabelManagerCreator(ctx),
+	}
 }
 
 type FunctionGenerationContext struct {
@@ -105,16 +123,16 @@ type InstructionContextGenerator[NodeT parse.Node, InfoT any] interface {
 
 // MARK: Utils
 
-func viewToSourceString(
+func ViewToSourceString(
 	ctx *FileGenerationContext,
 	view core.UnmanagedSourceView,
 ) string {
 	return string(view.Raw(ctx.SourceContext))
 }
 
-func nodeToSourceString(
+func NodeToSourceString(
 	ctx *FileGenerationContext,
 	node parse.Node,
 ) string {
-	return viewToSourceString(ctx, node.View())
+	return ViewToSourceString(ctx, node.View())
 }

@@ -84,7 +84,7 @@ func (g *InstructionGenerator) generateLabels(
 ) ([]*LabelInfo, core.ResultList) {
 	labels := make([]*LabelInfo, 0, len(node.Labels))
 	for _, node := range node.Labels {
-		name := nodeToSourceString(ctx.FileGenerationContext, node)
+		name := NodeToSourceString(ctx.FileGenerationContext, node)
 		label := ctx.Labels.GetLabel(name)
 		if label == nil {
 			v := node.View()
@@ -120,7 +120,7 @@ func (g *InstructionGenerator) Generate(
 		InstructionInfo:           NewEmptyInstructionInfo(&v),
 	}
 
-	instName := viewToSourceString(ctx.FileGenerationContext, node.Operator)
+	instName := ViewToSourceString(ctx.FileGenerationContext, node.Operator)
 	instDef, results := ctx.Instructions.GetInstructionDefinition(instName, node)
 
 	arguments, curResults := g.generateArguments(&instCtx, node)

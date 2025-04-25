@@ -49,7 +49,7 @@ func (g *LabelArgumentGenerator) Generate(
 	ctx *InstructionGenerationContext,
 	node parse.LabelNode,
 ) (ArgumentInfo, core.ResultList) {
-	name := nodeToSourceString(ctx.FileGenerationContext, node)
+	name := NodeToSourceString(ctx.FileGenerationContext, node)
 	labelInfo := ctx.Labels.GetLabel(name)
 
 	if labelInfo == nil {

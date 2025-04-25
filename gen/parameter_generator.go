@@ -55,7 +55,7 @@ func (g *ParameterGenerator) Generate(
 		return nil, results
 	}
 
-	registerName := nodeToSourceString(ctx.FileGenerationContext, node.Register)
+	registerName := NodeToSourceString(ctx.FileGenerationContext, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	if registerInfo != nil {
 		return registerInfo, core.ResultList{}

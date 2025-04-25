@@ -39,7 +39,7 @@ func (g *DescriptorGenerator) parseDescriptorAmount(
 	}
 
 	numView := decorator.Subview(1, decorator.Len())
-	numStr := viewToSourceString(ctx, numView)
+	numStr := ViewToSourceString(ctx, numView)
 	num, ok := new(big.Int).SetString(numStr, 10)
 
 	if !ok || num.Sign() < 0 {

@@ -50,7 +50,7 @@ func (g *NamedTypeGenerator) Generate(
 	ctx *FileGenerationContext,
 	node parse.TypeDeclarationNode,
 ) (*NamedTypeInfo, core.ResultList) {
-	identifier := viewToSourceString(ctx, node.Identifier)
+	identifier := ViewToSourceString(ctx, node.Identifier)
 	declaration := node.View()
 
 	typeInfo := ctx.Types.GetType(identifier)

@@ -1,32 +1,27 @@
 package aarch64managers
 
 import (
-	"alon.kr/x/aarch64codegen/registers"
+	"alon.kr/x/faststringmap"
 	"alon.kr/x/list"
 	aarch64translation "alon.kr/x/usm/aarch64/translation"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 )
 
-const numOfRegisters = registers.GPRegisterXZR + 1
-
 // Currently, only 64 bit registers are supported in aarch64.
-// There are 31 general purpose registers, named X0-X30, and one zero register,
-// XZR. Although the zero register is not a general purpose register, it can be
-// used as a general purpose register in instructions, so it is included here.
+// There are 31 general purpose registers, named x0-x30, one zero register named
+// xzr, and one stack pointer register named sp.
 type Aarch64RegisterManager struct {
-	// Registers are defined lazily, where X{i} is stored in register[i] if defined,
-	// or is nil if it is not defined.
-	registers [numOfRegisters]*gen.RegisterInfo
+	faststringmap.Map[*gen.RegisterInfo]
 }
 
 func (m *Aarch64RegisterManager) GetRegister(name string) *gen.RegisterInfo {
-	gpr, ok := aarch64translation.RegisterNameToAarch64GPRegister(name)
+	reg, ok := m.LookupString(name)
 	if !ok {
 		return nil
 	}
 
-	return m.registers[gpr]
+	return reg
 }
 
 func (m *Aarch64RegisterManager) NewRegister(reg *gen.RegisterInfo) core.ResultList {
@@ -50,13 +45,21 @@ func (m *Aarch64RegisterManager) DeleteRegister(reg *gen.RegisterInfo) core.Resu
 }
 
 func (m *Aarch64RegisterManager) Size() int {
-	return len(m.registers)
+	return len(aarch64translation.AllRegisterNames)
 }
 
 func (m *Aarch64RegisterManager) GetAllRegisters() []*gen.RegisterInfo {
-	registers := []*gen.RegisterInfo{}
-	for _, register := range m.registers {
-		registers = append(registers, register)
+	registers := make(
+		[]*gen.RegisterInfo,
+		0,
+		len(aarch64translation.AllRegisterNames),
+	)
+
+	for _, name := range aarch64translation.AllRegisterNames {
+		reg, ok := m.LookupString(name)
+		if ok { // Should always be true
+			registers = append(registers, reg)
+		}
 	}
 
 	return registers
@@ -64,18 +67,25 @@ func (m *Aarch64RegisterManager) GetAllRegisters() []*gen.RegisterInfo {
 
 func NewRegisterManager(fileCtx *gen.FileGenerationContext) gen.RegisterManager {
 	type64 := fileCtx.Types.GetType("$64")
-	regs := [numOfRegisters]*gen.RegisterInfo{}
 
-	for gpr := registers.GPRegister(0); gpr < numOfRegisters; gpr++ {
+	numOfRegisters := len(aarch64translation.AllRegisterNames)
+	entries := make([]faststringmap.MapEntry[*gen.RegisterInfo], 0, numOfRegisters)
+
+	for _, name := range aarch64translation.AllRegisterNames {
 		info := gen.NewRegisterInfo(
-			"%"+gpr.String(),
+			name,
 			gen.ReferencedTypeInfo{Base: type64},
 		)
 
-		regs[gpr] = info
+		entry := faststringmap.MapEntry[*gen.RegisterInfo]{
+			Key:   name,
+			Value: info,
+		}
+
+		entries = append(entries, entry)
 	}
 
 	return &Aarch64RegisterManager{
-		registers: regs,
+		Map: faststringmap.NewMap[*gen.RegisterInfo](entries),
 	}
 }

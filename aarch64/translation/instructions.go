@@ -45,17 +45,7 @@ func Immediate12InstructionToAarch64(
 	imm immediates.Immediate12,
 	results core.ResultList,
 ) {
-	curResults := AssertTargetsExactly(info, 1)
-	results.Extend(&curResults)
-
-	curResults = AssertArgumentsExactly(info, 2)
-	results.Extend(&curResults)
-
-	if !results.IsEmpty() {
-		return
-	}
-
-	Xd, curResults = TargetToAarch64GPorSPRegister(info.Targets[0])
+	Xd, curResults := TargetToAarch64GPorSPRegister(info.Targets[0])
 	results.Extend(&results)
 
 	Xn, curResults = ArgumentToAarch64GPorSPRegister(info.Arguments[0])
