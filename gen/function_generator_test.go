@@ -1,7 +1,6 @@
 package gen_test
 
 import (
-	"math/big"
 	"testing"
 
 	"alon.kr/x/usm/core"
@@ -26,16 +25,13 @@ func generateFunctionFromSource(
 	node, result := parse.NewFunctionParser().Parse(&tknView)
 	assert.Nil(t, result)
 
-	intType := gen.NewNamedTypeInfo("$32", big.NewInt(32), nil)
+	ctx := testGenerationContext.NewFileGenerationContext(sourceView.Ctx())
 
-	ctx := &gen.FileGenerationContext{
-		GenerationContext: &testGenerationContext,
-		SourceContext:     sourceView.Ctx(),
-		Types:             &TypeMap{intType.Name: intType},
-	}
+	funcGlobalGen := gen.NewFunctionGlobalGenerator()
+	funcGlobalGen.Generate(ctx, node)
 
-	generator := gen.NewFunctionGenerator()
-	return generator.Generate(ctx, node)
+	funcGen := gen.NewFunctionGenerator()
+	return funcGen.Generate(ctx, node)
 }
 
 func TestSimpleFunctionGeneration(t *testing.T) {

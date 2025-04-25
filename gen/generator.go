@@ -13,6 +13,7 @@ type ManagerCreators struct {
 	RegisterManagerCreator func(*FileGenerationContext) RegisterManager
 	LabelManagerCreator    func(*FileGenerationContext) LabelManager
 	TypeManagerCreator     func(*GenerationContext) TypeManager
+	GlobalManagerCreator   func(*GenerationContext) GlobalManager
 }
 
 // This structure is the most broad level of generation context.
@@ -45,6 +46,7 @@ func (ctx *GenerationContext) NewFileGenerationContext(
 		GenerationContext: ctx,
 		SourceContext:     source,
 		Types:             ctx.TypeManagerCreator(ctx),
+		Globals:           ctx.GlobalManagerCreator(ctx),
 	}
 }
 
@@ -59,7 +61,9 @@ type FileGenerationContext struct {
 	// new type definitions.
 	Types TypeManager
 
-	// TODO: add globals, variables, constants.
+	// A type manager that contains all declared and defines globals in the file.
+	// This includes function definitions and "extern" declarations.
+	Globals GlobalManager
 }
 
 func (ctx *FileGenerationContext) NewFunctionGenerationContext() *FunctionGenerationContext {

@@ -320,11 +320,42 @@ func (g *FunctionGenerator) generateBasicBlocks(
 	return core.ResultList{}
 }
 
+func (g *FunctionGenerator) getFunctionInfo(
+	ctx *FileGenerationContext,
+	node parse.FunctionNode,
+) (*FunctionInfo, core.ResultList) {
+	name := ViewToSourceString(ctx, node.Signature.Identifier)
+	global := ctx.Globals.GetGlobal(name)
+	if global == nil {
+		return nil, list.FromSingle(core.Result{
+			{
+				Type:     core.InternalErrorResult,
+				Message:  "Function global not found",
+				Location: &node.UnmanagedSourceView,
+			},
+		})
+	}
+
+	functionGlobal, ok := global.(*FunctionGlobalInfo)
+	if !ok {
+		return nil, list.FromSingle(core.Result{
+			{
+				Type:     core.InternalErrorResult,
+				Message:  "Function global is not a function",
+				Location: &node.UnmanagedSourceView,
+			},
+		})
+	}
+
+	function := functionGlobal.FunctionInfo
+	return function, core.ResultList{}
+}
+
 func (g *FunctionGenerator) Generate(
 	ctx *FileGenerationContext,
 	node parse.FunctionNode,
 ) (*FunctionInfo, core.ResultList) {
-	var results core.ResultList
+	results := core.ResultList{}
 	funcCtx := ctx.NewFunctionGenerationContext()
 
 	parameters, paramResults := g.createParameterRegisters(funcCtx, node.Signature.Parameters)
@@ -340,17 +371,15 @@ func (g *FunctionGenerator) Generate(
 		return nil, results
 	}
 
-	name := ViewToSourceString(funcCtx.FileGenerationContext, node.Signature.Identifier)
-
-	function := &FunctionInfo{
-		Name:        name,
-		Declaration: &node.UnmanagedSourceView,
-		EntryBlock:  nil, // will be defined later.
-		Registers:   funcCtx.Registers,
-		Labels:      funcCtx.Labels,
-		Parameters:  parameters,
-		Targets:     targets,
+	function, results := g.getFunctionInfo(ctx, node)
+	if !results.IsEmpty() {
+		return nil, results
 	}
+
+	function.Registers = funcCtx.Registers
+	function.Labels = funcCtx.Labels
+	function.Parameters = parameters
+	function.Targets = targets
 
 	instructions, results := g.generateInstructions(funcCtx, node.Instructions.Nodes)
 	if !results.IsEmpty() {

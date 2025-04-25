@@ -11,6 +11,7 @@ func NewManagerCreators() gen.ManagerCreators {
 		RegisterManagerCreator: NewRegisterManager,
 		LabelManagerCreator:    gen.NewLabelMap,
 		TypeManagerCreator:     NewTypeManager,
+		GlobalManagerCreator:   gen.NewGlobalMap,
 	}
 }
 
