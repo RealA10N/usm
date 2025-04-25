@@ -16,6 +16,7 @@ type Branch struct {
 func (b Branch) Operator() string {
 	return "b"
 }
+
 func (b Branch) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{
 		PossibleBranches: []*gen.LabelInfo{b.Target},
