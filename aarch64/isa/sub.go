@@ -1,7 +1,6 @@
 package aarch64isa
 
 import (
-	"alon.kr/x/aarch64codegen/immediates"
 	"alon.kr/x/aarch64codegen/instructions"
 	"alon.kr/x/list"
 	aarch64codegen "alon.kr/x/usm/aarch64/codegen"
@@ -18,12 +17,12 @@ func (BaseSub) Operator() string {
 	return "sub"
 }
 
-type Sub struct {
+type SubReg struct {
 	BaseSub
-	instructions.Sub
+	instructions.SubShiftedRegister
 }
 
-func (i Sub) Generate(
+func (i SubReg) Generate(
 	*aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
 	return i, core.ResultList{}
@@ -31,7 +30,7 @@ func (i Sub) Generate(
 
 type SubImm struct {
 	BaseSub
-	instructions.SubImm
+	instructions.SubImmediate
 }
 
 func (i SubImm) Generate(
@@ -40,56 +39,31 @@ func (i SubImm) Generate(
 	return i, core.ResultList{}
 }
 
-type SubDefinition struct {
-	immediates.SetFlags
-}
+type SubDefinition struct{}
 
-func (d SubDefinition) buildRegisterVariant(
+func (SubDefinition) buildRegisterVariant(
 	info *gen.InstructionInfo,
 ) (gen.BaseInstruction, core.ResultList) {
-	results := core.ResultList{}
-
-	Xd, curResults := aarch64translation.TargetToAarch64GPRegister(info.Targets[0])
-	results.Extend(&results)
-
-	Xn, curResults := aarch64translation.ArgumentToAarch64GPRegister(info.Arguments[0])
-	results.Extend(&curResults)
-
-	// TODO: Add shifted register support
-	Xm, results := aarch64translation.ArgumentToAarch64GPRegister(info.Arguments[1])
-	results.Extend(&curResults)
-
+	Xd, Xn, Xm, results := aarch64translation.BinaryInstructionToAarch64(info)
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
-	return Sub{
-		Sub: instructions.SUB(Xd, Xn, Xm, d.SetFlags),
+	return SubReg{
+		SubShiftedRegister: instructions.NewSubShiftedRegister(Xd, Xn, Xm),
 	}, core.ResultList{}
 }
 
 func (SubDefinition) buildImmediateVariant(
 	info *gen.InstructionInfo,
 ) (gen.BaseInstruction, core.ResultList) {
-
-	results := core.ResultList{}
-
-	Xd, curResults := aarch64translation.TargetToAarch64GPRegister(info.Targets[0])
-	results.Extend(&results)
-
-	Xn, curResults := aarch64translation.ArgumentToAarch64GPorSPRegister(info.Arguments[0])
-	results.Extend(&curResults)
-
-	// TODO: Add shifted immediate support
-	imm, curResults := aarch64translation.ArgumentToAarch64Immediate12(info.Arguments[1])
-	results.Extend(&curResults)
-
+	Xd, Xn, imm, results := aarch64translation.Immediate12GPRegisterTargetInstructionToAarch64(info)
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
 	return SubImm{
-		SubImm: instructions.SUBI(Xd, Xn, imm),
+		SubImmediate: instructions.NewSubImmediate(Xd, Xn, imm),
 	}, core.ResultList{}
 }
 
@@ -126,6 +100,6 @@ func (d SubDefinition) BuildInstruction(
 	}
 }
 
-func NewSubInstructionDefinition(setFlags immediates.SetFlags) gen.InstructionDefinition {
-	return SubDefinition{SetFlags: setFlags}
+func NewSubInstructionDefinition() gen.InstructionDefinition {
+	return SubDefinition{}
 }
