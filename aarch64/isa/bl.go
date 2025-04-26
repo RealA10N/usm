@@ -3,6 +3,7 @@ package aarch64isa
 import (
 	"alon.kr/x/aarch64codegen/instructions"
 	"alon.kr/x/list"
+	"alon.kr/x/macho/load/section64"
 	aarch64codegen "alon.kr/x/usm/aarch64/codegen"
 	aarch64translation "alon.kr/x/usm/aarch64/translation"
 	"alon.kr/x/usm/core"
@@ -23,11 +24,29 @@ func (b Bl) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
 }
 
+func (b Bl) registerRelocation(ctx *aarch64codegen.InstructionCodegenContext) {
+	relocation := section64.RelocationBuilder{
+		Address:                uint32(ctx.InstructionOffsetInFile()),
+		SymbolIndex:            ctx.FunctionIndices[b.Target],
+		IsRelocationPcRelative: true,
+		Length:                 section64.RelocationLengthLong,
+		IsRelocationExtern:     true,
+		Type:                   section64.RelocationTypeArm64Branch26,
+	}
+
+	ctx.Relocations = append(ctx.Relocations, relocation)
+}
+
 func (b Bl) Generate(
 	ctx *aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
-	targetOffset := ctx.FunctionOffsets[b.Target]
-	currentOffset := ctx.FunctionOffsets[ctx.FunctionInfo] + ctx.InstructionOffsetInFunction
+	targetOffset, ok := ctx.FunctionOffsets[b.Target]
+	if !ok {
+		b.registerRelocation(ctx)
+		return instructions.BL(0), core.ResultList{}
+	}
+
+	currentOffset := ctx.InstructionOffsetInFile()
 	offset, err := aarch64translation.Uint64DiffToOffset26Align4(targetOffset, currentOffset)
 
 	if err != nil {

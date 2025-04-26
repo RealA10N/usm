@@ -27,6 +27,10 @@ type InstructionCodegenContext struct {
 	InstructionOffsetInFunction uint64
 }
 
+func (ctx *InstructionCodegenContext) InstructionOffsetInFile() uint64 {
+	return ctx.InstructionOffsetInFunction + ctx.FunctionOffsets[ctx.FunctionInfo]
+}
+
 func (ctx *InstructionCodegenContext) Codegen(
 	buffer *bytes.Buffer,
 ) core.ResultList {

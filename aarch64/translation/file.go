@@ -48,6 +48,7 @@ func FileToMachoObject(file *gen.FileInfo) ([]byte, core.ResultList) {
 		SegmentName: [16]byte{'_', '_', 'T', 'E', 'X', 'T', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		Data:        data.Bytes(),
 		Flags:       section64.AttrPureInstructions | section64.AttrSomeInstructions,
+		Relocations: fileCtx.Relocations,
 	}
 
 	segmentBuilder := segment64.Segment64Builder{
