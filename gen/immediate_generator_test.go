@@ -39,11 +39,10 @@ func TestImmediateValueArgument(t *testing.T) {
 
 	generator := gen.NewImmediateArgumentGenerator()
 	argument, results := generator.Generate(&ctx, node)
-
 	assert.True(t, results.IsEmpty())
-	assert.Equal(t, intType, argument.GetType().Base)
 
 	immediateArgument, ok := argument.(*gen.ImmediateInfo)
 	assert.True(t, ok)
+	assert.Equal(t, intType, immediateArgument.Type.Base)
 	assert.Zero(t, immediateArgument.Value.Cmp(big.NewInt(1337)))
 }

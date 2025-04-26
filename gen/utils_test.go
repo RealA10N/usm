@@ -1,7 +1,6 @@
 package gen_test
 
 import (
-	"fmt"
 	"math/big"
 
 	"alon.kr/x/usm/core"
@@ -64,29 +63,6 @@ func (m *RegisterMap) GetAllRegisters() []*gen.RegisterInfo {
 	return registers
 }
 
-// MARK: LabelMap
-
-type LabelMap map[string]*gen.LabelInfo
-
-func (m *LabelMap) GetLabel(name string) *gen.LabelInfo {
-	val, ok := (*m)[name]
-	if !ok {
-		return nil
-	}
-	return val
-}
-
-func (m *LabelMap) NewLabel(label *gen.LabelInfo) core.ResultList {
-	(*m)[label.Name] = label
-	return core.ResultList{}
-}
-
-func (m *LabelMap) GenerateLabel() *gen.LabelInfo {
-	return &gen.LabelInfo{
-		Name: ".L" + fmt.Sprint(len(*m)),
-	}
-}
-
 // MARK: Context
 
 var testInstructionSet = gen.InstructionManager(
@@ -99,15 +75,17 @@ var testInstructionSet = gen.InstructionManager(
 )
 
 var testManagerCreators = gen.ManagerCreators{
-	LabelManagerCreator: func(*gen.FileGenerationContext) gen.LabelManager {
-		return gen.LabelManager(&LabelMap{})
-	},
+	LabelManagerCreator: gen.NewLabelMap,
 	RegisterManagerCreator: func(*gen.FileGenerationContext) gen.RegisterManager {
 		return gen.RegisterManager(&RegisterMap{})
 	},
 	TypeManagerCreator: func(*gen.GenerationContext) gen.TypeManager {
-		return gen.TypeManager(&TypeMap{})
+		manager := gen.TypeManager(&TypeMap{})
+		typ := gen.NewNamedTypeInfo("$32", big.NewInt(32), nil)
+		manager.NewType(typ)
+		return manager
 	},
+	GlobalManagerCreator: gen.NewGlobalMap,
 }
 
 var testGenerationContext = gen.GenerationContext{

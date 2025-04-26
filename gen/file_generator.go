@@ -6,28 +6,47 @@ import (
 )
 
 type FileGenerator struct {
-	NamedTypeGenerator FileContextGenerator[parse.TypeDeclarationNode, *NamedTypeInfo]
-	FunctionGenerator  FileContextGenerator[parse.FunctionNode, *FunctionInfo]
+	NamedTypeGenerator      FileContextGenerator[parse.TypeDeclarationNode, *NamedTypeInfo]
+	FunctionGenerator       FileContextGenerator[parse.FunctionNode, *FunctionInfo]
+	FunctionGlobalGenerator FileContextGenerator[parse.FunctionNode, GlobalInfo]
 }
 
 func NewFileGenerator() FileGenerator {
 	return FileGenerator{
-		NamedTypeGenerator: NewNamedTypeGenerator(),
-		FunctionGenerator:  NewFunctionGenerator(),
+		NamedTypeGenerator:      NewNamedTypeGenerator(),
+		FunctionGenerator:       NewFunctionGenerator(),
+		FunctionGlobalGenerator: NewFunctionGlobalGenerator(),
 	}
 }
 
 func (g *FileGenerator) generateTypesFromDeclarations(
 	ctx *FileGenerationContext,
 	nodes []parse.TypeDeclarationNode,
-) (types []*NamedTypeInfo, results core.ResultList) {
-	types = make([]*NamedTypeInfo, len(nodes))
-	for i, node := range nodes {
-		typeInfo, curResults := g.NamedTypeGenerator.Generate(ctx, node)
-		types[i] = typeInfo
+) (results core.ResultList) {
+	for _, node := range nodes {
+		_, curResults := g.NamedTypeGenerator.Generate(ctx, node)
 		results.Extend(&curResults)
 	}
-	return types, results
+	return results
+}
+
+func (g *FileGenerator) generateFunctionGlobals(
+	ctx *FileGenerationContext,
+	nodes []parse.FunctionNode,
+) (results core.ResultList) {
+	for _, node := range nodes {
+		_, curResults := g.FunctionGlobalGenerator.Generate(ctx, node)
+		results.Extend(&curResults)
+	}
+
+	return results
+}
+
+func (g *FileGenerator) generateGlobals(
+	ctx *FileGenerationContext,
+	node parse.FileNode,
+) (results core.ResultList) {
+	return g.generateFunctionGlobals(ctx, node.Functions)
 }
 
 func (g *FileGenerator) generateFunctions(
@@ -48,11 +67,17 @@ func (g *FileGenerator) Generate(
 	source core.SourceContext,
 	node parse.FileNode,
 ) (*FileInfo, core.ResultList) {
-	var results core.ResultList
 	fileCtx := ctx.NewFileGenerationContext(source)
 
-	_, typeResults := g.generateTypesFromDeclarations(fileCtx, node.Types)
-	results.Extend(&typeResults)
+	results := g.generateTypesFromDeclarations(fileCtx, node.Types)
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	results = g.generateGlobals(fileCtx, node)
+	if !results.IsEmpty() {
+		return nil, results
+	}
 
 	functions, functionResults := g.generateFunctions(fileCtx, node.Functions)
 	results.Extend(&functionResults)

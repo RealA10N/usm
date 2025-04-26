@@ -8,5 +8,5 @@ func @main {
     %x1 = add %x1 $12 #1
     b .loop
 .end
-    RET
+    ret
 }

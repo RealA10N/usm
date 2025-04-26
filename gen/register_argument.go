@@ -23,10 +23,6 @@ func (i *RegisterArgumentInfo) String() string {
 	return i.Register.String()
 }
 
-func (i *RegisterArgumentInfo) GetType() *ReferencedTypeInfo {
-	return &i.Register.Type
-}
-
 func (i *RegisterArgumentInfo) Declaration() *core.UnmanagedSourceView {
 	return i.declaration
 }

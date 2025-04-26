@@ -13,10 +13,6 @@ type ImmediateInfo struct {
 	// TODO: more complex and complete representation of immediate structs.
 }
 
-func (i *ImmediateInfo) GetType() *ReferencedTypeInfo {
-	return &i.Type
-}
-
 func (i *ImmediateInfo) Declaration() *core.UnmanagedSourceView {
 	return &i.declaration
 }
