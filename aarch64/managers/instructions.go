@@ -21,6 +21,7 @@ func NewInstructionManager() gen.InstructionManager {
 
 			// Control flow
 			{Key: "b", Value: aarch64isa.NewBranchInstructionDefinition()},
+			{Key: "bl", Value: aarch64isa.NewBlInstructionDefinition()},
 			{Key: "ret", Value: aarch64isa.NewRetInstructionDefinition()},
 
 			// Conditional branches
