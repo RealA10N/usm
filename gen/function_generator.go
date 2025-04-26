@@ -355,31 +355,40 @@ func (g *FunctionGenerator) Generate(
 	ctx *FileGenerationContext,
 	node parse.FunctionNode,
 ) (*FunctionInfo, core.ResultList) {
-	results := core.ResultList{}
-	funcCtx := ctx.NewFunctionGenerationContext()
-
-	parameters, paramResults := g.createParameterRegisters(funcCtx, node.Signature.Parameters)
-	results.Extend(&paramResults)
-
-	targets, targetResults := g.generateTargets(funcCtx, node.Signature.Returns)
-	results.Extend(&targetResults)
-
-	labels, labelResults := g.collectLabelDefinitions(funcCtx, node.Instructions.Nodes)
-	results.Extend(&labelResults)
-
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
 	function, results := g.getFunctionInfo(ctx, node)
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
+	funcCtx := ctx.NewFunctionGenerationContext()
 	function.Registers = funcCtx.Registers
 	function.Labels = funcCtx.Labels
+
+	parameters, curResults := g.createParameterRegisters(funcCtx, node.Signature.Parameters)
+	results.Extend(&curResults)
+
+	targets, curResults := g.generateTargets(funcCtx, node.Signature.Returns)
+	results.Extend(&curResults)
+
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
 	function.Parameters = parameters
 	function.Targets = targets
+
+	if node.Instructions == nil {
+		// If the function has no instructions, it means it is not defined, just
+		// declared. We can now just return.
+		return function, core.ResultList{}
+	}
+
+	labels, curResults := g.collectLabelDefinitions(funcCtx, node.Instructions.Nodes)
+	results.Extend(&curResults)
+
+	if !results.IsEmpty() {
+		return nil, results
+	}
 
 	instructions, results := g.generateInstructions(funcCtx, node.Instructions.Nodes)
 	if !results.IsEmpty() {
