@@ -30,10 +30,14 @@ func FileToMachoObject(file *gen.FileInfo) ([]byte, core.ResultList) {
 	for _, function := range file.Functions {
 		symbol := nlist64_builders.SectionNlist64Builder{
 			Name:        "_" + function.Name[1:],
-			Type:        nlist64.ExternalSymbol | nlist64.SectionSymbolType,
-			Section:     1,
-			Offset:      fileCtx.FunctionOffsets[function],
+			Type:        nlist64.ExternalSymbol,
 			Description: nlist64.ReferenceFlagUndefinedNonLazy,
+		}
+
+		if function.IsDefined() {
+			symbol.Type |= nlist64.SectionSymbolType
+			symbol.Section = 1
+			symbol.Offset = fileCtx.FunctionOffsets[function]
 		}
 
 		symbols = append(symbols, symbol)
