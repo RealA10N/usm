@@ -119,9 +119,9 @@ func ArgumentToAarch64GPorSPRegister(
 	return RegisterToAarch64GPOrSPRegister(register.Register)
 }
 
-func ArgumentToBigInt(
+func ArgumentToImmediateInfo(
 	argument gen.ArgumentInfo,
-) (*big.Int, core.ResultList) {
+) (*gen.ImmediateInfo, core.ResultList) {
 	imm, ok := argument.(*gen.ImmediateInfo)
 	if !ok {
 		return nil, list.FromSingle(core.Result{
@@ -133,7 +133,7 @@ func ArgumentToBigInt(
 		})
 	}
 
-	return imm.Value, core.ResultList{}
+	return imm, core.ResultList{}
 }
 
 func ArgumentToAarch64Immediate12(
@@ -141,17 +141,17 @@ func ArgumentToAarch64Immediate12(
 ) (immediates.Immediate12, core.ResultList) {
 	// TODO: remove code duplication with other immediate types.
 
-	results := AssertIntegerTypeOfSize(*argument.GetType(), big.NewInt(12))
+	info, results := ArgumentToImmediateInfo(argument)
 	if !results.IsEmpty() {
 		return 0, results
 	}
 
-	bigInt, results := ArgumentToBigInt(argument)
+	results = AssertIntegerTypeOfSize(info.Type, big.NewInt(12))
 	if !results.IsEmpty() {
 		return 0, results
 	}
 
-	return BigIntToAarch64Immediate12(argument.Declaration(), bigInt)
+	return BigIntToAarch64Immediate12(argument.Declaration(), info.Value)
 }
 
 func BigIntToAarch64Immediate12(
@@ -183,17 +183,17 @@ fail:
 func ArgumentToAarch64Immediate16(
 	argument gen.ArgumentInfo,
 ) (immediates.Immediate16, core.ResultList) {
-	results := AssertIntegerTypeOfSize(*argument.GetType(), big.NewInt(16))
+	info, results := ArgumentToImmediateInfo(argument)
 	if !results.IsEmpty() {
 		return 0, results
 	}
 
-	bigInt, results := ArgumentToBigInt(argument)
+	results = AssertIntegerTypeOfSize(info.Type, big.NewInt(16))
 	if !results.IsEmpty() {
 		return 0, results
 	}
 
-	return BigIntToAarch64Immediate16(argument.Declaration(), bigInt)
+	return BigIntToAarch64Immediate16(argument.Declaration(), info.Value)
 }
 
 func BigIntToAarch64Immediate16(
@@ -283,12 +283,12 @@ func BigIntToAarch64MovShift(
 func ArgumentToAarch64MovShift(
 	argument gen.ArgumentInfo,
 ) (instructions.MovShift, core.ResultList) {
-	bigInt, results := ArgumentToBigInt(argument)
+	info, results := ArgumentToImmediateInfo(argument)
 	if !results.IsEmpty() {
 		return 0, results
 	}
 
-	return BigIntToAarch64MovShift(argument.Declaration(), bigInt)
+	return BigIntToAarch64MovShift(argument.Declaration(), info.Value)
 }
 
 func ArgumentToLabelInfo(argument gen.ArgumentInfo) (*gen.LabelInfo, core.ResultList) {

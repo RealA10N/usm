@@ -23,10 +23,6 @@ func NewLabelArgumentInfo(
 	}
 }
 
-func (i *LabelArgumentInfo) GetType() *ReferencedTypeInfo {
-	return nil // Label argument does not have a type
-}
-
 func (i *LabelArgumentInfo) Declaration() *core.UnmanagedSourceView {
 	return i.declaration
 }
