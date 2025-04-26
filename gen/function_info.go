@@ -13,6 +13,16 @@ type FunctionInfo struct {
 	Targets    []ReferencedTypeInfo
 }
 
+// FunctionInfo can contain information about a function that is defined, or
+// only declared that will be linked later.
+//
+// This method returns true if the function is defined and has a function body,
+// and false if it is only declared and has only the signature, parameters and
+// targets defined.
+func (f *FunctionInfo) IsDefined() bool {
+	return f.EntryBlock != nil
+}
+
 func (f *FunctionInfo) CollectBasicBlocks() []*BasicBlockInfo {
 	blocks := make([]*BasicBlockInfo, 0)
 	for block := f.EntryBlock; block != nil; block = block.NextBlock {

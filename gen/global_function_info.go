@@ -19,7 +19,3 @@ func (f *FunctionGlobalInfo) Name() string {
 func (f *FunctionGlobalInfo) Declaration() *core.UnmanagedSourceView {
 	return f.FunctionInfo.Declaration
 }
-
-func (f *FunctionGlobalInfo) IsDefined() bool {
-	return f.FunctionInfo.EntryBlock != nil
-}
