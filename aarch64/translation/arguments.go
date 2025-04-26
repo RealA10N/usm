@@ -305,3 +305,31 @@ func ArgumentToLabelInfo(argument gen.ArgumentInfo) (*gen.LabelInfo, core.Result
 
 	return label.Label, core.ResultList{}
 }
+
+func ArgumentToFunctionInfo(
+	argument gen.ArgumentInfo,
+) (*gen.FunctionInfo, core.ResultList) {
+	globalArg, ok := argument.(*gen.GlobalArgumentInfo)
+	if !ok {
+		return nil, list.FromSingle(core.Result{
+			{
+				Type:     core.ErrorResult,
+				Message:  "Expected global argument",
+				Location: argument.Declaration(),
+			},
+		})
+	}
+
+	info, ok := globalArg.GlobalInfo.(*gen.FunctionGlobalInfo)
+	if !ok {
+		return nil, list.FromSingle(core.Result{
+			{
+				Type:     core.ErrorResult,
+				Message:  "Expected function global argument",
+				Location: argument.Declaration(),
+			},
+		})
+	}
+
+	return info.FunctionInfo, core.ResultList{}
+}
