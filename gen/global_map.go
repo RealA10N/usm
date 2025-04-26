@@ -7,7 +7,7 @@ import (
 type GlobalMap map[string]GlobalInfo
 
 func NewGlobalMap(*GenerationContext) GlobalManager {
-	return &GlobalMap{}
+	return &GlobalMap(make(map[string]GlobalInfo))
 }
 
 func (m *GlobalMap) GetGlobal(name string) GlobalInfo {
