@@ -42,6 +42,8 @@ func (b Bl) Generate(
 ) (instructions.Instruction, core.ResultList) {
 	targetOffset, ok := ctx.FunctionOffsets[b.Target]
 	if !ok {
+		// Target function is not defined: we add a relocation to the symbol
+		// and let the linker resolve it.
 		b.registerRelocation(ctx)
 		return instructions.BL(0), core.ResultList{}
 	}
