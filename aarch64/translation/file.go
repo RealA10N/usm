@@ -31,9 +31,13 @@ func FileToMachoObject(file *gen.FileInfo) ([]byte, core.ResultList) {
 		symbol := nlist64_builders.SectionNlist64Builder{
 			Name:        "_" + function.Name[1:],
 			Type:        nlist64.ExternalSymbol,
-			Section:     1,
-			Offset:      fileCtx.FunctionOffsets[function],
 			Description: nlist64.ReferenceFlagUndefinedNonLazy,
+		}
+
+		if function.IsDefined() {
+			symbol.Type |= nlist64.SectionSymbolType
+			symbol.Section = 1
+			symbol.Offset = fileCtx.FunctionOffsets[function]
 		}
 
 		symbols = append(symbols, symbol)
@@ -44,6 +48,7 @@ func FileToMachoObject(file *gen.FileInfo) ([]byte, core.ResultList) {
 		SegmentName: [16]byte{'_', '_', 'T', 'E', 'X', 'T', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		Data:        data.Bytes(),
 		Flags:       section64.AttrPureInstructions | section64.AttrSomeInstructions,
+		Relocations: fileCtx.Relocations,
 	}
 
 	segmentBuilder := segment64.Segment64Builder{

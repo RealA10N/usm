@@ -3,6 +3,7 @@ package aarch64codegen
 import (
 	"bytes"
 
+	"alon.kr/x/macho/load/section64"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 )
@@ -13,23 +14,38 @@ type FileCodegenContext struct {
 	*gen.FileInfo
 
 	// The offset of each function in the file (object file), relative to the
-	// base object offset.
+	// base object offset. It stores offsets of only defined functions.
 	FunctionOffsets map[*gen.FunctionInfo]uint64
+
+	// The index of each function, according to their order in the source
+	// definition. Indices start from 0 and are continuous.
+	FunctionIndices map[*gen.FunctionInfo]uint32
+
+	// The list of static relocations needed to be applied to the produced
+	// object file before it is linked to an executable.
+	Relocations []section64.RelocationBuilder
 }
 
 func NewFileCodegenContext(file *gen.FileInfo) *FileCodegenContext {
-	functionOffsets := make(map[*gen.FunctionInfo]uint64, len(file.Functions))
+	functionOffsets := make(map[*gen.FunctionInfo]uint64)
+	functionIndices := make(map[*gen.FunctionInfo]uint32, len(file.Functions))
 
 	offset := uint64(0)
-	for _, function := range file.Functions {
-		functionOffsets[function] = offset
-		functionSize := uint64(function.Size()) * 4 // TODO: handle overflow?
-		offset += functionSize
+	for idx, function := range file.Functions {
+		if function.IsDefined() {
+			functionOffsets[function] = offset
+			functionIndices[function] = uint32(idx)
+
+			functionSize := uint64(function.Size()) * 4 // TODO: handle overflow?
+			offset += functionSize
+		}
 	}
 
 	return &FileCodegenContext{
 		FileInfo:        file,
 		FunctionOffsets: functionOffsets,
+		FunctionIndices: functionIndices,
+		Relocations:     []section64.RelocationBuilder{},
 	}
 }
 
