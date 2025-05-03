@@ -3,271 +3,192 @@ package main
 import (
 	"fmt"
 	"os"
-	"path/filepath"
+	"strings"
 
 	aarch64managers "alon.kr/x/usm/aarch64/managers"
-	aarch64translation "alon.kr/x/usm/aarch64/translation"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 	"alon.kr/x/usm/lex"
-	"alon.kr/x/usm/opt"
 	"alon.kr/x/usm/parse"
-	usm64core "alon.kr/x/usm/usm64/core"
-	"alon.kr/x/usm/usm64/managers"
-	usm64ssa "alon.kr/x/usm/usm64/ssa"
+	"alon.kr/x/usm/transform"
+	usm64managers "alon.kr/x/usm/usm64/managers"
 	"github.com/spf13/cobra"
 )
 
-var inputFilepath string = ""
+var targets = transform.NewTargetCollection(
+	&transform.Target{
+		Names:             []string{"usm"},
+		Extensions:        []string{".usm"},
+		GenerationContext: usm64managers.NewGenerationContext(),
+		Transformations: *transform.NewTransformationCollection(
+			&transform.Transformation{
+				Names:      []string{"dead-code-elimination", "dce"},
+				TargetName: "usm",
+				// Transform: ,
+			},
+			&transform.Transformation{
+				Names:      []string{"aarch64", "arm64"},
+				TargetName: "aarch64",
+				// Transform: ,
+			},
+		),
+	},
 
-func setInputSource(cmd *cobra.Command, args []string) error {
-	if len(args) > 0 {
-		inputFilepath = filepath.Clean(args[0])
-		file, err := os.Open(inputFilepath)
-		if err != nil {
-			return fmt.Errorf("error opening file: %v", err)
-		}
-		cmd.SetIn(file)
-	}
-	return nil
-}
+	&transform.Target{
+		Names:             []string{"aarch64", "arm64"},
+		Extensions:        []string{".aarch64.usm", ".arm64.usm"},
+		GenerationContext: aarch64managers.NewGenerationContext(),
+		Transformations: *transform.NewTransformationCollection(
+			&transform.Transformation{
+				Names:      []string{"dead-code-elimination", "dce"},
+				TargetName: "aarch64",
+				// Transform: ,
+			},
+		),
+	},
+)
+
+var inputFilepath string
 
 func printResultAndExit(sourceView core.SourceView, result core.Result) {
 	stringer := core.NewResultStringer(sourceView.Ctx(), inputFilepath)
-	fmt.Print(stringer.StringResult(result))
+	fmt.Fprint(os.Stderr, stringer.StringResult(result))
 	os.Exit(1)
 }
 
 func printResultsAndExit(sourceView core.SourceView, results core.ResultList) {
 	stringer := core.NewResultStringer(sourceView.Ctx(), inputFilepath)
 	for result := range results.Range() {
-		fmt.Print(stringer.StringResult(result))
+		fmt.Fprint(os.Stderr, stringer.StringResult(result))
 	}
 	os.Exit(1)
 }
 
-func lexCommand(cmd *cobra.Command, args []string) {
-	view, err := core.ReadSource(cmd.InOrStdin())
-	if err != nil {
-		fmt.Printf("Error reading source: %v\n", err)
-		os.Exit(1)
+func ValidArgsFunction(
+	cmd *cobra.Command,
+	args []string,
+	toComplete string,
+) ([]string, cobra.ShellCompDirective) {
+	// TODO: improve this implementation to ignore flags.
+
+	if len(args) == 0 {
+		// Filename is not provided: regular shell completion for filenames.
+		return []string{}, cobra.ShellCompDirectiveDefault
 	}
 
-	tokens, err := lex.NewTokenizer().Tokenize(view)
-	if err != nil {
-		fmt.Printf("Error tokenizing: %v\n", err)
-		os.Exit(1)
+	start, _ := targets.FilenameToTarget(args[0])
+	if start == nil {
+		// Invalid start target name: just suggest all transformation.
+		return targets.TransformationNames(), cobra.ShellCompDirectiveNoFileComp
 	}
 
-	for _, tkn := range tokens {
-		fmt.Printf("%s ", tkn.String(view.Ctx()))
-		if tkn.Type == lex.SeparatorToken {
-			fmt.Println()
-		}
+	_, end, results := targets.Traverse(start, args[1:])
+	if !results.IsEmpty() {
+		// Invalid transformation chain: just suggest all transformations.
+		return targets.TransformationNames(), cobra.ShellCompDirectiveNoFileComp
 	}
+
+	return end.Transformations.Names(), cobra.ShellCompDirectiveNoFileComp
 }
 
-func fmtCommand(cmd *cobra.Command, args []string) {
-	view, err := core.ReadSource(cmd.InOrStdin())
-	if err != nil {
-		fmt.Printf("Error reading source: %v\n", err)
-		os.Exit(1)
+func Args(cmd *cobra.Command, args []string) error {
+	if len(args) < 1 {
+		return fmt.Errorf("requires an input file argument")
 	}
 
-	tokens, err := lex.NewTokenizer().Tokenize(view)
-	if err != nil {
-		fmt.Printf("Error tokenizing: %v\n", err)
-		os.Exit(1)
-	}
-
-	tknView := parse.NewTokenView(tokens)
-	node, result := parse.NewFileParser().Parse(&tknView)
-	if result != nil {
-		printResultAndExit(view, result)
-	}
-
-	strCtx := parse.StringContext{SourceContext: view.Ctx()}
-	fmt.Print(node.String(&strCtx))
+	return nil
 }
 
-func emuCommand(cmd *cobra.Command, args []string) {
-	view, err := core.ReadSource(cmd.InOrStdin())
-	if err != nil {
-		fmt.Printf("Error reading source: %v\n", err)
+func Run(cmd *cobra.Command, args []string) {
+	inputFilepath = args[0]
+
+	inputTarget, inputExt := targets.FilenameToTarget(inputFilepath)
+	if inputTarget == nil {
+		fmt.Fprintf(
+			os.Stderr,
+			"Target type can't be determined from filename: %v\n",
+			inputFilepath,
+		)
 		os.Exit(1)
 	}
 
-	tokens, err := lex.NewTokenizer().Tokenize(view)
-	if err != nil {
-		fmt.Printf("Error tokenizing: %v\n", err)
+	ctx := inputTarget.GenerationContext
+	if ctx == nil {
+		fmt.Fprintf(
+			os.Stderr,
+			"Target type isn't supported as input: %v\n",
+			inputTarget.Names[0],
+		)
 		os.Exit(1)
 	}
 
-	tknView := parse.NewTokenView(tokens)
-	node, result := parse.NewFileParser().Parse(&tknView)
-	if result != nil {
-		printResultAndExit(view, result)
-	}
-
-	ctx := managers.NewGenerationContext()
-	generator := gen.NewFileGenerator()
-	info, results := generator.Generate(ctx, view.Ctx(), node)
-	if !results.IsEmpty() {
-		printResultsAndExit(view, results)
-	}
-
-	emulator := usm64core.NewEmulator()
-	results = emulator.Emulate(info.Functions[0])
-	if !results.IsEmpty() {
-		printResultsAndExit(view, results)
-	}
-
-	os.Exit(0)
-}
-
-func ssaCommand(cmd *cobra.Command, args []string) {
-	view, err := core.ReadSource(cmd.InOrStdin())
+	file, err := os.Open(inputFilepath)
 	if err != nil {
-		fmt.Printf("Error reading source: %v\n", err)
-		os.Exit(1)
-	}
-
-	tokens, err := lex.NewTokenizer().Tokenize(view)
-	if err != nil {
-		fmt.Printf("Error tokenizing: %v\n", err)
-		os.Exit(1)
-	}
-
-	tknView := parse.NewTokenView(tokens)
-	node, result := parse.NewFileParser().Parse(&tknView)
-	if result != nil {
-		printResultAndExit(view, result)
-	}
-
-	ctx := managers.NewGenerationContext()
-	generator := gen.NewFileGenerator()
-	info, results := generator.Generate(ctx, view.Ctx(), node)
-	if !results.IsEmpty() {
-		printResultsAndExit(view, results)
-	}
-
-	for _, function := range info.Functions {
-		results = usm64ssa.ConvertToSsaForm(function)
-		if !results.IsEmpty() {
-			printResultsAndExit(view, results)
-		}
-
-		results = opt.DeadCodeElimination(function)
-		if !results.IsEmpty() {
-			printResultsAndExit(view, results)
-		}
-	}
-
-	fmt.Print(info.String())
-}
-
-func aarch64Command(cmd *cobra.Command, args []string) {
-	view, err := core.ReadSource(cmd.InOrStdin())
-	if err != nil {
-		fmt.Printf("Error reading source: %v\n", err)
-		os.Exit(1)
-	}
-
-	tokens, err := lex.NewTokenizer().Tokenize(view)
-	if err != nil {
-		fmt.Printf("Error tokenizing: %v\n", err)
-		os.Exit(1)
-	}
-
-	tknView := parse.NewTokenView(tokens)
-	node, result := parse.NewFileParser().Parse(&tknView)
-	if result != nil {
-		printResultAndExit(view, result)
-	}
-
-	ctx := aarch64managers.NewGenerationContext()
-	generator := gen.NewFileGenerator()
-	info, results := generator.Generate(ctx, view.Ctx(), node)
-	if !results.IsEmpty() {
-		printResultsAndExit(view, results)
-	}
-
-	object, results := aarch64translation.FileToMachoObject(info)
-	if !results.IsEmpty() {
-		printResultsAndExit(view, results)
-	}
-
-	outputFilepath := filepath.Base(inputFilepath)
-	ext := filepath.Ext(inputFilepath)
-	outputFilename := outputFilepath[:len(outputFilepath)-len(ext)] + ".o"
-
-	file, err := os.Create(outputFilename)
-	if err != nil {
-		fmt.Printf("Error creating output file: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error opening file: %v\n", err)
 		os.Exit(1)
 	}
 	defer file.Close()
 
-	_, err = file.Write(object)
+	view, err := core.ReadSource(file)
 	if err != nil {
-		fmt.Printf("Error writing to output file: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error reading source: %v\n", err)
 		os.Exit(1)
 	}
 
-	os.Exit(0)
+	tokens, err := lex.NewTokenizer().Tokenize(view)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error tokenizing: %v\n", err)
+		os.Exit(1)
+	}
+
+	tknView := parse.NewTokenView(tokens)
+	node, result := parse.NewFileParser().Parse(&tknView)
+	if result != nil {
+		printResultAndExit(view, result)
+	}
+
+	generator := gen.NewFileGenerator()
+	info, results := generator.Generate(ctx, view.Ctx(), node)
+	if !results.IsEmpty() {
+		printResultsAndExit(view, results)
+	}
+
+	data := transform.NewTargetData(inputTarget, info)
+	transformationNames := args[1:]
+	data, results = targets.Transform(data, transformationNames)
+	if !results.IsEmpty() {
+		printResultsAndExit(view, results)
+	}
+
+	// TODO: if the transformation chain is empty, use the same output filepath
+	// as the input filepath by default. In general, if the input target is the
+	// same as the output target, use the same filepath.
+
+	outputTarget := data.Target
+	cleanInputFilepath, _ := strings.CutSuffix(inputFilepath, inputExt)
+	outputFilepath := cleanInputFilepath + outputTarget.Extensions[0]
+
+	outputFile, err := os.Create(outputFilepath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating output file: %v\n", err)
+		os.Exit(1)
+	}
+	defer outputFile.Close()
+
+	if _, err := data.WriteTo(outputFile); err != nil {
+		fmt.Fprintf(os.Stderr, "Error writing to output file: %v\n", err)
+		os.Exit(1)
+	}
 }
 
 func main() {
 	rootCmd := &cobra.Command{
-		Use:   "usm",
-		Short: "One Universal assembly language to rule them all.",
+		Use:               "usm <input_file> [transformation...]",
+		Short:             "One Universal assembly language to rule them all.",
+		ValidArgsFunction: ValidArgsFunction,
+		Args:              Args,
+		Run:               Run,
 	}
-
-	lexCmd := &cobra.Command{
-		Use:     "lex [file]",
-		Short:   "Lex the source code",
-		Args:    cobra.MaximumNArgs(1),
-		PreRunE: setInputSource,
-		Run:     lexCommand,
-	}
-
-	fmtCmd := &cobra.Command{
-		Use:     "fmt [file]",
-		Short:   "Format the source code",
-		Args:    cobra.MaximumNArgs(1),
-		PreRunE: setInputSource,
-		Run:     fmtCommand,
-	}
-
-	emuCmd := &cobra.Command{
-		Use:     "emu [file]",
-		Short:   "Emulate a the main function execution",
-		Args:    cobra.MaximumNArgs(1),
-		PreRunE: setInputSource,
-		Run:     emuCommand,
-	}
-
-	ssaCmd := &cobra.Command{
-		Use:     "ssa [file]",
-		Short:   "Convert a source to SSA form",
-		Args:    cobra.MaximumNArgs(1),
-		PreRunE: setInputSource,
-		Run:     ssaCommand,
-	}
-
-	aarch64Cmd := &cobra.Command{
-		Use:     "aarch64 [file]",
-		Short:   "Generate AArch64 instructions",
-		Args:    cobra.MaximumNArgs(1),
-		PreRunE: setInputSource,
-		Run:     aarch64Command,
-	}
-
-	rootCmd.AddCommand(lexCmd)
-	rootCmd.AddCommand(fmtCmd)
-	rootCmd.AddCommand(emuCmd)
-	rootCmd.AddCommand(ssaCmd)
-	rootCmd.AddCommand(aarch64Cmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

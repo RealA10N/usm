@@ -1,4 +1,4 @@
-package managers
+package usm64managers
 
 import (
 	"alon.kr/x/usm/core"
