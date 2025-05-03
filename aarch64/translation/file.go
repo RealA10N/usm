@@ -2,7 +2,9 @@ package aarch64translation
 
 import (
 	"bytes"
+	"fmt"
 
+	"alon.kr/x/list"
 	"alon.kr/x/macho/builder"
 	"alon.kr/x/macho/header"
 	"alon.kr/x/macho/load/build_version"
@@ -14,14 +16,17 @@ import (
 	"alon.kr/x/macho/load/symtab/symbol"
 	aarch64codegen "alon.kr/x/usm/aarch64/codegen"
 	"alon.kr/x/usm/core"
-	"alon.kr/x/usm/gen"
+	"alon.kr/x/usm/transform"
 )
 
-func FileToMachoObject(file *gen.FileInfo) ([]byte, core.ResultList) {
+func ToMachoObject(
+	data *transform.TargetData,
+) (*transform.TargetData, core.ResultList) {
+	file := data.Code
 	fileCtx := aarch64codegen.NewFileCodegenContext(file)
 
-	data := bytes.Buffer{}
-	results := fileCtx.Codegen(&data)
+	codeBuffer := bytes.Buffer{}
+	results := fileCtx.Codegen(&codeBuffer)
 	if !results.IsEmpty() {
 		return nil, results
 	}
@@ -46,7 +51,7 @@ func FileToMachoObject(file *gen.FileInfo) ([]byte, core.ResultList) {
 	sectionBuilder := section64.Section64Builder{
 		SectionName: [16]byte{'_', '_', 't', 'e', 'x', 't', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		SegmentName: [16]byte{'_', '_', 'T', 'E', 'X', 'T', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		Data:        data.Bytes(),
+		Data:        codeBuffer.Bytes(),
 		Flags:       section64.AttrPureInstructions | section64.AttrSomeInstructions,
 		Relocations: fileCtx.Relocations,
 	}
@@ -83,7 +88,17 @@ func FileToMachoObject(file *gen.FileInfo) ([]byte, core.ResultList) {
 		},
 	}
 
-	buffer := new(bytes.Buffer)
-	machoBuilder.WriteTo(buffer)
-	return buffer.Bytes(), core.ResultList{}
+	machoBuffer := new(bytes.Buffer)
+	_, err := machoBuilder.WriteTo(machoBuffer)
+	if err != nil {
+		return nil, list.FromSingle(core.Result{
+			{
+				Type:    core.ErrorResult,
+				Message: fmt.Sprintf("Failed to generate Mach-O object file: %v", err),
+			},
+		})
+	}
+
+	data.Artifact = machoBuffer
+	return data, core.ResultList{}
 }

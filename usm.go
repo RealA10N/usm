@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	aarch64managers "alon.kr/x/usm/aarch64/managers"
+	aarch64translation "alon.kr/x/usm/aarch64/translation"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 	"alon.kr/x/usm/lex"
@@ -19,16 +20,19 @@ var targets = transform.NewTargetCollection(
 	&transform.Target{
 		Names:             []string{"usm"},
 		Extensions:        []string{".usm"},
+		Description:       "A universal assembly language",
 		GenerationContext: usm64managers.NewGenerationContext(),
 		Transformations: *transform.NewTransformationCollection(
 			&transform.Transformation{
-				Names:      []string{"dead-code-elimination", "dce"},
-				TargetName: "usm",
+				Names:       []string{"dead-code-elimination", "dce"},
+				Description: "An optimization pass that eliminates unnecessary instructions",
+				TargetName:  "usm",
 				// Transform: ,
 			},
 			&transform.Transformation{
-				Names:      []string{"aarch64", "arm64"},
-				TargetName: "aarch64",
+				Names:       []string{"aarch64", "arm64"},
+				Description: "Converts the universal assembly to matching machine specific aarch64 assembly",
+				TargetName:  "aarch64",
 				// Transform: ,
 			},
 		),
@@ -37,14 +41,26 @@ var targets = transform.NewTargetCollection(
 	&transform.Target{
 		Names:             []string{"aarch64", "arm64"},
 		Extensions:        []string{".aarch64.usm", ".arm64.usm"},
+		Description:       "Aarch64 (arm64v8) assembly language",
 		GenerationContext: aarch64managers.NewGenerationContext(),
 		Transformations: *transform.NewTransformationCollection(
 			&transform.Transformation{
-				Names:      []string{"dead-code-elimination", "dce"},
-				TargetName: "aarch64",
-				// Transform: ,
+				Names:      []string{"macho", "macho-obj", "macho-object"},
+				TargetName: "aarch64-macho-object",
+				Transform:  aarch64translation.ToMachoObject,
 			},
 		),
+	},
+
+	&transform.Target{
+		Names: []string{
+			"aarch64-macho-object",
+			"aarch64-macho-obj",
+			"arm64-macho-object",
+			"arm64-macho-obj",
+		},
+		Extensions:  []string{".o"},
+		Description: "Mach-O object file containing aarch64 assembly",
 	},
 )
 
