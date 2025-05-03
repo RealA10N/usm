@@ -70,5 +70,6 @@ func (i *FunctionInfo) String() string {
 		s += "}"
 	}
 
+	s += "\n"
 	return s
 }
