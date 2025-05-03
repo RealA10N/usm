@@ -81,18 +81,14 @@ func Run(cmd *cobra.Command, args []string) {
 }
 
 func main() {
-	var outputFile string
 
 	rootCmd := &cobra.Command{
-		Use:               "usm [flags] <input_file> [transformation...]",
+		Use:               "usm <input_file> [transformation...]",
 		Short:             "One Universal assembly language to rule them all.",
 		ValidArgsFunction: ValidArgsFunction,
 		Args:              Args,
 		Run:               Run,
 	}
-
-	flags := rootCmd.Flags()
-	flags.StringVarP(&outputFile, "output", "o", "", "output file")
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
