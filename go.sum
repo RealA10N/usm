@@ -2,6 +2,8 @@ alon.kr/x/aarch64codegen v0.0.0-20250423211537-52c2f85d1367 h1:l+WdERkNIO4GVBHvc
 alon.kr/x/aarch64codegen v0.0.0-20250423211537-52c2f85d1367/go.mod h1:WAdZYqOdp9KwoBjWamrMDAphahR5oXkPSICj3+tLIyQ=
 alon.kr/x/faststringmap v0.0.0-20250425112818-35d6525968e3 h1:i2q4NANxEeSzGiWidH8lodMM/fZ3eCxfZdvA4WDKC9I=
 alon.kr/x/faststringmap v0.0.0-20250425112818-35d6525968e3/go.mod h1:dPORoTvAFIehHRaI/lfJV3eT6PL5tY7fpAtxzz7rQVw=
+alon.kr/x/faststringmap v0.0.0-20250503134653-20d6364c2c94 h1:EdG6bQh5IT5MZ76MY85/GK4Ma7zoJ4zcFqd2fpxK6NI=
+alon.kr/x/faststringmap v0.0.0-20250503134653-20d6364c2c94/go.mod h1:dPORoTvAFIehHRaI/lfJV3eT6PL5tY7fpAtxzz7rQVw=
 alon.kr/x/graph v0.0.0-20250319212444-dd67d0281ab7 h1:0d/oLvPQWc1B38ZfWfJ5UQXeHx9JT8gmp3K0AOOG8aQ=
 alon.kr/x/graph v0.0.0-20250319212444-dd67d0281ab7/go.mod h1:Cat+EJocX/ddkDX1quMqwe+itOfD7DILXV76nG0tk8Q=
 alon.kr/x/list v0.0.0-20241203223347-3173d76828c0 h1:NedGw3ZJMKT9Y4RByuogGfBEXT4st8eX/XO5frezx6o=

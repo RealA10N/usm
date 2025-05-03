@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	alon.kr/x/aarch64codegen v0.0.0-20250423211537-52c2f85d1367
-	alon.kr/x/faststringmap v0.0.0-20250425112818-35d6525968e3
+	alon.kr/x/faststringmap v0.0.0-20250503134653-20d6364c2c94
 	alon.kr/x/graph v0.0.0-20250319212444-dd67d0281ab7
 	alon.kr/x/list v0.0.0-20241203223347-3173d76828c0
 	alon.kr/x/macho v0.0.0-20250426181816-9e10903e5803
