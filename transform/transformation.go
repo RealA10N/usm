@@ -3,23 +3,18 @@ package transform
 import (
 	"alon.kr/x/faststringmap"
 	"alon.kr/x/usm/core"
-	"alon.kr/x/usm/gen"
 )
 
+type DoTransform func(*TargetData) (*TargetData, core.ResultList)
+
 type Transformation struct {
-	Name        string
-	Aliases     []string
+	Names       []string
 	Description string
 
-	// The name of the target ISA of this transformation.
-	Target string
+	// The name of the target of this transformation.
+	TargetName string
 
-	// Transform takes a file in the input ISA, and returns a file in the
-	// output ISA.
-	//
-	// The transformation may modify, and possibly invalidate the input
-	// structure.
-	Transform func(*gen.FileInfo) (*gen.FileInfo, core.ResultList)
+	Transform DoTransform
 }
 
 type TransformationCollection struct {
@@ -30,8 +25,7 @@ type TransformationCollection struct {
 func (c *TransformationCollection) Names() []string {
 	names := []string{}
 	for _, t := range c.Transformations {
-		names = append(names, t.Name)
-		names = append(names, t.Aliases...)
+		names = append(names, t.Names...)
 	}
 	return names
 }
@@ -39,13 +33,9 @@ func (c *TransformationCollection) Names() []string {
 func NewTransformationCollection(transformations ...*Transformation) *TransformationCollection {
 	entries := []faststringmap.MapEntry[*Transformation]{}
 	for _, t := range transformations {
-		entries = append(entries, faststringmap.MapEntry[*Transformation]{
-			Key:   t.Name,
-			Value: t,
-		})
-		for _, alias := range t.Aliases {
+		for _, name := range t.Names {
 			entries = append(entries, faststringmap.MapEntry[*Transformation]{
-				Key:   alias,
+				Key:   name,
 				Value: t,
 			})
 		}

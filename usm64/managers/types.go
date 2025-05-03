@@ -1,4 +1,4 @@
-package managers
+package usm64managers
 
 import (
 	"math/big"

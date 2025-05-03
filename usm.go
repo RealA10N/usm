@@ -3,69 +3,92 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
+	aarch64managers "alon.kr/x/usm/aarch64/managers"
+	"alon.kr/x/usm/core"
+	"alon.kr/x/usm/gen"
+	"alon.kr/x/usm/lex"
+	"alon.kr/x/usm/parse"
 	"alon.kr/x/usm/transform"
+	usm64managers "alon.kr/x/usm/usm64/managers"
 	"github.com/spf13/cobra"
 )
 
-var instructionSets = transform.NewIsaCollection(
-	&transform.InstructionSet{
-		Name:       "usm",
-		Aliases:    nil,
-		Extensions: []string{".usm"},
-		// GenerationContext: ,
+var targets = transform.NewTargetCollection(
+	&transform.Target{
+		Names:             []string{"usm"},
+		Extensions:        []string{".usm"},
+		GenerationContext: usm64managers.NewGenerationContext(),
 		Transformations: *transform.NewTransformationCollection(
 			&transform.Transformation{
-				Name:    "dead-code-elimination",
-				Aliases: []string{"dce"},
-				Target:  "usm",
+				Names:      []string{"dead-code-elimination", "dce"},
+				TargetName: "usm",
 				// Transform: ,
 			},
 			&transform.Transformation{
-				Name:    "aarch64",
-				Aliases: []string{"arm64"},
-				Target:  "aarch64",
+				Names:      []string{"aarch64", "arm64"},
+				TargetName: "aarch64",
 				// Transform: ,
 			},
 		),
 	},
 
-	&transform.InstructionSet{
-		Name:       "aarch64",
-		Aliases:    []string{"arm64"},
-		Extensions: []string{".aarch64.usm", ".arm64.usm"},
-		// GenerationContext: ,
+	&transform.Target{
+		Names:             []string{"aarch64", "arm64"},
+		Extensions:        []string{".aarch64.usm", ".arm64.usm"},
+		GenerationContext: aarch64managers.NewGenerationContext(),
 		Transformations: *transform.NewTransformationCollection(
 			&transform.Transformation{
-				Name:    "dead-code-elimination",
-				Aliases: []string{"dce"},
-				Target:  "aarch64",
+				Names:      []string{"dead-code-elimination", "dce"},
+				TargetName: "aarch64",
 				// Transform: ,
 			},
 		),
 	},
 )
+
+var inputFilepath string
+
+func printResultAndExit(sourceView core.SourceView, result core.Result) {
+	stringer := core.NewResultStringer(sourceView.Ctx(), inputFilepath)
+	fmt.Fprint(os.Stderr, stringer.StringResult(result))
+	os.Exit(1)
+}
+
+func printResultsAndExit(sourceView core.SourceView, results core.ResultList) {
+	stringer := core.NewResultStringer(sourceView.Ctx(), inputFilepath)
+	for result := range results.Range() {
+		fmt.Fprint(os.Stderr, stringer.StringResult(result))
+	}
+	os.Exit(1)
+}
 
 func ValidArgsFunction(
 	cmd *cobra.Command,
 	args []string,
 	toComplete string,
 ) ([]string, cobra.ShellCompDirective) {
+	// TODO: improve this implementation to ignore flags.
+
 	if len(args) == 0 {
+		// Filename is not provided: regular shell completion for filenames.
 		return []string{}, cobra.ShellCompDirectiveDefault
 	}
 
-	isa := instructionSets.FilenameToInstructionSet(args[0])
-	if isa == nil {
-		return instructionSets.TransformationNames(), cobra.ShellCompDirectiveNoFileComp
+	start, _ := targets.FilenameToTarget(args[0])
+	if start == nil {
+		// Invalid start target name: just suggest all transformation.
+		return targets.TransformationNames(), cobra.ShellCompDirectiveNoFileComp
 	}
 
-	currentIsa := instructionSets.Traverse(isa, args[1:])
-	if currentIsa == nil {
-		return instructionSets.TransformationNames(), cobra.ShellCompDirectiveNoFileComp
+	_, end, results := targets.Traverse(start, args[1:])
+	if !results.IsEmpty() {
+		// Invalid transformation chain: just suggest all transformations.
+		return targets.TransformationNames(), cobra.ShellCompDirectiveNoFileComp
 	}
 
-	return currentIsa.Transformations.Names(), cobra.ShellCompDirectiveNoFileComp
+	return end.Transformations.Names(), cobra.ShellCompDirectiveNoFileComp
 }
 
 func Args(cmd *cobra.Command, args []string) error {
@@ -77,11 +100,88 @@ func Args(cmd *cobra.Command, args []string) error {
 }
 
 func Run(cmd *cobra.Command, args []string) {
-	fmt.Println("Running usm with args:", args)
+	inputFilepath = args[0]
+
+	inputTarget, inputExt := targets.FilenameToTarget(inputFilepath)
+	if inputTarget == nil {
+		fmt.Fprintf(
+			os.Stderr,
+			"Target type can't be determined from filename: %v\n",
+			inputFilepath,
+		)
+		os.Exit(1)
+	}
+
+	ctx := inputTarget.GenerationContext
+	if ctx == nil {
+		fmt.Fprintf(
+			os.Stderr,
+			"Target type isn't supported as input: %v\n",
+			inputTarget.Names[0],
+		)
+		os.Exit(1)
+	}
+
+	file, err := os.Open(inputFilepath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error opening file: %v\n", err)
+		os.Exit(1)
+	}
+	defer file.Close()
+
+	view, err := core.ReadSource(file)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error reading source: %v\n", err)
+		os.Exit(1)
+	}
+
+	tokens, err := lex.NewTokenizer().Tokenize(view)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error tokenizing: %v\n", err)
+		os.Exit(1)
+	}
+
+	tknView := parse.NewTokenView(tokens)
+	node, result := parse.NewFileParser().Parse(&tknView)
+	if result != nil {
+		printResultAndExit(view, result)
+	}
+
+	generator := gen.NewFileGenerator()
+	info, results := generator.Generate(ctx, view.Ctx(), node)
+	if !results.IsEmpty() {
+		printResultsAndExit(view, results)
+	}
+
+	data := transform.NewTargetData(inputTarget, info)
+	transformationNames := args[1:]
+	data, results = targets.Transform(data, transformationNames)
+	if !results.IsEmpty() {
+		printResultsAndExit(view, results)
+	}
+
+	// TODO: if the transformation chain is empty, use the same output filepath
+	// as the input filepath by default. In general, if the input target is the
+	// same as the output target, use the same filepath.
+
+	outputTarget := data.Target
+	cleanInputFilepath, _ := strings.CutSuffix(inputFilepath, inputExt)
+	outputFilepath := cleanInputFilepath + outputTarget.Extensions[0]
+
+	outputFile, err := os.Create(outputFilepath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating output file: %v\n", err)
+		os.Exit(1)
+	}
+	defer outputFile.Close()
+
+	if _, err := data.WriteTo(outputFile); err != nil {
+		fmt.Fprintf(os.Stderr, "Error writing to output file: %v\n", err)
+		os.Exit(1)
+	}
 }
 
 func main() {
-
 	rootCmd := &cobra.Command{
 		Use:               "usm <input_file> [transformation...]",
 		Short:             "One Universal assembly language to rule them all.",
