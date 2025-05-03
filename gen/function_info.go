@@ -60,12 +60,15 @@ func (i *FunctionInfo) String() string {
 		s += param.Type.String() + " " + param.String() + " "
 	}
 
-	s += "{\n"
+	if i.IsDefined() {
+		s += "{\n"
 
-	for block := i.EntryBlock; block != nil; block = block.NextBlock {
-		s += block.String()
+		for block := i.EntryBlock; block != nil; block = block.NextBlock {
+			s += block.String()
+		}
+
+		s += "}"
 	}
 
-	s += "}"
 	return s
 }
