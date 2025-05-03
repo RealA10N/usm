@@ -6,9 +6,17 @@ type FileInfo struct {
 
 func (i *FileInfo) String() string {
 	s := ""
-	for _, function := range i.Functions {
+
+	if len(i.Functions) == 0 {
+		return s
+	}
+
+	for _, function := range i.Functions[:len(i.Functions)-1] {
 		s += function.String() + "\n"
 	}
+
+	s += i.Functions[len(i.Functions)-1].String()
+
 	return s
 }
 
