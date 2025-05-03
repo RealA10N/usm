@@ -40,7 +40,8 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 	$32 %b = ADD %a $32 #1
 	$32 %c = ADD %b %a
 	RET
-}`
+}
+`
 
 	function, results := generateFunctionFromSource(t, src)
 	assert.True(t, results.IsEmpty())
@@ -97,7 +98,8 @@ func TestIfElseFunctionGeneration(t *testing.T) {
 	$32 %bool = ADD $32 #0 $32 #0
 .end
 	RET
-}`
+}
+`
 
 	function, results := generateFunctionFromSource(t, src)
 	assert.True(t, results.IsEmpty())
