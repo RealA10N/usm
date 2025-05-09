@@ -25,7 +25,7 @@ func (adds Adds) codegenRegisterVariant(
 		return nil, results
 	}
 
-	inst := instructions.NewAddShiftedRegister(Xd, Xn, Xm)
+	inst := instructions.NewAddsShiftedRegister(Xd, Xn, Xm)
 	return inst, core.ResultList{}
 }
 
@@ -67,4 +67,15 @@ func (adds Adds) Codegen(
 			},
 		})
 	}
+}
+
+func (adds Adds) Validate(
+	info *gen.InstructionInfo,
+) core.ResultList {
+	// TODO: this is a pretty hacky way to validate the instruction: we create
+	// a "mock" generation context, and then try to generate the binary
+	// representation of the instruction.
+	ctx := aarch64codegen.InstructionCodegenContext{InstructionInfo: info}
+	_, results := adds.Codegen(&ctx)
+	return results
 }
