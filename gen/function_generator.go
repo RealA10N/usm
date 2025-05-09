@@ -144,7 +144,7 @@ func (g *FunctionGenerator) getInstructionBranchingDestinations(
 	info *InstructionInfo,
 	labels functionLabelData,
 ) ([]int, core.ResultList) {
-	steps, results := info.Instruction.PossibleNextSteps()
+	steps, results := info.Instruction.PossibleNextSteps(info)
 	if !results.IsEmpty() {
 		return nil, results
 	}
@@ -286,7 +286,7 @@ func (g *FunctionGenerator) generateBasicBlocks(
 		basicBlockLength := len(currentBasicBlock.Instructions)
 		lastInstruction := currentBasicBlock.Instructions[basicBlockLength-1]
 
-		steps, results := lastInstruction.Instruction.PossibleNextSteps()
+		steps, results := lastInstruction.Instruction.PossibleNextSteps(lastInstruction)
 		if !results.IsEmpty() {
 			return results
 		}

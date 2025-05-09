@@ -13,7 +13,7 @@ type InstructionInfo struct {
 	Arguments []ArgumentInfo
 
 	// The actual instruction information, which is ISA specific.
-	Instruction BaseInstruction
+	Instruction InstructionDefinition
 
 	// The location in which the instruction was defined in the source code.
 	// Can be nil if the instruction was defined internally, for example,
@@ -61,13 +61,13 @@ func (i *InstructionInfo) AppendArgument(arguments ...ArgumentInfo) {
 // This can be used to update the instruction, but keep the same arguments and
 // targets, for example, as an optimization to a more specific operation which
 // accepts the same arguments in certain cases.
-func (i *InstructionInfo) SetBaseInstruction(instruction BaseInstruction) {
+func (i *InstructionInfo) SetInstruction(instruction InstructionDefinition) {
 	i.Instruction = instruction
 }
 
 func (i *InstructionInfo) String() string {
 	s := ""
-	operator := i.Instruction.Operator()
+	operator := i.Instruction.Operator(i)
 
 	if len(i.Targets) > 0 {
 		for _, target := range i.Targets {

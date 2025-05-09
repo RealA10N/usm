@@ -137,11 +137,12 @@ func (g *InstructionGenerator) Generate(
 	instCtx.InstructionInfo.AppendTarget(targets...)
 	instCtx.InstructionInfo.AppendArgument(arguments...)
 
-	instruction, results := instDef.BuildInstruction(instCtx.InstructionInfo)
+	instCtx.InstructionInfo.SetInstruction(instDef)
+
+	results = instDef.Validate(instCtx.InstructionInfo)
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
-	instCtx.InstructionInfo.Instruction = instruction
 	return instCtx.InstructionInfo, core.ResultList{}
 }
