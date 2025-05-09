@@ -4,27 +4,31 @@ import (
 	"alon.kr/x/usm/core"
 )
 
-type BaseInstruction interface {
+type InstructionDefinition interface {
 	// This method is usd by the USM engine to generate the internal control
 	// flow graph representation.
 	//
 	// Should return a non-empty slice. If the instruction does not have any
 	// consecutive steps in the function (for example, a return statement),
 	// then a special dedicated return step should be returned.
-	PossibleNextSteps() (StepInfo, core.ResultList)
+	PossibleNextSteps(*InstructionInfo) (StepInfo, core.ResultList)
 
 	// Returns the string that represents the operator of the instruction.
 	// For example, for the add instruction this method would return "ADD".
 	//
 	// This is required because some instructions may be generated automatically,
 	// and we want to be able to display them in a human-readable format.
-	Operator() string
+	Operator(*InstructionInfo) string
+
+	// Validate the instruction information structure, according to the
+	// expected arguments, targets, and other related information.
+	Validate(*InstructionInfo) core.ResultList
 }
 
-// A basic instruction definition. This defines the logic that converts the
-// generic, architecture / instruction set independent instruction AST nodes
-// into a format instruction which is part of a specific instruction set.
-type InstructionDefinition interface {
-	// Build an instruction from the provided instruction information.
-	BuildInstruction(info *InstructionInfo) (BaseInstruction, core.ResultList)
+type NonBranchingInstruction struct{}
+
+func (NonBranchingInstruction) PossibleNextSteps(*InstructionInfo) (StepInfo, core.ResultList) {
+	return StepInfo{
+		PossibleContinue: true,
+	}, core.ResultList{}
 }

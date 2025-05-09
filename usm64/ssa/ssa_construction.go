@@ -29,7 +29,7 @@ func (s *ConstructionScheme) NewPhiInstruction(
 	target := gen.NewTargetInfo(register)
 	info.AppendTarget(&target)
 	instruction, results := usm64isa.NewPhiInstruction(info)
-	info.SetBaseInstruction(instruction)
+	info.SetInstruction(instruction)
 	block.PrependInstruction(info)
 	return ssa.PhiInstruction(instruction), results
 }

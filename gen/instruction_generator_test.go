@@ -16,20 +16,24 @@ import (
 
 type AddInstruction struct{}
 
-func (i *AddInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
+func (AddInstruction) PossibleNextSteps(*gen.InstructionInfo) (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
 }
 
-func (i *AddInstruction) Operator() string {
+func (AddInstruction) Operator(*gen.InstructionInfo) string {
 	return "ADD"
+}
+
+func (AddInstruction) Validate(info *gen.InstructionInfo) core.ResultList {
+	return core.ResultList{}
 }
 
 type AddInstructionDefinition struct{}
 
 func (AddInstructionDefinition) BuildInstruction(
 	info *gen.InstructionInfo,
-) (gen.BaseInstruction, core.ResultList) {
-	return gen.BaseInstruction(&AddInstruction{}), core.ResultList{}
+) (gen.InstructionDefinition, core.ResultList) {
+	return gen.InstructionDefinition(AddInstruction{}), core.ResultList{}
 }
 
 func (AddInstructionDefinition) InferTargetTypes(
@@ -71,20 +75,24 @@ func (AddInstructionDefinition) InferTargetTypes(
 
 type RetInstruction struct{}
 
-func (i *RetInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
+func (RetInstruction) PossibleNextSteps(*gen.InstructionInfo) (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleReturn: true}, core.ResultList{}
 }
 
-func (i *RetInstruction) Operator() string {
+func (RetInstruction) Operator(*gen.InstructionInfo) string {
 	return "RET"
+}
+
+func (RetInstruction) Validate(*gen.InstructionInfo) core.ResultList {
+	return core.ResultList{}
 }
 
 type RetInstructionDefinition struct{}
 
 func (RetInstructionDefinition) BuildInstruction(
 	info *gen.InstructionInfo,
-) (gen.BaseInstruction, core.ResultList) {
-	return gen.BaseInstruction(&RetInstruction{}), core.ResultList{}
+) (gen.InstructionDefinition, core.ResultList) {
+	return gen.InstructionDefinition(RetInstruction{}), core.ResultList{}
 }
 
 func (RetInstructionDefinition) InferTargetTypes(
@@ -97,11 +105,9 @@ func (RetInstructionDefinition) InferTargetTypes(
 
 // MARK: Jump
 
-type JumpInstruction struct {
-	*gen.InstructionInfo
-}
+type JumpInstruction struct{}
 
-func (i *JumpInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
+func (JumpInstruction) PossibleNextSteps(i *gen.InstructionInfo) (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{
 		PossibleBranches: []*gen.LabelInfo{
 			i.Arguments[0].(*gen.LabelArgumentInfo).Label,
@@ -109,16 +115,20 @@ func (i *JumpInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
 	}, core.ResultList{}
 }
 
-func (i *JumpInstruction) Operator() string {
+func (JumpInstruction) Operator(*gen.InstructionInfo) string {
 	return "JMP"
+}
+
+func (JumpInstruction) Validate(info *gen.InstructionInfo) core.ResultList {
+	return core.ResultList{}
 }
 
 type JumpInstructionDefinition struct{}
 
 func (JumpInstructionDefinition) BuildInstruction(
 	info *gen.InstructionInfo,
-) (gen.BaseInstruction, core.ResultList) {
-	return gen.BaseInstruction(&JumpInstruction{info}), core.ResultList{}
+) (gen.InstructionDefinition, core.ResultList) {
+	return gen.InstructionDefinition(JumpInstruction{}), core.ResultList{}
 }
 
 func (JumpInstructionDefinition) InferTargetTypes(
@@ -132,11 +142,9 @@ func (JumpInstructionDefinition) InferTargetTypes(
 // MARK: Jump Zero
 
 // JZ %condition .label
-type JumpZeroInstruction struct {
-	*gen.InstructionInfo
-}
+type JumpZeroInstruction struct{}
 
-func (i *JumpZeroInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
+func (JumpZeroInstruction) PossibleNextSteps(i *gen.InstructionInfo) (gen.StepInfo, core.ResultList) {
 	label := i.Arguments[1].(*gen.LabelArgumentInfo).Label
 	return gen.StepInfo{
 		PossibleBranches: []*gen.LabelInfo{label},
@@ -144,16 +152,20 @@ func (i *JumpZeroInstruction) PossibleNextSteps() (gen.StepInfo, core.ResultList
 	}, core.ResultList{}
 }
 
-func (i *JumpZeroInstruction) Operator() string {
+func (JumpZeroInstruction) Operator(*gen.InstructionInfo) string {
 	return "JZ"
+}
+
+func (JumpZeroInstruction) Validate(info *gen.InstructionInfo) core.ResultList {
+	return core.ResultList{}
 }
 
 type JumpZeroInstructionDefinition struct{}
 
 func (JumpZeroInstructionDefinition) BuildInstruction(
 	info *gen.InstructionInfo,
-) (gen.BaseInstruction, core.ResultList) {
-	return gen.BaseInstruction(&JumpZeroInstruction{info}), core.ResultList{}
+) (gen.InstructionDefinition, core.ResultList) {
+	return gen.InstructionDefinition(JumpZeroInstruction{}), core.ResultList{}
 }
 
 func (JumpZeroInstructionDefinition) InferTargetTypes(
@@ -172,7 +184,7 @@ func (m *InstructionMap) GetInstructionDefinition(
 	name string,
 	node parse.InstructionNode,
 ) (gen.InstructionDefinition, core.ResultList) {
-	instDef, ok := (*m)[name]
+	inst, ok := (*m)[name]
 	if !ok {
 		return nil, list.FromSingle(core.Result{{
 			Type:     core.ErrorResult,
@@ -180,7 +192,7 @@ func (m *InstructionMap) GetInstructionDefinition(
 			Location: &node.Operator,
 		}})
 	}
-	return instDef, core.ResultList{}
+	return inst, core.ResultList{}
 }
 
 func PrepareTestForInstructionGeneration(
