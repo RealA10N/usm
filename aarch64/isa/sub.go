@@ -13,7 +13,7 @@ type Sub struct {
 	gen.NonBranchingInstruction
 }
 
-func NewSubInstruction() gen.InstructionDefinition {
+func NewSub() gen.InstructionDefinition {
 	return Sub{}
 }
 

@@ -11,6 +11,10 @@ import (
 
 type Ret struct{}
 
+func NewRet() gen.InstructionDefinition {
+	return Ret{}
+}
+
 func (Ret) Operator(*gen.InstructionInfo) string {
 	return "ret"
 }
@@ -20,9 +24,15 @@ func (Ret) PossibleNextSteps(*gen.InstructionInfo) (gen.StepInfo, core.ResultLis
 }
 
 func (i Ret) Codegen(
-	*aarch64codegen.InstructionCodegenContext,
+	ctx *aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
-	return instructions.RET(registers.GPRegisterX30), core.ResultList{}
+	info := ctx.InstructionInfo
+	Xn, results := i.Xn(info)
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	return instructions.RET(Xn), core.ResultList{}
 }
 
 func (i Ret) Xn(info *gen.InstructionInfo) (registers.GPRegister, core.ResultList) {

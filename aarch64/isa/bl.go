@@ -14,7 +14,11 @@ type Bl struct {
 	gen.NonBranchingInstruction
 }
 
-func (b Bl) Operator() string {
+func NewBl() gen.InstructionDefinition {
+	return Bl{}
+}
+
+func (b Bl) Operator(*gen.InstructionInfo) string {
 	return "bl"
 }
 
@@ -71,7 +75,7 @@ func (b Bl) registerRelocation(
 	return core.ResultList{}
 }
 
-func (b Bl) Generate(
+func (b Bl) Codegen(
 	ctx *aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
 	target, results := b.Target(ctx.InstructionInfo)

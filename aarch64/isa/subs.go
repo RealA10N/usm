@@ -9,67 +9,47 @@ import (
 	"alon.kr/x/usm/gen"
 )
 
-type BaseSubs struct {
-	NonBranchingInstruction
+type Subs struct {
+	gen.NonBranchingInstruction
 }
 
-func (BaseSubs) Operator() string {
+func NewSubs() gen.InstructionDefinition {
+	return Subs{}
+}
+
+func (Subs) Operator(*gen.InstructionInfo) string {
 	return "subs"
 }
 
-type SubsReg struct {
-	BaseSubs
-	instructions.SubShiftedRegister
-}
-
-func (i SubsReg) Generate(
-	*aarch64codegen.InstructionCodegenContext,
-) (instructions.Instruction, core.ResultList) {
-	return i, core.ResultList{}
-}
-
-type SubsImm struct {
-	BaseSubs
-	instructions.SubImmediate
-}
-
-func (i SubsImm) Generate(
-	*aarch64codegen.InstructionCodegenContext,
-) (instructions.Instruction, core.ResultList) {
-	return i, core.ResultList{}
-}
-
-type SubsDefinition struct{}
-
-func (d SubsDefinition) buildRegisterVariant(
+func (i Subs) codegenRegisterVariant(
 	info *gen.InstructionInfo,
-) (gen.BaseInstruction, core.ResultList) {
+) (instructions.Instruction, core.ResultList) {
 	Xd, Xn, Xm, results := aarch64translation.BinaryInstructionToAarch64(info)
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
-	return SubsReg{
-		SubShiftedRegister: instructions.NewSubsShiftedRegister(Xd, Xn, Xm),
-	}, core.ResultList{}
+	inst := instructions.NewSubsShiftedRegister(Xd, Xn, Xm)
+	return inst, core.ResultList{}
 }
 
-func (SubsDefinition) buildImmediateVariant(
+func (i Subs) codegenImmediateVariant(
 	info *gen.InstructionInfo,
-) (gen.BaseInstruction, core.ResultList) {
+) (instructions.Instruction, core.ResultList) {
 	Xd, Xn, imm, results := aarch64translation.Immediate12GPRegisterTargetInstructionToAarch64(info)
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
-	return SubsImm{
-		SubImmediate: instructions.NewSubsImmediate(Xd, Xn, imm),
-	}, core.ResultList{}
+	inst := instructions.NewSubsImmediate(Xd, Xn, imm)
+	return inst, core.ResultList{}
 }
 
-func (d SubsDefinition) BuildInstruction(
-	info *gen.InstructionInfo,
-) (gen.BaseInstruction, core.ResultList) {
+func (i Subs) Codegen(
+	ctx *aarch64codegen.InstructionCodegenContext,
+) (instructions.Instruction, core.ResultList) {
+	info := ctx.InstructionInfo
+
 	results := aarch64translation.ValidateBinaryInstruction(info)
 	if !results.IsEmpty() {
 		return nil, results
@@ -77,10 +57,10 @@ func (d SubsDefinition) BuildInstruction(
 
 	switch info.Arguments[1].(type) {
 	case *gen.RegisterArgumentInfo:
-		return d.buildRegisterVariant(info)
+		return i.codegenRegisterVariant(info)
 
 	case *gen.ImmediateInfo:
-		return d.buildImmediateVariant(info)
+		return i.codegenImmediateVariant(info)
 
 	default:
 		return nil, list.FromSingle(core.Result{
@@ -93,6 +73,13 @@ func (d SubsDefinition) BuildInstruction(
 	}
 }
 
-func NewSubsInstructionDefinition() gen.InstructionDefinition {
-	return SubsDefinition{}
+func (i Subs) Validate(
+	info *gen.InstructionInfo,
+) core.ResultList {
+	// TODO: this is a pretty hacky way to validate the instruction: we create
+	// a "mock" generation context, and then try to generate the binary
+	// representation of the instruction.
+	ctx := aarch64codegen.InstructionCodegenContext{InstructionInfo: info}
+	_, results := i.Codegen(&ctx)
+	return results
 }

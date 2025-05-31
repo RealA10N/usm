@@ -14,6 +14,10 @@ type Movz struct {
 	gen.NonBranchingInstruction
 }
 
+func NewMovz() gen.InstructionDefinition {
+	return Movz{}
+}
+
 func (Movz) Operator(*gen.InstructionInfo) string {
 	return "movz"
 }
@@ -77,9 +81,9 @@ func (i Movz) Validate(info *gen.InstructionInfo) core.ResultList {
 }
 
 func (i Movz) Codegen(
-	_ *aarch64codegen.InstructionCodegenContext,
-	info *gen.InstructionInfo,
+	ctx *aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
+	info := ctx.InstructionInfo
 	results := core.ResultList{}
 
 	Xd, curResults := i.Xd(info)

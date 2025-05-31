@@ -14,6 +14,12 @@ type Bcond struct {
 	Condition immediates.Condition
 }
 
+func NewBcond(condition immediates.Condition) gen.InstructionDefinition {
+	return Bcond{
+		Condition: condition,
+	}
+}
+
 func (b Bcond) Target(
 	info *gen.InstructionInfo,
 ) (*gen.LabelInfo, core.ResultList) {
@@ -46,7 +52,7 @@ func (b Bcond) PossibleNextSteps(info *gen.InstructionInfo) (gen.StepInfo, core.
 	}, core.ResultList{}
 }
 
-func (b Bcond) Generate(
+func (b Bcond) Codegen(
 	ctx *aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
 	target, results := b.Target(ctx.InstructionInfo)
