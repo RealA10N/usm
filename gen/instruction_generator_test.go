@@ -14,100 +14,50 @@ import (
 
 // MARK: Add
 
-type AddInstruction struct{}
-
-func (AddInstruction) PossibleNextSteps(*gen.InstructionInfo) (gen.StepInfo, core.ResultList) {
-	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
+type Add struct {
+	gen.NonBranchingInstruction
 }
 
-func (AddInstruction) Operator(*gen.InstructionInfo) string {
-	return "ADD"
+func NewAdd() gen.InstructionDefinition {
+	return Add{}
 }
 
-func (AddInstruction) Validate(info *gen.InstructionInfo) core.ResultList {
+func (Add) Operator(*gen.InstructionInfo) string {
+	return "add"
+}
+
+func (Add) Validate(info *gen.InstructionInfo) core.ResultList {
 	return core.ResultList{}
-}
-
-type AddInstructionDefinition struct{}
-
-func (AddInstructionDefinition) BuildInstruction(
-	info *gen.InstructionInfo,
-) (gen.InstructionDefinition, core.ResultList) {
-	return gen.InstructionDefinition(AddInstruction{}), core.ResultList{}
-}
-
-func (AddInstructionDefinition) InferTargetTypes(
-	ctx *gen.FunctionGenerationContext,
-	targets []*gen.ReferencedTypeInfo,
-	arguments []*gen.ReferencedTypeInfo,
-) ([]gen.ReferencedTypeInfo, core.ResultList) {
-	if len(arguments) != 2 {
-		return nil, list.FromSingle(core.Result{{
-			Type:    core.ErrorResult,
-			Message: "expected exactly 2 arguments",
-		}})
-	}
-
-	if len(targets) != 1 {
-		return nil, list.FromSingle(core.Result{{
-			Type:    core.ErrorResult,
-			Message: "expected exactly 1 target",
-		}})
-	}
-
-	// TODO: possible panic?
-	if !arguments[0].Equal(*arguments[1]) {
-		return nil, list.FromSingle(core.Result{{
-			Type:    core.ErrorResult,
-			Message: "expected both arguments to be of the same type",
-		}})
-	}
-
-	return []gen.ReferencedTypeInfo{
-		{
-			Base:        arguments[0].Base,
-			Descriptors: arguments[0].Descriptors,
-		},
-	}, core.ResultList{}
 }
 
 // MARK: Ret
 
-type RetInstruction struct{}
+type Ret struct{}
 
-func (RetInstruction) PossibleNextSteps(*gen.InstructionInfo) (gen.StepInfo, core.ResultList) {
+func NewRet() gen.InstructionDefinition {
+	return Ret{}
+}
+
+func (Ret) Operator(*gen.InstructionInfo) string {
+	return "ret"
+}
+func (Ret) PossibleNextSteps(*gen.InstructionInfo) (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleReturn: true}, core.ResultList{}
 }
 
-func (RetInstruction) Operator(*gen.InstructionInfo) string {
-	return "RET"
-}
-
-func (RetInstruction) Validate(*gen.InstructionInfo) core.ResultList {
+func (Ret) Validate(*gen.InstructionInfo) core.ResultList {
 	return core.ResultList{}
-}
-
-type RetInstructionDefinition struct{}
-
-func (RetInstructionDefinition) BuildInstruction(
-	info *gen.InstructionInfo,
-) (gen.InstructionDefinition, core.ResultList) {
-	return gen.InstructionDefinition(RetInstruction{}), core.ResultList{}
-}
-
-func (RetInstructionDefinition) InferTargetTypes(
-	ctx *gen.FunctionGenerationContext,
-	targets []*gen.ReferencedTypeInfo,
-	arguments []*gen.ReferencedTypeInfo,
-) ([]gen.ReferencedTypeInfo, core.ResultList) {
-	return []gen.ReferencedTypeInfo{}, core.ResultList{}
 }
 
 // MARK: Jump
 
-type JumpInstruction struct{}
+type Jump struct{}
 
-func (JumpInstruction) PossibleNextSteps(i *gen.InstructionInfo) (gen.StepInfo, core.ResultList) {
+func NewJump() gen.InstructionDefinition {
+	return Jump{}
+}
+
+func (Jump) PossibleNextSteps(i *gen.InstructionInfo) (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{
 		PossibleBranches: []*gen.LabelInfo{
 			i.Arguments[0].(*gen.LabelArgumentInfo).Label,
@@ -115,36 +65,28 @@ func (JumpInstruction) PossibleNextSteps(i *gen.InstructionInfo) (gen.StepInfo, 
 	}, core.ResultList{}
 }
 
-func (JumpInstruction) Operator(*gen.InstructionInfo) string {
-	return "JMP"
+func (Jump) Operator(*gen.InstructionInfo) string {
+	return "j"
 }
 
-func (JumpInstruction) Validate(info *gen.InstructionInfo) core.ResultList {
+func (Jump) Validate(info *gen.InstructionInfo) core.ResultList {
 	return core.ResultList{}
-}
-
-type JumpInstructionDefinition struct{}
-
-func (JumpInstructionDefinition) BuildInstruction(
-	info *gen.InstructionInfo,
-) (gen.InstructionDefinition, core.ResultList) {
-	return gen.InstructionDefinition(JumpInstruction{}), core.ResultList{}
-}
-
-func (JumpInstructionDefinition) InferTargetTypes(
-	ctx *gen.FunctionGenerationContext,
-	targets []*gen.ReferencedTypeInfo,
-	arguments []*gen.ReferencedTypeInfo,
-) ([]gen.ReferencedTypeInfo, core.ResultList) {
-	return []gen.ReferencedTypeInfo{}, core.ResultList{}
 }
 
 // MARK: Jump Zero
 
 // JZ %condition .label
-type JumpZeroInstruction struct{}
+type JumpZero struct{}
 
-func (JumpZeroInstruction) PossibleNextSteps(i *gen.InstructionInfo) (gen.StepInfo, core.ResultList) {
+func NewJumpZero() gen.InstructionDefinition {
+	return JumpZero{}
+}
+
+func (JumpZero) Operator(*gen.InstructionInfo) string {
+	return "jz"
+}
+
+func (JumpZero) PossibleNextSteps(i *gen.InstructionInfo) (gen.StepInfo, core.ResultList) {
 	label := i.Arguments[1].(*gen.LabelArgumentInfo).Label
 	return gen.StepInfo{
 		PossibleBranches: []*gen.LabelInfo{label},
@@ -152,28 +94,8 @@ func (JumpZeroInstruction) PossibleNextSteps(i *gen.InstructionInfo) (gen.StepIn
 	}, core.ResultList{}
 }
 
-func (JumpZeroInstruction) Operator(*gen.InstructionInfo) string {
-	return "JZ"
-}
-
-func (JumpZeroInstruction) Validate(info *gen.InstructionInfo) core.ResultList {
+func (JumpZero) Validate(info *gen.InstructionInfo) core.ResultList {
 	return core.ResultList{}
-}
-
-type JumpZeroInstructionDefinition struct{}
-
-func (JumpZeroInstructionDefinition) BuildInstruction(
-	info *gen.InstructionInfo,
-) (gen.InstructionDefinition, core.ResultList) {
-	return gen.InstructionDefinition(JumpZeroInstruction{}), core.ResultList{}
-}
-
-func (JumpZeroInstructionDefinition) InferTargetTypes(
-	ctx *gen.FunctionGenerationContext,
-	targets []*gen.ReferencedTypeInfo,
-	arguments []*gen.ReferencedTypeInfo,
-) ([]gen.ReferencedTypeInfo, core.ResultList) {
-	return []gen.ReferencedTypeInfo{}, core.ResultList{}
 }
 
 // MARK: Instruction Map
@@ -234,7 +156,7 @@ func PrepareTestForInstructionGeneration(
 }
 
 func TestInstructionCreateTarget(t *testing.T) {
-	src := core.NewSourceView("$32 %c = ADD %a %b\n")
+	src := core.NewSourceView("$32 %c = add %a %b\n")
 	node, ctx := PrepareTestForInstructionGeneration(src, t)
 
 	generator := gen.NewInstructionGenerator()
