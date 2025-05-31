@@ -27,7 +27,6 @@
 
 # build files
 build
-usm
 
 # coverage
 coverage.txt

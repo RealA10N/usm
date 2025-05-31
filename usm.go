@@ -12,7 +12,7 @@ import (
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/parse"
 	"alon.kr/x/usm/transform"
-	usm64managers "alon.kr/x/usm/usm64/managers"
+	usmmanagers "alon.kr/x/usm/usm/managers"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +21,7 @@ var targets = transform.NewTargetCollection(
 		Names:             []string{"usm"},
 		Extensions:        []string{".usm"},
 		Description:       "A universal assembly language",
-		GenerationContext: usm64managers.NewGenerationContext(),
+		GenerationContext: usmmanagers.NewGenerationContext(),
 		Transformations: *transform.NewTransformationCollection(
 			&transform.Transformation{
 				Names:       []string{"dead-code-elimination", "dce"},
@@ -31,7 +31,7 @@ var targets = transform.NewTargetCollection(
 			},
 			&transform.Transformation{
 				Names:       []string{"aarch64", "arm64"},
-				Description: "Converts the universal assembly to matching machine specific aarch64 assembly",
+				Description: "Converts the universal assembly to matching machine specific AArch64 assembly",
 				TargetName:  "aarch64",
 				// Transform: ,
 			},
@@ -41,7 +41,7 @@ var targets = transform.NewTargetCollection(
 	&transform.Target{
 		Names:             []string{"aarch64", "arm64"},
 		Extensions:        []string{".aarch64.usm", ".arm64.usm"},
-		Description:       "Aarch64 (arm64v8) assembly language",
+		Description:       "AArch64 (ARM64, ARMv8) assembly",
 		GenerationContext: aarch64managers.NewGenerationContext(),
 		Transformations: *transform.NewTransformationCollection(
 			&transform.Transformation{
@@ -56,8 +56,7 @@ var targets = transform.NewTargetCollection(
 		Names: []string{
 			"aarch64-macho-object",
 			"aarch64-macho-obj",
-			"arm64-macho-object",
-			"arm64-macho-obj",
+			"aarch64-macho",
 		},
 		Extensions:  []string{".o"},
 		Description: "Mach-O object file containing aarch64 assembly",
