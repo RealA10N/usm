@@ -9,56 +9,51 @@ import (
 	"alon.kr/x/usm/gen"
 )
 
-type Ret struct {
-	instructions.Ret
-}
+type Ret struct{}
 
-func (Ret) Operator() string {
+func (Ret) Operator(*gen.InstructionInfo) string {
 	return "ret"
 }
 
-func (Ret) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
+func (Ret) PossibleNextSteps(*gen.InstructionInfo) (gen.StepInfo, core.ResultList) {
 	return gen.StepInfo{PossibleReturn: true}, core.ResultList{}
 }
 
-func (i Ret) Generate(
+func (i Ret) Codegen(
 	*aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
-	return i, core.ResultList{}
+	return instructions.RET(registers.GPRegisterX30), core.ResultList{}
 }
 
-type RetDefinition struct{}
+func (i Ret) Xn(info *gen.InstructionInfo) (registers.GPRegister, core.ResultList) {
+	results := aarch64translation.AssertArgumentsBetween(info, 0, 1)
+	if !results.IsEmpty() {
+		return registers.GPRegister(0), results
+	}
 
-func (RetDefinition) BuildInstruction(
-	info *gen.InstructionInfo,
-) (gen.BaseInstruction, core.ResultList) {
+	Xn := registers.GPRegisterX30
+	if len(info.Arguments) > 0 {
+		Xn, results = aarch64translation.ArgumentToAarch64GPRegister(info.Arguments[0])
+		if !results.IsEmpty() {
+			return registers.GPRegister(0), results
+		}
+	}
+
+	return Xn, core.ResultList{}
+}
+
+func (i Ret) Validate(info *gen.InstructionInfo) core.ResultList {
 	results := core.ResultList{}
 
-	curResults := aarch64translation.AssertArgumentsBetween(info, 0, 1)
+	_, curResults := i.Xn(info)
 	results.Extend(&curResults)
 
 	curResults = aarch64translation.AssertTargetsExactly(info, 0)
 	results.Extend(&curResults)
 
 	if !results.IsEmpty() {
-		return nil, results
+		return results
 	}
 
-	Xn := registers.GPRegisterX30
-	if len(info.Arguments) > 0 {
-		Xn, curResults = aarch64translation.ArgumentToAarch64GPRegister(info.Arguments[0])
-		results.Extend(&curResults)
-	}
-
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
-	return Ret{
-		instructions.RET(Xn),
-	}, core.ResultList{}
-}
-
-func NewRetInstructionDefinition() gen.InstructionDefinition {
-	return RetDefinition{}
+	return core.ResultList{}
 }
