@@ -20,6 +20,10 @@ func (i Move) Operator(*gen.InstructionInfo) string {
 	return ""
 }
 
+func (i Move) IsCritical(*gen.InstructionInfo) bool {
+	return false
+}
+
 func (i Move) Validate(info *gen.InstructionInfo) core.ResultList {
 	results := core.ResultList{}
 

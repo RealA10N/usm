@@ -17,6 +17,10 @@ func (i Ret) Operator(*gen.InstructionInfo) string {
 	return "ret"
 }
 
+func (i Ret) IsCritical(*gen.InstructionInfo) bool {
+	return true
+}
+
 func (i Ret) Validate(info *gen.InstructionInfo) core.ResultList {
 	results := core.ResultList{}
 
