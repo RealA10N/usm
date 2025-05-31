@@ -11,23 +11,56 @@ import (
 )
 
 type Bl struct {
-	Target *gen.FunctionInfo
+	gen.NonBranchingInstruction
 }
 
 func (b Bl) Operator() string {
 	return "bl"
 }
 
-func (b Bl) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
-	// TODO: add an analysis to check if the target function is a no-return
-	// function.
-	return gen.StepInfo{PossibleContinue: true}, core.ResultList{}
+func (b Bl) Target(
+	info *gen.InstructionInfo,
+) (*gen.FunctionInfo, core.ResultList) {
+	results := aarch64translation.AssertArgumentsExactly(info, 1)
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	target, results := aarch64translation.ArgumentToFunctionInfo(info.Arguments[0])
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	return target, core.ResultList{}
 }
 
-func (b Bl) registerRelocation(ctx *aarch64codegen.InstructionCodegenContext) {
+func (b Bl) Validate(info *gen.InstructionInfo) core.ResultList {
+	results := core.ResultList{}
+
+	_, curResults := b.Target(info)
+	results.Extend(&curResults)
+
+	curResults = aarch64translation.AssertTargetsExactly(info, 0)
+	results.Extend(&curResults)
+
+	if !results.IsEmpty() {
+		return results
+	}
+
+	return core.ResultList{}
+}
+
+func (b Bl) registerRelocation(
+	ctx *aarch64codegen.InstructionCodegenContext,
+) core.ResultList {
+	target, results := b.Target(ctx.InstructionInfo)
+	if !results.IsEmpty() {
+		return results
+	}
+
 	relocation := section64.RelocationBuilder{
 		Address:                uint32(ctx.InstructionOffsetInFile()),
-		SymbolIndex:            ctx.FunctionIndices[b.Target],
+		SymbolIndex:            ctx.FunctionIndices[target],
 		IsRelocationPcRelative: true,
 		Length:                 section64.RelocationLengthLong,
 		IsRelocationExtern:     true,
@@ -35,17 +68,27 @@ func (b Bl) registerRelocation(ctx *aarch64codegen.InstructionCodegenContext) {
 	}
 
 	ctx.Relocations = append(ctx.Relocations, relocation)
+	return core.ResultList{}
 }
 
 func (b Bl) Generate(
 	ctx *aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
-	targetOffset, ok := ctx.FunctionOffsets[b.Target]
+	target, results := b.Target(ctx.InstructionInfo)
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	targetOffset, ok := ctx.FunctionOffsets[target]
 	if !ok {
 		// Target function is not defined: we add a relocation to the symbol
 		// and let the linker resolve it.
-		b.registerRelocation(ctx)
-		return instructions.BL(0), core.ResultList{}
+		results = b.registerRelocation(ctx)
+		if !results.IsEmpty() {
+			return nil, results
+		}
+
+		return instructions.NewBl(0), core.ResultList{}
 	}
 
 	currentOffset := ctx.InstructionOffsetInFile()
@@ -65,36 +108,5 @@ func (b Bl) Generate(
 		})
 	}
 
-	return instructions.BL(offset), core.ResultList{}
-}
-
-type BlDefinition struct{}
-
-func (BlDefinition) BuildInstruction(
-	info *gen.InstructionInfo,
-) (gen.BaseInstruction, core.ResultList) {
-	results := core.ResultList{}
-
-	curResults := aarch64translation.AssertArgumentsExactly(info, 1)
-	results.Extend(&curResults)
-
-	curResults = aarch64translation.AssertTargetsExactly(info, 0)
-	results.Extend(&curResults)
-
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
-	target, curResults := aarch64translation.ArgumentToFunctionInfo(info.Arguments[0])
-	results.Extend(&curResults)
-
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
-	return Bl{Target: target}, core.ResultList{}
-}
-
-func NewBlInstructionDefinition() gen.InstructionDefinition {
-	return BlDefinition{}
+	return instructions.NewBl(offset), core.ResultList{}
 }
