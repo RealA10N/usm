@@ -22,7 +22,7 @@ func buildInstructionFromSource(
 	t *testing.T,
 	def gen.InstructionDefinition,
 	src string,
-) aarch64codegen.Instruction {
+) (*gen.InstructionInfo, aarch64codegen.Instruction) {
 	srcView := core.NewSourceView(src)
 
 	tokenizer := lex.NewTokenizer()
@@ -46,7 +46,7 @@ func buildInstructionFromSource(
 	inst, ok := info.Instruction.(aarch64codegen.Instruction)
 	assert.True(t, ok)
 
-	return inst
+	return info, inst
 }
 
 func assertExpectedCodegen(
@@ -55,9 +55,12 @@ func assertExpectedCodegen(
 	expected instructions.Instruction,
 	src string,
 ) {
-	inst := buildInstructionFromSource(t, def, src)
+	info, inst := buildInstructionFromSource(t, def, src)
 
-	generationContext := &aarch64codegen.InstructionCodegenContext{}
+	generationContext := &aarch64codegen.InstructionCodegenContext{
+		InstructionInfo: info,
+	}
+
 	code, results := inst.Codegen(generationContext)
 	assert.True(t, results.IsEmpty())
 
