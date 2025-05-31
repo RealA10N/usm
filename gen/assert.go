@@ -84,6 +84,28 @@ func AssertArgumentsExactly(
 	return core.ResultList{}
 }
 
+func AssertArgumentIsTyped(
+	arg ArgumentInfo,
+) (ReferencedTypeInfo, core.ResultList) {
+	switch typedArg := arg.(type) {
+
+	case *RegisterArgumentInfo:
+		return typedArg.Register.Type, core.ResultList{}
+
+	case *ImmediateInfo:
+		return typedArg.Type, core.ResultList{}
+
+	default:
+		return ReferencedTypeInfo{}, list.FromSingle(core.Result{
+			{
+				Type:     core.ErrorResult,
+				Message:  "Expected an argument that can be typed",
+				Location: arg.Declaration(),
+			},
+		})
+	}
+}
+
 // MARK: Targets
 
 func AssertTargetsExactly(
