@@ -11,15 +11,15 @@ import (
 
 type Branch struct{}
 
-func NewBranch() Branch {
+func NewBranch() gen.InstructionDefinition {
 	return Branch{}
 }
 
-func (b Branch) Operator() string {
+func (i Branch) Operator(*gen.InstructionInfo) string {
 	return "b"
 }
 
-func (b Branch) Target(
+func (i Branch) Target(
 	info *gen.InstructionInfo,
 ) (*gen.LabelInfo, core.ResultList) {
 	results := aarch64translation.AssertArgumentsExactly(info, 1)
@@ -35,22 +35,25 @@ func (b Branch) Target(
 	return label, core.ResultList{}
 }
 
-func (b Branch) PossibleNextSteps(
+func (i Branch) PossibleNextSteps(
 	info *gen.InstructionInfo,
 ) (gen.StepInfo, core.ResultList) {
-	target, results := b.Target(info)
+	target, results := i.Target(info)
 	return gen.StepInfo{
 		PossibleBranches: []*gen.LabelInfo{target},
 	}, results
 }
 
-func (b Branch) Codegen(
-	ctx *aarch64codegen.InstructionCodegenContext,
-) (instructions.Instruction, core.ResultList) {
-	info := ctx.InstructionInfo
+type branchValidationArtifacts struct {
+	Target *gen.LabelInfo
+}
 
+func (i Branch) internalValidate(
+	info *gen.InstructionInfo,
+) (*branchValidationArtifacts, core.ResultList) {
 	results := core.ResultList{}
-	curResults := aarch64translation.AssertArgumentsExactly(info, 1)
+
+	target, curResults := i.Target(info)
 	results.Extend(&curResults)
 
 	curResults = aarch64translation.AssertTargetsExactly(info, 0)
@@ -60,11 +63,24 @@ func (b Branch) Codegen(
 		return nil, results
 	}
 
-	target, results := b.Target(info)
+	artifacts := &branchValidationArtifacts{
+		Target: target,
+	}
+
+	return artifacts, core.ResultList{}
+}
+
+func (i Branch) Codegen(
+	ctx *aarch64codegen.InstructionCodegenContext,
+) (instructions.Instruction, core.ResultList) {
+	info := ctx.InstructionInfo
+
+	artifacts, results := i.internalValidate(info)
 	if !results.IsEmpty() {
 		return nil, results
 	}
 
+	target := artifacts.Target
 	targetBasicBlock := target.BasicBlock
 	targetOffset := ctx.BasicBlockOffsets[targetBasicBlock]
 	currentOffset := ctx.InstructionOffsetInFunction
@@ -86,4 +102,11 @@ func (b Branch) Codegen(
 
 	inst := instructions.NewBranch(offset)
 	return inst, core.ResultList{}
+}
+
+func (i Branch) Validate(
+	info *gen.InstructionInfo,
+) core.ResultList {
+	_, results := i.internalValidate(info)
+	return results
 }
