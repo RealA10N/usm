@@ -86,8 +86,14 @@ func (g *FileGenerator) Generate(
 		return nil, results
 	}
 
-	file := &FileInfo{
-		Functions: functions,
+	file := NewFileInfo()
+	for _, function := range functions {
+		file.AppendFunction(function)
+	}
+
+	results = file.Validate()
+	if !results.IsEmpty() {
+		return nil, results
 	}
 
 	return file, core.ResultList{}

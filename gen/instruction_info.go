@@ -33,6 +33,10 @@ func NewEmptyInstructionInfo(
 	}
 }
 
+func (i *InstructionInfo) Validate() core.ResultList {
+	return i.Instruction.Validate(i)
+}
+
 // Appends the given register(s) as a target(s) of the instruction,
 // including updating the required instruction and register information fields.
 func (i *InstructionInfo) AppendTarget(targets ...*TargetInfo) {

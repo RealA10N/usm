@@ -138,11 +138,5 @@ func (g *InstructionGenerator) Generate(
 	instCtx.InstructionInfo.AppendArgument(arguments...)
 
 	instCtx.InstructionInfo.SetInstruction(instDef)
-
-	results = instDef.Validate(instCtx.InstructionInfo)
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
 	return instCtx.InstructionInfo, core.ResultList{}
 }
