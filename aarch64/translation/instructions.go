@@ -10,9 +10,9 @@ import (
 func ValidateBinaryInstruction(
 	info *gen.InstructionInfo,
 ) core.ResultList {
-	results := AssertTargetsExactly(info, 1)
+	results := gen.AssertTargetsExactly(info, 1)
 
-	argumentResults := AssertArgumentsExactly(info, 2)
+	argumentResults := gen.AssertArgumentsExactly(info, 2)
 	results.Extend(&argumentResults)
 
 	return results

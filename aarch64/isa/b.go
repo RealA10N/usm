@@ -22,7 +22,7 @@ func (i Branch) Operator(*gen.InstructionInfo) string {
 func (i Branch) Target(
 	info *gen.InstructionInfo,
 ) (*gen.LabelInfo, core.ResultList) {
-	results := aarch64translation.AssertArgumentsExactly(info, 1)
+	results := gen.AssertArgumentsExactly(info, 1)
 	if !results.IsEmpty() {
 		return nil, results
 	}
@@ -56,7 +56,7 @@ func (i Branch) internalValidate(
 	target, curResults := i.Target(info)
 	results.Extend(&curResults)
 
-	curResults = aarch64translation.AssertTargetsExactly(info, 0)
+	curResults = gen.AssertTargetsExactly(info, 0)
 	results.Extend(&curResults)
 
 	if !results.IsEmpty() {

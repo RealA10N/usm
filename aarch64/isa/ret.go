@@ -36,7 +36,7 @@ func (i Ret) Codegen(
 }
 
 func (i Ret) Xn(info *gen.InstructionInfo) (registers.GPRegister, core.ResultList) {
-	results := aarch64translation.AssertArgumentsBetween(info, 0, 1)
+	results := gen.AssertArgumentsBetween(info, 0, 1)
 	if !results.IsEmpty() {
 		return registers.GPRegister(0), results
 	}
@@ -58,7 +58,7 @@ func (i Ret) Validate(info *gen.InstructionInfo) core.ResultList {
 	_, curResults := i.Xn(info)
 	results.Extend(&curResults)
 
-	curResults = aarch64translation.AssertTargetsExactly(info, 0)
+	curResults = gen.AssertTargetsExactly(info, 0)
 	results.Extend(&curResults)
 
 	if !results.IsEmpty() {

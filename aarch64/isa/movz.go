@@ -23,7 +23,7 @@ func (Movz) Operator(*gen.InstructionInfo) string {
 }
 
 func (i Movz) Xd(info *gen.InstructionInfo) (registers.GPRegister, core.ResultList) {
-	results := aarch64translation.AssertTargetsExactly(info, 1)
+	results := gen.AssertTargetsExactly(info, 1)
 
 	if !results.IsEmpty() {
 		return registers.GPRegister(0), results
@@ -40,7 +40,7 @@ func (i Movz) Xd(info *gen.InstructionInfo) (registers.GPRegister, core.ResultLi
 func (i Movz) Immediate(
 	info *gen.InstructionInfo,
 ) (immediates.Immediate16, instructions.MovShift, core.ResultList) {
-	results := aarch64translation.AssertArgumentsBetween(info, 1, 2)
+	results := gen.AssertArgumentsBetween(info, 1, 2)
 	if !results.IsEmpty() {
 		return immediates.Immediate16(0), instructions.MovShift0, results
 

@@ -25,7 +25,7 @@ func (b Bl) Operator(*gen.InstructionInfo) string {
 func (b Bl) Target(
 	info *gen.InstructionInfo,
 ) (*gen.FunctionInfo, core.ResultList) {
-	results := aarch64translation.AssertArgumentsExactly(info, 1)
+	results := gen.AssertArgumentsExactly(info, 1)
 	if !results.IsEmpty() {
 		return nil, results
 	}
@@ -44,7 +44,7 @@ func (b Bl) Validate(info *gen.InstructionInfo) core.ResultList {
 	_, curResults := b.Target(info)
 	results.Extend(&curResults)
 
-	curResults = aarch64translation.AssertTargetsExactly(info, 0)
+	curResults = gen.AssertTargetsExactly(info, 0)
 	results.Extend(&curResults)
 
 	if !results.IsEmpty() {
