@@ -10,6 +10,7 @@ func NewInstructionManager() gen.InstructionManager {
 	return gen.NewInstructionMap(
 		[]faststringmap.MapEntry[gen.InstructionDefinition]{
 			{Key: "", Value: usmisa.NewMove()},
+			{Key: "ret", Value: usmisa.NewRet()},
 		},
 		false,
 	)

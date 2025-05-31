@@ -32,3 +32,11 @@ func (NonBranchingInstruction) PossibleNextSteps(*InstructionInfo) (StepInfo, co
 		PossibleContinue: true,
 	}, core.ResultList{}
 }
+
+type ReturningInstruction struct{}
+
+func (ReturningInstruction) PossibleNextSteps(*InstructionInfo) (StepInfo, core.ResultList) {
+	return StepInfo{
+		PossibleReturn: true,
+	}, core.ResultList{}
+}
