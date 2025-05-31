@@ -65,7 +65,7 @@ func assertExpectedCodegen(
 }
 
 func TestAddExpectedCodegen(t *testing.T) {
-	def := aarch64isa.NewAddInstruction()
+	def := aarch64isa.NewAdd()
 
 	testCases := []struct {
 		src      string

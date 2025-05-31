@@ -13,7 +13,7 @@ type Add struct {
 	gen.NonBranchingInstruction
 }
 
-func NewAddInstruction() gen.InstructionDefinition {
+func NewAdd() gen.InstructionDefinition {
 	return Add{}
 }
 

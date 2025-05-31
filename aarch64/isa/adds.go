@@ -13,7 +13,11 @@ type Adds struct {
 	gen.NonBranchingInstruction
 }
 
-func (Adds) Operator() string {
+func NewAdds() gen.InstructionDefinition {
+	return Adds{}
+}
+
+func (Adds) Operator(*gen.InstructionInfo) string {
 	return "adds"
 }
 
