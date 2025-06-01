@@ -10,7 +10,7 @@ import (
 	"alon.kr/x/usm/gen"
 	"alon.kr/x/usm/lex"
 	"alon.kr/x/usm/parse"
-	usm64managers "alon.kr/x/usm/usm64/managers"
+	usmmanagers "alon.kr/x/usm/usm/managers"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -72,7 +72,7 @@ func generateFileInfo(t *testing.T, source string) *gen.FileInfo {
 	fileNode, result := parse.NewFileParser().Parse(&tknView)
 	assert.Nil(t, result)
 
-	ctx := usm64managers.NewGenerationContext()
+	ctx := usmmanagers.NewGenerationContext()
 	generator := gen.NewFileGenerator()
 	info, results := generator.Generate(ctx, srcView.Ctx(), fileNode)
 	assert.True(t, results.IsEmpty(), "Failed to generate file info")

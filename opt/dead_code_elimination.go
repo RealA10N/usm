@@ -21,20 +21,20 @@ import (
 // instruction since we assume SSA form).
 
 type DCESupportedInstruction interface {
-	gen.BaseInstruction
+	gen.InstructionDefinition
 
 	// Returns true if the instruction is a critical instruction, which means
 	// it can't be removed by the dead code elimination process, by definition.
 	//
 	// A critical instruction might be a function call, a branch, an instruction
 	// with a side effect, etc.
-	IsCritical() bool
+	IsCritical(info *gen.InstructionInfo) bool
 
 	// Returns the registers that the instruction defines, directly or indirectly.
-	Defines() []*gen.RegisterInfo
+	Defines(info *gen.InstructionInfo) []*gen.RegisterInfo
 
 	// Returns the registers that the instruction uses, directly or indirectly.
-	Uses() []*gen.RegisterInfo
+	Uses(info *gen.InstructionInfo) []*gen.RegisterInfo
 }
 
 func newDCENotSupportedError(instruction *gen.InstructionInfo) core.ResultList {
@@ -43,6 +43,30 @@ func newDCENotSupportedError(instruction *gen.InstructionInfo) core.ResultList {
 		Message:  "Instruction does not support dead code elimination",
 		Location: instruction.Declaration,
 	}})
+}
+
+type CriticalInstruction struct{}
+
+func (CriticalInstruction) IsCritical(*gen.InstructionInfo) bool {
+	return true
+}
+
+type NonCriticalInstruction struct{}
+
+func (NonCriticalInstruction) IsCritical(*gen.InstructionInfo) bool {
+	return false
+}
+
+type UsesArgumentsInstruction struct{}
+
+func (UsesArgumentsInstruction) Uses(info *gen.InstructionInfo) []*gen.RegisterInfo {
+	return gen.ArgumentsToRegisters(info.Arguments)
+}
+
+type DefinesTargetsInstruction struct{}
+
+func (DefinesTargetsInstruction) Defines(info *gen.InstructionInfo) []*gen.RegisterInfo {
+	return gen.TargetsToRegisters(info.Targets)
 }
 
 func collectCriticalInstructions(
@@ -57,7 +81,7 @@ func collectCriticalInstructions(
 			if !ok {
 				curResults := newDCENotSupportedError(instruction)
 				results.Extend(&curResults)
-			} else if dceInstruction.IsCritical() {
+			} else if dceInstruction.IsCritical(instruction) {
 				collected.Push(instruction)
 			}
 		}
@@ -91,7 +115,7 @@ func collectUsefulInstructions(
 
 		usefulInstructions.Add(instruction)
 
-		for _, register := range dceInstruction.Uses() {
+		for _, register := range dceInstruction.Uses(instruction) {
 			definitions := register.Definitions
 
 			// In SSA form, a register can have at most one definition, and thus

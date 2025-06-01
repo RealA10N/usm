@@ -4,26 +4,27 @@ import (
 	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
+	"alon.kr/x/usm/opt"
 )
 
 // The call instruction
 type Call struct {
 	gen.NonBranchingInstruction
+
+	opt.CriticalInstruction
+	opt.UsesArgumentsInstruction
+	opt.DefinesTargetsInstruction
 }
 
 func NewCall() gen.InstructionDefinition {
 	return Call{}
 }
 
-func (i Call) Operator(*gen.InstructionInfo) string {
+func (Call) Operator(*gen.InstructionInfo) string {
 	return "call"
 }
 
-func (i Call) IsCritical(*gen.InstructionInfo) bool {
-	return true
-}
-
-func (i Call) Validate(info *gen.InstructionInfo) core.ResultList {
+func (Call) Validate(info *gen.InstructionInfo) core.ResultList {
 	results := gen.AssertAtLeastArguments(info, 1)
 	if !results.IsEmpty() {
 		return results
@@ -63,4 +64,12 @@ func (i Call) Validate(info *gen.InstructionInfo) core.ResultList {
 	}
 
 	return core.ResultList{}
+}
+
+func (Call) Defines(info *gen.InstructionInfo) []*gen.RegisterInfo {
+	return gen.TargetsToRegisters(info.Targets)
+}
+
+func (Call) Uses(info *gen.InstructionInfo) []*gen.RegisterInfo {
+	return gen.ArgumentsToRegisters(info.Arguments)
 }

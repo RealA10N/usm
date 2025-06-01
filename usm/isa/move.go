@@ -6,25 +6,26 @@ import (
 	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
+	"alon.kr/x/usm/opt"
 )
 
 type Move struct {
 	gen.NonBranchingInstruction
+
+	opt.NonCriticalInstruction
+	opt.UsesArgumentsInstruction
+	opt.DefinesTargetsInstruction
 }
 
 func NewMove() gen.InstructionDefinition {
 	return Move{}
 }
 
-func (i Move) Operator(*gen.InstructionInfo) string {
+func (Move) Operator(*gen.InstructionInfo) string {
 	return ""
 }
 
-func (i Move) IsCritical(*gen.InstructionInfo) bool {
-	return false
-}
-
-func (i Move) Validate(info *gen.InstructionInfo) core.ResultList {
+func (Move) Validate(info *gen.InstructionInfo) core.ResultList {
 	results := core.ResultList{}
 
 	curResults := gen.AssertTargetsExactly(info, 1)
@@ -67,4 +68,12 @@ func (i Move) Validate(info *gen.InstructionInfo) core.ResultList {
 	}
 
 	return core.ResultList{}
+}
+
+func (Move) Defines(info *gen.InstructionInfo) []*gen.RegisterInfo {
+	return gen.TargetsToRegisters(info.Targets)
+}
+
+func (Move) Uses(info *gen.InstructionInfo) []*gen.RegisterInfo {
+	return gen.ArgumentsToRegisters(info.Arguments)
 }
