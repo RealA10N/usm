@@ -1,14 +1,16 @@
+func @use $64 %reg
+
 func @input {
 .entry
 	$64 %a = $64 #0
 	$64 %b = $64 #1
-	PUT %a
-	TERM
+	call @use %a
+	ret
 }
 
 func @expected {
 .entry
 	$64 %a = $64 #0
-	PUT %a
-	TERM
+	call @use %a
+	ret
 }
