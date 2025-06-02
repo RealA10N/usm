@@ -38,7 +38,7 @@ func (Move) Validate(info *gen.InstructionInfo) core.ResultList {
 		return results
 	}
 
-	argumentType, curResults := gen.AssertArgumentIsTyped(info.Arguments[0])
+	argumentType, curResults := gen.ArgumentToType(info.Arguments[0])
 	results.Extend(&curResults)
 
 	if !results.IsEmpty() {
