@@ -127,7 +127,7 @@ func AssertBigIntInSet(
 fail:
 	message := "Expected one of "
 	message += "#" + strconv.FormatInt(options[0], 10)
-	for _, option := range options {
+	for _, option := range options[1:] {
 		message += ", #" + strconv.FormatInt(option, 10)
 	}
 
