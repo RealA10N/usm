@@ -37,6 +37,14 @@ func (NonBranchingInstruction) PossibleNextSteps(*InstructionInfo) (StepInfo, co
 	}, core.ResultList{}
 }
 
+type BranchToLabelArguments struct{}
+
+func (BranchToLabelArguments) PossibleNextSteps(info *InstructionInfo) (StepInfo, core.ResultList) {
+	return StepInfo{
+		PossibleBranches: ArgumentsToLabels(info.Arguments),
+	}, core.ResultList{}
+}
+
 type BranchesToLabelArgumentsOrContinues struct{}
 
 func (BranchesToLabelArgumentsOrContinues) PossibleNextSteps(info *InstructionInfo) (StepInfo, core.ResultList) {

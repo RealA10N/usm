@@ -63,6 +63,12 @@ func (UsesArgumentsInstruction) Uses(info *gen.InstructionInfo) []*gen.RegisterI
 	return gen.ArgumentsToRegisters(info.Arguments)
 }
 
+type UsesNothingInstruction struct{}
+
+func (UsesNothingInstruction) Uses(*gen.InstructionInfo) []*gen.RegisterInfo {
+	return []*gen.RegisterInfo{}
+}
+
 type DefinesTargetsInstruction struct{}
 
 func (DefinesTargetsInstruction) Defines(info *gen.InstructionInfo) []*gen.RegisterInfo {
