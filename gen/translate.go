@@ -44,7 +44,7 @@ func ArgumentToType(arg ArgumentInfo) (ReferencedTypeInfo, core.ResultList) {
 		return ReferencedTypeInfo{}, list.FromSingle(core.Result{
 			{
 				Type:     core.ErrorResult,
-				Message:  "Expected an argument that can be typed",
+				Message:  "Expected a typed argument",
 				Location: arg.Declaration(),
 			},
 		})
