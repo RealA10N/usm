@@ -12,24 +12,55 @@ import (
 
 type Bcond struct {
 	Condition immediates.Condition
-	Target    *gen.LabelInfo
 }
 
-func (b Bcond) Operator() string {
+func NewBcond(condition immediates.Condition) gen.InstructionDefinition {
+	return Bcond{
+		Condition: condition,
+	}
+}
+
+func (b Bcond) Target(
+	info *gen.InstructionInfo,
+) (*gen.LabelInfo, core.ResultList) {
+	results := gen.AssertArgumentsExactly(info, 1)
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	target, results := aarch64translation.ArgumentToLabelInfo(info.Arguments[0])
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	return target, core.ResultList{}
+}
+
+func (b Bcond) Operator(*gen.InstructionInfo) string {
 	return "b." + b.Condition.String()
 }
 
-func (b Bcond) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
+func (b Bcond) PossibleNextSteps(info *gen.InstructionInfo) (gen.StepInfo, core.ResultList) {
+	target, results := b.Target(info)
+	if !results.IsEmpty() {
+		return gen.StepInfo{}, results
+	}
+
 	return gen.StepInfo{
-		PossibleBranches: []*gen.LabelInfo{b.Target},
+		PossibleBranches: []*gen.LabelInfo{target},
 		PossibleContinue: true,
 	}, core.ResultList{}
 }
 
-func (b Bcond) Generate(
+func (b Bcond) Codegen(
 	ctx *aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
-	targetBasicBlock := b.Target.BasicBlock
+	target, results := b.Target(ctx.InstructionInfo)
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	targetBasicBlock := target.BasicBlock
 	targetOffset := ctx.BasicBlockOffsets[targetBasicBlock]
 	currentOffset := ctx.InstructionOffsetInFunction
 	offset, err := aarch64translation.Uint64DiffToOffset19Align4(targetOffset, currentOffset)
@@ -52,35 +83,20 @@ func (b Bcond) Generate(
 	return instruction, core.ResultList{}
 }
 
-type BcondDefinition struct {
-	Condition immediates.Condition
-}
-
-func (d BcondDefinition) BuildInstruction(
+func (b Bcond) Validate(
 	info *gen.InstructionInfo,
-) (gen.BaseInstruction, core.ResultList) {
+) core.ResultList {
 	results := core.ResultList{}
 
-	curResults := aarch64translation.AssertArgumentsExactly(info, 1)
+	_, curResults := b.Target(info)
 	results.Extend(&curResults)
 
-	curResults = aarch64translation.AssertTargetsExactly(info, 0)
-	results.Extend(&curResults)
-
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
-	target, curResults := aarch64translation.ArgumentToLabelInfo(info.Arguments[0])
+	curResults = gen.AssertTargetsExactly(info, 0)
 	results.Extend(&curResults)
 
 	if !results.IsEmpty() {
-		return nil, results
+		return results
 	}
 
-	return Bcond{Condition: d.Condition, Target: target}, core.ResultList{}
-}
-
-func NewBcondInstructionDefinition(condition immediates.Condition) gen.InstructionDefinition {
-	return BcondDefinition{Condition: condition}
+	return core.ResultList{}
 }

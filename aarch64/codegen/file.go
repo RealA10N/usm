@@ -31,14 +31,17 @@ func NewFileCodegenContext(file *gen.FileInfo) *FileCodegenContext {
 	functionIndices := make(map[*gen.FunctionInfo]uint32, len(file.Functions))
 
 	offset := uint64(0)
-	for idx, function := range file.Functions {
+	idx := uint32(0)
+	for _, function := range file.Functions {
 		if function.IsDefined() {
 			functionOffsets[function] = offset
-			functionIndices[function] = uint32(idx)
+			functionIndices[function] = idx
 
 			functionSize := uint64(function.Size()) * 4 // TODO: handle overflow?
 			offset += functionSize
 		}
+
+		idx++
 	}
 
 	return &FileCodegenContext{

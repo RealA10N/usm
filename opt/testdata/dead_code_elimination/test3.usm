@@ -1,19 +1,12 @@
-func @use $64 %reg
-
 func @input {
 .entry
 	$64 %a = $64 #0
 	$64 %b = %a
 	$64 %c = %b
-	call @use %c
 	ret
 }
 
 func @expected {
 .entry
-	$64 %a = $64 #0
-	$64 %b = %a
-	$64 %c = %b
-	call @use %c
 	ret
 }

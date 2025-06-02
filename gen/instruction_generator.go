@@ -121,7 +121,7 @@ func (g *InstructionGenerator) Generate(
 	}
 
 	instName := ViewToSourceString(ctx.FileGenerationContext, node.Operator)
-	instDef, results := ctx.Instructions.GetInstructionDefinition(instName, node)
+	instDef, results := ctx.Instructions.GetInstructionDefinition(instName, &node)
 
 	arguments, curResults := g.generateArguments(&instCtx, node)
 	results.Extend(&curResults)
@@ -137,11 +137,6 @@ func (g *InstructionGenerator) Generate(
 	instCtx.InstructionInfo.AppendTarget(targets...)
 	instCtx.InstructionInfo.AppendArgument(arguments...)
 
-	instruction, results := instDef.BuildInstruction(instCtx.InstructionInfo)
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
-	instCtx.InstructionInfo.Instruction = instruction
+	instCtx.InstructionInfo.SetInstruction(instDef)
 	return instCtx.InstructionInfo, core.ResultList{}
 }

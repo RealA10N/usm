@@ -3,6 +3,8 @@ package gen
 import "alon.kr/x/usm/core"
 
 type FunctionInfo struct {
+	*FileInfo
+
 	Name        string
 	Declaration *core.UnmanagedSourceView
 
@@ -72,4 +74,15 @@ func (i *FunctionInfo) String() string {
 
 	s += "\n"
 	return s
+}
+
+func (i *FunctionInfo) Validate() core.ResultList {
+	results := core.ResultList{}
+
+	for _, block := range i.CollectBasicBlocks() {
+		curResults := block.Validate()
+		results.Extend(&curResults)
+	}
+
+	return results
 }

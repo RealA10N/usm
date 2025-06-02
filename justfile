@@ -4,9 +4,10 @@
 GO := `if command -v richgo >/dev/null 2>&1; then echo richgo; else echo go; fi`
 PY := "python3"
 COVERPROFILE := "coverage.out"
+OUTPUT := "usm.out"
 
 build:
-	{{GO}} build
+	{{GO}} build -o {{OUTPUT}}
 
 test:
 	{{GO}} test ./...

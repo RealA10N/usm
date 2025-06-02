@@ -13,8 +13,8 @@ type RegisterArgumentInfo struct {
 	declaration *core.UnmanagedSourceView
 }
 
-func NewRegisterArgument(register *RegisterInfo) RegisterArgumentInfo {
-	return RegisterArgumentInfo{
+func NewRegisterArgumentInfo(register *RegisterInfo) *RegisterArgumentInfo {
+	return &RegisterArgumentInfo{
 		Register: register,
 	}
 }

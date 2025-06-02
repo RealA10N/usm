@@ -37,9 +37,9 @@ func generateFunctionFromSource(
 func TestSimpleFunctionGeneration(t *testing.T) {
 	src := `func $32 @add $32 %a {
 .entry
-	$32 %b = ADD %a $32 #1
-	$32 %c = ADD %b %a
-	RET
+	$32 %b = add %a $32 #1
+	$32 %c = add %b %a
+	ret
 }
 `
 
@@ -90,14 +90,14 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 func TestIfElseFunctionGeneration(t *testing.T) {
 	src := `func @toBool $32 %n {
 .entry
-	JZ %n .zero
+	jz %n .zero
 .nonzero
-	$32 %bool = ADD $32 #1 $32 #0
-	JMP .end
+	$32 %bool = add $32 #1 $32 #0
+	j .end
 .zero
-	$32 %bool = ADD $32 #0 $32 #0
+	$32 %bool = add $32 #0 $32 #0
 .end
-	RET
+	ret
 }
 `
 
@@ -131,7 +131,7 @@ func TestEmptyFunctionGeneration(t *testing.T) {
 
 func TestNoReturnFunctionGeneration(t *testing.T) {
 	src := `func @noReturn {
-				$32 %n = ADD $32 #1 $32 #2
+				$32 %n = add $32 #1 $32 #2
 			}`
 	function, results := generateFunctionFromSource(t, src)
 	assert.False(t, results.IsEmpty())
@@ -142,8 +142,8 @@ func TestNoReturnFunctionGeneration(t *testing.T) {
 
 func TestNoExplicitRegisterType(t *testing.T) {
 	src := `func @noExplicitType {
-				%a = ADD $32 #1 $32 #2
-				RET
+				%a = add $32 #1 $32 #2
+				ret
 			}`
 
 	function, results := generateFunctionFromSource(t, src)
@@ -155,9 +155,9 @@ func TestNoExplicitRegisterType(t *testing.T) {
 
 func TestExplicitRegisterDefinitionNotOnSecondSight(t *testing.T) {
 	src := `func @main {
-				%a = ADD $32 #0 $32 #0
-				$32 %a = ADD %a $32 #1
-				RET
+				%a = add $32 #0 $32 #0
+				$32 %a = add %a $32 #1
+				ret
 			}`
 	function, results := generateFunctionFromSource(t, src)
 	assert.True(t, results.IsEmpty())

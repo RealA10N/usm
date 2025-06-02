@@ -16,7 +16,7 @@ type InstructionMap struct {
 
 func (m *InstructionMap) GetInstructionDefinition(
 	name string,
-	node parse.InstructionNode,
+	node *parse.InstructionNode,
 ) (InstructionDefinition, core.ResultList) {
 	if !m.caseSensitive {
 		name = strings.ToLower(name)
@@ -24,10 +24,15 @@ func (m *InstructionMap) GetInstructionDefinition(
 
 	def, ok := m.Map.LookupString(name)
 	if !ok {
+		v := (*core.UnmanagedSourceView)(nil)
+		if node != nil {
+			v = &node.Operator
+		}
+
 		return nil, list.FromSingle(core.Result{{
 			Type:     core.ErrorResult,
 			Message:  "Undefined instruction",
-			Location: &node.Operator,
+			Location: v,
 		}})
 	}
 

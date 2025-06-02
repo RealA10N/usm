@@ -11,12 +11,12 @@ import (
 )
 
 type Instruction interface {
-	gen.BaseInstruction
+	gen.InstructionDefinition
 
 	// Converts the abstract instruction representation into a concrete binary
 	// instruction.
-	Generate(
-		*InstructionCodegenContext,
+	Codegen(
+		ctx *InstructionCodegenContext,
 	) (instructions.Instruction, core.ResultList)
 }
 
@@ -34,7 +34,7 @@ func (ctx *InstructionCodegenContext) InstructionOffsetInFile() uint64 {
 func (ctx *InstructionCodegenContext) Codegen(
 	buffer *bytes.Buffer,
 ) core.ResultList {
-	instruction, ok := ctx.Instruction.(Instruction)
+	instruction, ok := ctx.InstructionInfo.Definition.(Instruction)
 	if !ok {
 		return list.FromSingle(core.Result{
 			{
@@ -45,7 +45,7 @@ func (ctx *InstructionCodegenContext) Codegen(
 		})
 	}
 
-	binaryInst, results := instruction.Generate(ctx)
+	binaryInst, results := instruction.Codegen(ctx)
 	if !results.IsEmpty() {
 		return results
 	}

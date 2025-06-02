@@ -1,4 +1,4 @@
-package usm64ssa
+package usmssa
 
 import (
 	"fmt"
@@ -6,7 +6,8 @@ import (
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 	"alon.kr/x/usm/opt/ssa"
-	usm64isa "alon.kr/x/usm/usm64/isa"
+	"alon.kr/x/usm/transform"
+	usmisa "alon.kr/x/usm/usm/isa"
 )
 
 type ConstructionScheme struct {
@@ -14,24 +15,24 @@ type ConstructionScheme struct {
 }
 
 func NewConstructionScheme() ssa.SsaConstructionScheme {
-	scheme := &ConstructionScheme{
+	return &ConstructionScheme{
 		RenamesPerRegister: make(map[*gen.RegisterInfo]uint),
 	}
-
-	return ssa.SsaConstructionScheme(scheme)
 }
 
 func (s *ConstructionScheme) NewPhiInstruction(
 	block *gen.BasicBlockInfo,
 	register *gen.RegisterInfo,
-) (ssa.PhiInstruction, core.ResultList) {
+) (*gen.InstructionInfo, core.ResultList) {
 	info := gen.NewEmptyInstructionInfo(nil)
+	info.SetInstruction(usmisa.NewPhi())
+
 	target := gen.NewTargetInfo(register)
 	info.AppendTarget(&target)
-	instruction, results := usm64isa.NewPhiInstruction(info)
-	info.SetBaseInstruction(instruction)
+
 	block.PrependInstruction(info)
-	return ssa.PhiInstruction(instruction), results
+
+	return info, core.ResultList{}
 }
 
 func (s *ConstructionScheme) NewRenamedRegister(
@@ -104,7 +105,7 @@ func (s *ConstructionScheme) RenameBasicBlock(
 	return core.ResultList{}
 }
 
-func ConvertToSsaForm(function *gen.FunctionInfo) core.ResultList {
+func FunctionToSsaForm(function *gen.FunctionInfo) core.ResultList {
 	constructionScheme := NewConstructionScheme()
 	ssaInfo := ssa.NewFunctionSsaInfo(function, constructionScheme)
 	results := ssaInfo.InsertPhiInstructions()
@@ -113,9 +114,29 @@ func ConvertToSsaForm(function *gen.FunctionInfo) core.ResultList {
 	}
 
 	results = ssaInfo.RenameRegisters()
-	if results.IsEmpty() {
+	if !results.IsEmpty() {
 		return results
 	}
 
 	return core.ResultList{}
+}
+
+func FileToSsaForm(file *gen.FileInfo) core.ResultList {
+	results := core.ResultList{}
+
+	for _, function := range file.Functions {
+		if function.IsDefined() {
+			curResults := FunctionToSsaForm(function)
+			results.Extend(&curResults)
+		}
+	}
+
+	return results
+}
+
+func TransformFileToSsaForm(
+	data *transform.TargetData,
+) (*transform.TargetData, core.ResultList) {
+	results := FileToSsaForm(data.Code)
+	return data, results
 }

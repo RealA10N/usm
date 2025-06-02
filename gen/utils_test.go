@@ -67,10 +67,10 @@ func (m *RegisterMap) GetAllRegisters() []*gen.RegisterInfo {
 
 var testInstructionSet = gen.InstructionManager(
 	&InstructionMap{
-		"ADD": &AddInstructionDefinition{},
-		"JMP": &JumpInstructionDefinition{},
-		"JZ":  &JumpZeroInstructionDefinition{},
-		"RET": &RetInstructionDefinition{},
+		"add": NewAdd(),
+		"j":   NewJump(),
+		"jz":  NewJumpZero(),
+		"ret": NewRet(),
 	},
 )
 

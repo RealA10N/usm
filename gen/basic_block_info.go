@@ -1,6 +1,10 @@
 package gen
 
-import "slices"
+import (
+	"slices"
+
+	"alon.kr/x/usm/core"
+)
 
 type BasicBlockInfo struct {
 	*FunctionInfo
@@ -26,6 +30,17 @@ func NewEmptyBasicBlockInfo(function *FunctionInfo) *BasicBlockInfo {
 	return &BasicBlockInfo{
 		FunctionInfo: function,
 	}
+}
+
+func (b *BasicBlockInfo) Validate() core.ResultList {
+	results := core.ResultList{}
+
+	for _, instruction := range b.Instructions {
+		curResults := instruction.Validate()
+		results.Extend(&curResults)
+	}
+
+	return results
 }
 
 // Returns the number of instructions in the basic block.

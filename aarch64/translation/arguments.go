@@ -1,9 +1,7 @@
 package aarch64translation
 
 import (
-	"fmt"
 	"math/big"
-	"strconv"
 
 	"alon.kr/x/aarch64codegen/immediates"
 	"alon.kr/x/aarch64codegen/instructions"
@@ -12,79 +10,6 @@ import (
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 )
-
-func AssertAtLeastArguments(
-	info *gen.InstructionInfo,
-	atLeast int,
-) core.ResultList {
-	if len(info.Arguments) < atLeast {
-		return list.FromSingle(core.Result{
-			{
-				Type:     core.ErrorResult,
-				Message:  fmt.Sprintf("Expected at least %d arguments", atLeast),
-				Location: info.Declaration,
-			},
-		})
-	}
-
-	return core.ResultList{}
-}
-
-func AssertAtMostArguments(
-	info *gen.InstructionInfo,
-	atMost int,
-) core.ResultList {
-	if len(info.Arguments) > atMost {
-		return list.FromSingle(core.Result{
-			{
-				Type:     core.ErrorResult,
-				Message:  fmt.Sprintf("Expected at most %d arguments", atMost),
-				Location: info.Declaration,
-			},
-		})
-	}
-
-	return core.ResultList{}
-}
-
-func AssertArgumentsBetween(
-	info *gen.InstructionInfo,
-	atLeast int,
-	atMost int,
-) core.ResultList {
-	if len(info.Arguments) < atLeast || len(info.Arguments) > atMost {
-		return list.FromSingle(core.Result{
-			{
-				Type: core.ErrorResult,
-				Message: fmt.Sprintf(
-					"Expected between %d and %d arguments",
-					atLeast,
-					atMost,
-				),
-				Location: info.Declaration,
-			},
-		})
-	}
-
-	return core.ResultList{}
-}
-
-func AssertArgumentsExactly(
-	info *gen.InstructionInfo,
-	count int,
-) core.ResultList {
-	if len(info.Arguments) != count {
-		return list.FromSingle(core.Result{
-			{
-				Type:     core.ErrorResult,
-				Message:  fmt.Sprintf("Expected %d arguments", count),
-				Location: info.Declaration,
-			},
-		})
-	}
-
-	return core.ResultList{}
-}
 
 func ArgumentToAarch64GPRegister(
 	argument gen.ArgumentInfo,
@@ -222,46 +147,11 @@ fail:
 	})
 }
 
-func AssertBigIntInSet(
-	view *core.UnmanagedSourceView,
-	bigInt *big.Int,
-	options []int64,
-) (int64, core.ResultList) {
-	var value int64
-	isInvalid := !bigInt.IsInt64()
-
-	if isInvalid {
-		goto fail
-	}
-
-	value = bigInt.Int64()
-	for _, option := range options {
-		if value == option {
-			return value, core.ResultList{}
-		}
-	}
-
-fail:
-	message := "Expected one of "
-	message += "#" + strconv.FormatInt(options[0], 10)
-	for _, option := range options {
-		message += ", #" + strconv.FormatInt(option, 10)
-	}
-
-	return 0, list.FromSingle(core.Result{
-		{
-			Type:     core.ErrorResult,
-			Message:  message,
-			Location: view,
-		},
-	})
-}
-
 func BigIntToAarch64MovShift(
 	view *core.UnmanagedSourceView,
 	bigInt *big.Int,
 ) (instructions.MovShift, core.ResultList) {
-	value, results := AssertBigIntInSet(view, bigInt, []int64{0, 16, 32, 48})
+	value, results := gen.AssertBigIntInSet(view, bigInt, []int64{0, 16, 32, 48})
 	if !results.IsEmpty() {
 		return 0, results
 	}

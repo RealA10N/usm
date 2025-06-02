@@ -22,7 +22,7 @@ func buildInstructionFromSource(
 	t *testing.T,
 	def gen.InstructionDefinition,
 	src string,
-) aarch64codegen.Instruction {
+) (*gen.InstructionInfo, aarch64codegen.Instruction) {
 	srcView := core.NewSourceView(src)
 
 	tokenizer := lex.NewTokenizer()
@@ -39,18 +39,14 @@ func buildInstructionFromSource(
 		NewFunctionGenerationContext()
 
 	generator := gen.NewInstructionGenerator()
-	baseInfo, results := generator.Generate(ctx, node)
+	info, results := generator.Generate(ctx, node)
 	assert.True(t, results.IsEmpty())
-	assert.NotNil(t, baseInfo)
+	assert.NotNil(t, info)
 
-	baseInst, results := def.BuildInstruction(baseInfo)
-	assert.True(t, results.IsEmpty())
-	assert.NotNil(t, baseInst)
-
-	inst, ok := baseInst.(aarch64codegen.Instruction)
+	inst, ok := info.Definition.(aarch64codegen.Instruction)
 	assert.True(t, ok)
 
-	return inst
+	return info, inst
 }
 
 func assertExpectedCodegen(
@@ -59,17 +55,20 @@ func assertExpectedCodegen(
 	expected instructions.Instruction,
 	src string,
 ) {
-	inst := buildInstructionFromSource(t, def, src)
+	info, inst := buildInstructionFromSource(t, def, src)
 
-	generationContext := &aarch64codegen.InstructionCodegenContext{}
-	code, results := inst.Generate(generationContext)
+	generationContext := &aarch64codegen.InstructionCodegenContext{
+		InstructionInfo: info,
+	}
+
+	code, results := inst.Codegen(generationContext)
 	assert.True(t, results.IsEmpty())
 
 	assert.Equal(t, expected.Binary(), code.Binary())
 }
 
 func TestAddExpectedCodegen(t *testing.T) {
-	def := aarch64isa.NewAddInstructionDefinition()
+	def := aarch64isa.NewAdd()
 
 	testCases := []struct {
 		src      string

@@ -9,24 +9,79 @@ import (
 	"alon.kr/x/usm/gen"
 )
 
-type Branch struct {
-	Target *gen.LabelInfo
+type Branch struct{}
+
+func NewBranch() gen.InstructionDefinition {
+	return Branch{}
 }
 
-func (b Branch) Operator() string {
+func (i Branch) Operator(*gen.InstructionInfo) string {
 	return "b"
 }
 
-func (b Branch) PossibleNextSteps() (gen.StepInfo, core.ResultList) {
-	return gen.StepInfo{
-		PossibleBranches: []*gen.LabelInfo{b.Target},
-	}, core.ResultList{}
+func (i Branch) Target(
+	info *gen.InstructionInfo,
+) (*gen.LabelInfo, core.ResultList) {
+	results := gen.AssertArgumentsExactly(info, 1)
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	label, results := aarch64translation.ArgumentToLabelInfo(info.Arguments[0])
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	return label, core.ResultList{}
 }
 
-func (b Branch) Generate(
+func (i Branch) PossibleNextSteps(
+	info *gen.InstructionInfo,
+) (gen.StepInfo, core.ResultList) {
+	target, results := i.Target(info)
+	return gen.StepInfo{
+		PossibleBranches: []*gen.LabelInfo{target},
+	}, results
+}
+
+type branchValidationArtifacts struct {
+	Target *gen.LabelInfo
+}
+
+func (i Branch) internalValidate(
+	info *gen.InstructionInfo,
+) (*branchValidationArtifacts, core.ResultList) {
+	results := core.ResultList{}
+
+	target, curResults := i.Target(info)
+	results.Extend(&curResults)
+
+	curResults = gen.AssertTargetsExactly(info, 0)
+	results.Extend(&curResults)
+
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	artifacts := &branchValidationArtifacts{
+		Target: target,
+	}
+
+	return artifacts, core.ResultList{}
+}
+
+func (i Branch) Codegen(
 	ctx *aarch64codegen.InstructionCodegenContext,
 ) (instructions.Instruction, core.ResultList) {
-	targetBasicBlock := b.Target.BasicBlock
+	info := ctx.InstructionInfo
+
+	artifacts, results := i.internalValidate(info)
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	target := artifacts.Target
+	targetBasicBlock := target.BasicBlock
 	targetOffset := ctx.BasicBlockOffsets[targetBasicBlock]
 	currentOffset := ctx.InstructionOffsetInFunction
 	offset, err := aarch64translation.Uint64DiffToOffset26Align4(targetOffset, currentOffset)
@@ -35,7 +90,7 @@ func (b Branch) Generate(
 		return nil, list.FromSingle(core.Result{
 			{
 				Type:     core.ErrorResult,
-				Message:  "Invalid branch offset (arbitrary large offsets are not yet supported)",
+				Message:  "Branch offset too large",
 				Location: ctx.Declaration,
 			},
 			{
@@ -45,37 +100,13 @@ func (b Branch) Generate(
 		})
 	}
 
-	instruction := instructions.B(offset)
-	return instruction, core.ResultList{}
+	inst := instructions.NewBranch(offset)
+	return inst, core.ResultList{}
 }
 
-type BranchDefinition struct{}
-
-func (BranchDefinition) BuildInstruction(
+func (i Branch) Validate(
 	info *gen.InstructionInfo,
-) (gen.BaseInstruction, core.ResultList) {
-	results := core.ResultList{}
-
-	curResults := aarch64translation.AssertArgumentsExactly(info, 1)
-	results.Extend(&curResults)
-
-	curResults = aarch64translation.AssertTargetsExactly(info, 0)
-	results.Extend(&curResults)
-
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
-	target, curResults := aarch64translation.ArgumentToLabelInfo(info.Arguments[0])
-	results.Extend(&curResults)
-
-	if !results.IsEmpty() {
-		return nil, results
-	}
-
-	return Branch{Target: target}, core.ResultList{}
-}
-
-func NewBranchInstructionDefinition() gen.InstructionDefinition {
-	return BranchDefinition{}
+) core.ResultList {
+	_, results := i.internalValidate(info)
+	return results
 }
