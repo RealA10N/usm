@@ -15,6 +15,9 @@ func NewInstructionManager() gen.InstructionManager {
 			{Key: "ret", Value: usmisa.NewRet()},
 			{Key: "call", Value: usmisa.NewCall()},
 			{Key: "jz", Value: usmisa.NewJz()},
+
+			// Static Single Assignment (SSA)
+			{Key: "phi", Value: usmisa.NewPhi()},
 		},
 		false,
 	)
