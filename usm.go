@@ -13,6 +13,7 @@ import (
 	"alon.kr/x/usm/parse"
 	"alon.kr/x/usm/transform"
 	usmmanagers "alon.kr/x/usm/usm/managers"
+	usmssa "alon.kr/x/usm/usm/ssa"
 	"github.com/spf13/cobra"
 )
 
@@ -28,6 +29,12 @@ var targets = transform.NewTargetCollection(
 				Description: "An optimization pass that eliminates unnecessary instructions",
 				TargetName:  "usm",
 				// Transform: ,
+			},
+			&transform.Transformation{
+				Names:       []string{"static-single-assignment", "ssa"},
+				Description: "An optimization pass that converts the assembly to static single assignment form",
+				TargetName:  "usm",
+				Transform:   usmssa.TransformFileToSsaForm,
 			},
 			&transform.Transformation{
 				Names:       []string{"aarch64", "arm64"},

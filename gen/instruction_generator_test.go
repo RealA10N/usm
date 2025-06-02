@@ -104,16 +104,22 @@ type InstructionMap map[string]gen.InstructionDefinition
 
 func (m *InstructionMap) GetInstructionDefinition(
 	name string,
-	node parse.InstructionNode,
+	node *parse.InstructionNode,
 ) (gen.InstructionDefinition, core.ResultList) {
 	inst, ok := (*m)[name]
 	if !ok {
+		v := (*core.UnmanagedSourceView)(nil)
+		if node != nil {
+			v = &node.Operator
+		}
+
 		return nil, list.FromSingle(core.Result{{
 			Type:     core.ErrorResult,
 			Message:  "undefined instruction",
-			Location: &node.Operator,
+			Location: v,
 		}})
 	}
+
 	return inst, core.ResultList{}
 }
 

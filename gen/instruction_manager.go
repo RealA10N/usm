@@ -12,6 +12,6 @@ type InstructionManager interface {
 	// generating nice error messages.
 	GetInstructionDefinition(
 		name string,
-		node parse.InstructionNode,
+		node *parse.InstructionNode,
 	) (InstructionDefinition, core.ResultList)
 }

@@ -98,5 +98,20 @@ func (i Phi) Validate(info *gen.InstructionInfo) core.ResultList {
 		}
 	}
 
+	// Notice that we do not check if incomingEdges is empty.
+	// This is because it it VALID for some incoming edges to not have a
+	// specified value. In that case the value will be undefined.
+
 	return results
+}
+
+func (Phi) AddForwardingRegister(
+	instruction *gen.InstructionInfo,
+	block *gen.BasicBlockInfo,
+	register *gen.RegisterInfo,
+) core.ResultList {
+	labelArg := gen.NewLabelArgumentInfo(block.Label)
+	regArg := gen.NewRegisterArgumentInfo(register)
+	instruction.AppendArgument(labelArg, regArg)
+	return core.ResultList{}
 }
