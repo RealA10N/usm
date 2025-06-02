@@ -9,7 +9,16 @@ import (
 func NewInstructionManager() gen.InstructionManager {
 	return gen.NewInstructionMap(
 		[]faststringmap.MapEntry[gen.InstructionDefinition]{
+			// Arithmetic
 			{Key: "", Value: usmisa.NewMove()},
+			{Key: "add", Value: usmisa.NewAdd()},
+			{Key: "sub", Value: usmisa.NewSub()},
+			{Key: "mul", Value: usmisa.NewMul()},
+
+			// Bitwise Operations
+			{Key: "and", Value: usmisa.NewAnd()},
+			{Key: "or", Value: usmisa.NewOr()},
+			{Key: "xor", Value: usmisa.NewXor()},
 
 			// Functions
 			{Key: "ret", Value: usmisa.NewRet()},

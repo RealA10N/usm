@@ -93,3 +93,7 @@ func TargetsToRegisters(targets []*TargetInfo) []*RegisterInfo {
 
 	return registers
 }
+
+func TargetToType(target *TargetInfo) ReferencedTypeInfo {
+	return target.Register.Type
+}
