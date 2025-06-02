@@ -34,7 +34,7 @@ func (ctx *InstructionCodegenContext) InstructionOffsetInFile() uint64 {
 func (ctx *InstructionCodegenContext) Codegen(
 	buffer *bytes.Buffer,
 ) core.ResultList {
-	instruction, ok := ctx.InstructionInfo.Instruction.(Instruction)
+	instruction, ok := ctx.InstructionInfo.Definition.(Instruction)
 	if !ok {
 		return list.FromSingle(core.Result{
 			{

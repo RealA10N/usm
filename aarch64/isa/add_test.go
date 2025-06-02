@@ -43,7 +43,7 @@ func buildInstructionFromSource(
 	assert.True(t, results.IsEmpty())
 	assert.NotNil(t, info)
 
-	inst, ok := info.Instruction.(aarch64codegen.Instruction)
+	inst, ok := info.Definition.(aarch64codegen.Instruction)
 	assert.True(t, ok)
 
 	return info, inst

@@ -51,6 +51,25 @@ func ArgumentToType(arg ArgumentInfo) (ReferencedTypeInfo, core.ResultList) {
 	}
 }
 
+func ArgumentsToTypes(
+	arguments []ArgumentInfo,
+) ([]ReferencedTypeInfo, core.ResultList) {
+	results := core.ResultList{}
+	types := make([]ReferencedTypeInfo, len(arguments))
+
+	for i, arg := range arguments {
+		typ, curResults := ArgumentToType(arg)
+		results.Extend(&curResults)
+		types[i] = typ
+	}
+
+	if !results.IsEmpty() {
+		return nil, results
+	}
+
+	return types, core.ResultList{}
+}
+
 func ArgumentToLabel(arg ArgumentInfo) (*LabelInfo, core.ResultList) {
 	if labelArg, ok := arg.(*LabelArgumentInfo); ok {
 		return labelArg.Label, core.ResultList{}
@@ -65,9 +84,7 @@ func ArgumentToLabel(arg ArgumentInfo) (*LabelInfo, core.ResultList) {
 	})
 }
 
-func TargetsToRegisters(
-	targets []*TargetInfo,
-) []*RegisterInfo {
+func TargetsToRegisters(targets []*TargetInfo) []*RegisterInfo {
 	registers := []*RegisterInfo{}
 
 	for _, target := range targets {

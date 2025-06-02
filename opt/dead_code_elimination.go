@@ -89,7 +89,7 @@ func collectCriticalInstructions(
 
 	for block := function.EntryBlock; block != nil; block = block.NextBlock {
 		for _, instruction := range block.Instructions {
-			dceInstruction, ok := instruction.Instruction.(DCESupportedInstruction)
+			dceInstruction, ok := instruction.Definition.(DCESupportedInstruction)
 			if !ok {
 				curResults := newDCENotSupportedError(instruction)
 				results.Extend(&curResults)
@@ -117,7 +117,7 @@ func collectUsefulInstructions(
 		unprocessedInstructions.Pop()
 		processedInstructions.Add(instruction)
 
-		dceInstruction, ok := instruction.Instruction.(DCESupportedInstruction)
+		dceInstruction, ok := instruction.Definition.(DCESupportedInstruction)
 		if !ok {
 			// Should not happen, since we try to convert all instructions to
 			// DCESupportedInstruction in the collection of critical instructions

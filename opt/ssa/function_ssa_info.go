@@ -1,7 +1,10 @@
 package ssa
 
 import (
+	"fmt"
+
 	"alon.kr/x/graph"
+	"alon.kr/x/list"
 	"alon.kr/x/set"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
@@ -14,7 +17,7 @@ type forwardingRegisterDescriptor struct {
 
 type phiInstructionDescriptor struct {
 	// The new phi instruction.
-	instruction PhiInstruction
+	*gen.InstructionInfo
 
 	// The original base register that this phi instruction is a definition for.
 	base *gen.RegisterInfo
@@ -39,8 +42,29 @@ func (p *phiInstructionDescriptor) AddForwardingRegister(
 // will result in some weird behavior.
 func (p *phiInstructionDescriptor) CommitForwardingRegisters() core.ResultList {
 	results := core.ResultList{}
+	phiDefinition, ok := p.Definition.(PhiInstructionDefinition)
+
+	if !ok {
+		defName := p.Definition.Operator(p.InstructionInfo)
+		return list.FromSingle(core.Result{
+			{
+				Type:     core.InternalErrorResult,
+				Message:  "Expected phi instruction definition",
+				Location: p.Declaration,
+			},
+			{
+				Type:    core.HintResult,
+				Message: fmt.Sprintf("Got \"%s\" instruction definition", defName),
+			},
+		})
+	}
+
 	for _, forward := range p.forwards {
-		curResults := p.instruction.AddForwardingRegister(forward.block, forward.renamed)
+		curResults := phiDefinition.AddForwardingRegister(
+			p.InstructionInfo,
+			forward.block,
+			forward.renamed,
+		)
 		results.Extend(&curResults)
 	}
 
@@ -185,8 +209,8 @@ func (i *FunctionSsaInfo) InsertPhiInstructions() core.ResultList {
 				return results
 			}
 			descriptor := phiInstructionDescriptor{
-				instruction: phi,
-				base:        register,
+				InstructionInfo: phi,
+				base:            register,
 			}
 			i.PhiInstructionsPerBlock[blockIndex] = append(
 				i.PhiInstructionsPerBlock[blockIndex],

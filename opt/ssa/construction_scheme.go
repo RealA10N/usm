@@ -126,10 +126,11 @@ func (s *ReachingDefinitionsSet) popBlock() {
 	s.registerDefinitionPushes.Pop()
 }
 
-type PhiInstruction interface {
-	gen.BaseInstruction
+type PhiInstructionDefinition interface {
+	gen.InstructionDefinition
 
 	AddForwardingRegister(
+		*gen.InstructionInfo,
 		*gen.BasicBlockInfo,
 		*gen.RegisterInfo,
 	) core.ResultList
@@ -146,7 +147,7 @@ type SsaConstructionScheme interface {
 	NewPhiInstruction(
 		*gen.BasicBlockInfo,
 		*gen.RegisterInfo,
-	) (PhiInstruction, core.ResultList)
+	) (*gen.InstructionInfo, core.ResultList)
 
 	// Creates a new unique register that is used as a renaming of the provided
 	// register in the construction of the SSA form.
