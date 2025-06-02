@@ -9,8 +9,10 @@ import (
 
 // The call instruction
 type Call struct {
+	// Control Flow
 	gen.NonBranchingInstruction
 
+	// Dead Code Elimination
 	opt.CriticalInstruction
 	opt.UsesArgumentsInstruction
 	opt.DefinesTargetsInstruction

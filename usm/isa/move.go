@@ -10,8 +10,10 @@ import (
 )
 
 type Move struct {
+	// Control Flow
 	gen.NonBranchingInstruction
 
+	// Dead Code Elimination
 	opt.NonCriticalInstruction
 	opt.UsesArgumentsInstruction
 	opt.DefinesTargetsInstruction

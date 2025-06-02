@@ -7,11 +7,13 @@ import (
 )
 
 type Ret struct {
+	// Control Flow
 	gen.ReturningInstruction
 
+	// Dead Code Elimination
 	opt.CriticalInstruction
 	opt.UsesArgumentsInstruction
-	opt.DefinesTargetsInstruction
+	opt.DefinesNothingInstruction
 }
 
 func NewRet() gen.InstructionDefinition {
@@ -38,12 +40,4 @@ func (Ret) Validate(info *gen.InstructionInfo) core.ResultList {
 	}
 
 	return core.ResultList{}
-}
-
-func (Ret) Defines(info *gen.InstructionInfo) []*gen.RegisterInfo {
-	return []*gen.RegisterInfo{}
-}
-
-func (Ret) Uses(info *gen.InstructionInfo) []*gen.RegisterInfo {
-	return gen.ArgumentsToRegisters(info.Arguments)
 }

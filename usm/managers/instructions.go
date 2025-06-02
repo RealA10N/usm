@@ -10,8 +10,11 @@ func NewInstructionManager() gen.InstructionManager {
 	return gen.NewInstructionMap(
 		[]faststringmap.MapEntry[gen.InstructionDefinition]{
 			{Key: "", Value: usmisa.NewMove()},
+
+			// Control Flow
 			{Key: "ret", Value: usmisa.NewRet()},
 			{Key: "call", Value: usmisa.NewCall()},
+			{Key: "jz", Value: usmisa.NewJz()},
 		},
 		false,
 	)

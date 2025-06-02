@@ -69,6 +69,12 @@ func (DefinesTargetsInstruction) Defines(info *gen.InstructionInfo) []*gen.Regis
 	return gen.TargetsToRegisters(info.Targets)
 }
 
+type DefinesNothingInstruction struct{}
+
+func (DefinesNothingInstruction) Defines(*gen.InstructionInfo) []*gen.RegisterInfo {
+	return []*gen.RegisterInfo{}
+}
+
 func collectCriticalInstructions(
 	function *gen.FunctionInfo,
 ) (stack.Stack[*gen.InstructionInfo], core.ResultList) {

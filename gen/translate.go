@@ -19,6 +19,18 @@ func ArgumentsToRegisters(
 	return registers
 }
 
+func ArgumentsToLabels(arguments []ArgumentInfo) []*LabelInfo {
+	labels := []*LabelInfo{}
+
+	for _, arg := range arguments {
+		if labelArg, ok := arg.(*LabelArgumentInfo); ok {
+			labels = append(labels, labelArg.Label)
+		}
+	}
+
+	return labels
+}
+
 func ArgumentToType(arg ArgumentInfo) (ReferencedTypeInfo, core.ResultList) {
 	switch typedArg := arg.(type) {
 
