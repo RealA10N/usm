@@ -16,6 +16,8 @@ type BinaryCalculation struct {
 	opt.DefinesTargetsInstruction
 }
 
+// Validates that there are exactly two arguments and one target, all of the
+// same type.
 func (BinaryCalculation) Validate(info *gen.InstructionInfo) core.ResultList {
 	results := core.ResultList{}
 
