@@ -6,7 +6,7 @@ import (
 
 // Jump to label if the value is positive.
 type Jp struct {
-	// Inharits most of the functionality from ConditionalJump
+	// Inherits most of the functionality from ConditionalJump
 	ConditionalJump
 }
 

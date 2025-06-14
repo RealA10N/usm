@@ -5,7 +5,7 @@ import (
 )
 
 type Xor struct {
-	// Inharits most of the functionality from BinaryCalculation
+	// Inherits most of the functionality from BinaryCalculation
 	BinaryCalculation
 }
 
