@@ -245,3 +245,24 @@ func TestCommentAtEOF(t *testing.T) {
 	assert.NoError(t, err)
 	assertExpectedTokens(t, expected, tokens, ctx)
 }
+
+// TestCommentAfterOpenBrace verifies that a comment on the same line as '{'
+// (no newline between them) produces no separator between '{' and the comment.
+// The parser uses the absence of a preceding separator to recognise the comment
+// as belonging to the block interior, not as a trailing inline comment of the
+// outer instruction.
+func TestCommentAfterOpenBrace(t *testing.T) {
+	code := "{ ; comment in the same line"
+
+	expected := []tknDesc{
+		{"{", lex.LeftCurlyBraceToken},
+		{"; comment in the same line", lex.CommentToken},
+	}
+
+	view := core.NewSourceView(code)
+	_, ctx := view.Detach()
+	tokens, err := lex.NewTokenizer().Tokenize(view)
+
+	assert.NoError(t, err)
+	assertExpectedTokens(t, expected, tokens, ctx)
+}

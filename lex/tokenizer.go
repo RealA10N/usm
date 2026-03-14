@@ -78,17 +78,19 @@ func (t tokenizer) yieldToken(view *core.SourceView) (tkn Token, err error) {
 // order. This ensures that a comment on a new line appears after the separator
 // for that line, so the parser can distinguish inline comments from leading
 // comments of the next node.
-func (tokenizer) consumeWhitespace(view *core.SourceView) (tokens []Token) {
+func (tokenizer) consumeWhitespace(view *core.SourceView) []Token {
+	var tokens []Token
 	for {
 		if consumeSpaces(view) {
 			tokens = append(tokens, Token{Type: SeparatorToken})
 		}
 		comment, ok := consumeComment(view)
 		if !ok {
-			return
+			break
 		}
 		tokens = append(tokens, comment)
 	}
+	return tokens
 }
 
 // consumeSpaces advances past leading whitespace and returns true if a newline was among them.
