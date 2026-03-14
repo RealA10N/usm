@@ -76,30 +76,41 @@ func (t tokenizer) yieldToken(view *core.SourceView) (tkn Token, err error) {
 	return
 }
 
-// consumeWhitespace consumes whitespace (and any ';' comments) from the view.
+// consumeWhitespace consumes interleaved whitespace and ';' comments.
 // Returns true if a newline was encountered, and any comments found.
 func (tokenizer) consumeWhitespace(view *core.SourceView) (sawNewline bool, comments []Comment) {
 	for {
-		// Consume whitespace; track whether a newline was seen.
-		idx := view.IndexFunc(not(unicode.IsSpace))
-		before, after := view.Partition(idx)
-		sawNewline = sawNewline || before.Contains('\n')
-		*view = after
-
-		// If the next character is not ';', we are done.
-		if !view.HasPrefix(core.NewSourceView(";")) {
-			break
+		if consumeSpaces(view) {
+			sawNewline = true
 		}
-
-		// Capture the comment up to (but not including) the '\n' or EOF.
-		idx = view.IndexFunc(func(r rune) bool { return r == '\n' })
-		commentView, after := view.Partition(idx)
-		detached, _ := commentView.Detach()
-		comments = append(comments, Comment{View: detached})
-		*view = after
-		// The '\n' remains in view; the next iteration will pick it up.
+		comment, ok := consumeComment(view)
+		if !ok {
+			return
+		}
+		comments = append(comments, comment)
 	}
-	return
+}
+
+// consumeSpaces advances past leading whitespace and returns true if a newline was among them.
+func consumeSpaces(view *core.SourceView) bool {
+	idx := view.IndexFunc(not(unicode.IsSpace))
+	before, after := view.Partition(idx)
+	*view = after
+	return before.Contains('\n')
+}
+
+// consumeComment advances past a ';'-style line comment if one is present.
+// The trailing '\n' is left in the view so the caller can detect the line boundary.
+// Returns the comment and true, or the zero value and false if no comment was found.
+func consumeComment(view *core.SourceView) (Comment, bool) {
+	if !view.HasPrefix(core.NewSourceView(";")) {
+		return Comment{}, false
+	}
+	idx := view.IndexFunc(func(r rune) bool { return r == '\n' })
+	commentView, after := view.Partition(idx)
+	detached, _ := commentView.Detach()
+	*view = after
+	return Comment{View: detached}, true
 }
 
 // Provided a boolean predicate, returns a new boolean predicate which yields
