@@ -45,9 +45,7 @@ func (n FileNode) String(ctx *StringContext) (s string) {
 	// we just need to merge the sorted lists in linear time.
 
 	for i, node := range nodes {
-		for _, c := range ctx.WholeLineCommentsBefore(node.View().Start) {
-			s += string(c.View.Raw(ctx.SourceContext)) + "\n"
-		}
+		s += ctx.FormatCommentsBefore(node.View().Start)
 		s += node.String(ctx) + "\n"
 		if i != len(nodes)-1 {
 			s += "\n"
@@ -55,8 +53,11 @@ func (n FileNode) String(ctx *StringContext) (s string) {
 	}
 
 	// Emit any trailing comments after the last node.
-	for _, c := range ctx.WholeLineCommentsBefore(^core.SourceViewOffset(0)) {
-		s += string(c.View.Raw(ctx.SourceContext)) + "\n"
+	if trailing := ctx.FormatCommentsBefore(^core.SourceViewOffset(0)); trailing != "" {
+		if len(nodes) > 0 {
+			s += "\n"
+		}
+		s += trailing
 	}
 
 	return s

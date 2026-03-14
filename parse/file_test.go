@@ -261,3 +261,28 @@ func TestFileWithCommentInBlock(t *testing.T) {
 `
 	testExpectedFileFormat(t, src, src)
 }
+
+func TestFileWithOpenBraceInlineComment(t *testing.T) {
+	src := `func @foo { ; this is my block
+	ret
+}
+`
+	// Inline comments after '{' are not preserved in-place; they migrate to
+	// whole-line comments before the first instruction inside the block.
+	expected := `func @foo {
+	; this is my block
+	ret
+}
+`
+	testExpectedFileFormat(t, src, expected)
+}
+
+func TestFileWithTrailingComments(t *testing.T) {
+	src := `func @foo {
+	ret
+}
+
+; trailing comment
+`
+	testExpectedFileFormat(t, src, src)
+}

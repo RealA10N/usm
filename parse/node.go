@@ -26,11 +26,21 @@ func (ctx *StringContext) WholeLineCommentsBefore(nodeStart core.SourceViewOffse
 	return result
 }
 
+// FormatCommentsBefore returns all unprocessed whole-line comments before until,
+// formatted as plain comment lines (no indent prefix). Advances the cursor.
+func (ctx *StringContext) FormatCommentsBefore(until core.SourceViewOffset) string {
+	var s string
+	for _, c := range ctx.WholeLineCommentsBefore(until) {
+		s += string(c.View.Raw(ctx.SourceContext)) + "\n"
+	}
+	return s
+}
+
 // InlineComment returns the trailing comment on the same source line as nodeEnd,
 // if one exists. Advances the cursor past it.
-func (ctx *StringContext) InlineComment(nodeEnd core.SourceViewOffset) string {
+func (ctx *StringContext) InlineComment(nodeEnd core.SourceViewOffset) *lex.Comment {
 	if ctx.cursor >= len(ctx.Comments) {
-		return ""
+		return nil
 	}
 	lineEnd := core.SourceViewOffset(len(ctx.SourceContext))
 	for i := int(nodeEnd); i < len(ctx.SourceContext); i++ {
@@ -39,12 +49,12 @@ func (ctx *StringContext) InlineComment(nodeEnd core.SourceViewOffset) string {
 			break
 		}
 	}
-	c := ctx.Comments[ctx.cursor]
+	c := &ctx.Comments[ctx.cursor]
 	if c.View.Start >= nodeEnd && c.View.Start < lineEnd {
 		ctx.cursor++
-		return " " + string(c.View.Raw(ctx.SourceContext))
+		return c
 	}
-	return ""
+	return nil
 }
 
 type Node interface {

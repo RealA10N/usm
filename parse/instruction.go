@@ -76,7 +76,10 @@ func (n InstructionNode) String(ctx *StringContext) string {
 	targets := n.stringTargets(ctx)
 	op := string(n.Operator.Raw(ctx.SourceContext))
 	arguments := n.stringArguments(ctx)
-	comment := ctx.InlineComment(n.View().End)
+	comment := ""
+	if c := ctx.InlineComment(n.View().End); c != nil {
+		comment = " " + string(c.View.Raw(ctx.SourceContext))
+	}
 	return leading + labels + prefix + targets + op + arguments + comment + "\n"
 }
 
