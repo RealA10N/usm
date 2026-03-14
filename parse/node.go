@@ -32,10 +32,9 @@ func (ctx *StringContext) CommentsInRange(start, end core.SourceViewOffset) []le
 // so that inline comments on the same line as the previous node are excluded
 // (those are handled by each node's own String() method via InlineComment).
 func (ctx *StringContext) WholeLineCommentsAfter(prevNodeEnd, nextNodeStart core.SourceViewOffset) []lex.Comment {
-	src := []rune(ctx.SourceContext)
 	start := prevNodeEnd
-	for i := int(prevNodeEnd); i < len(src); i++ {
-		if src[i] == '\n' {
+	for i := int(prevNodeEnd); i < len(ctx.SourceContext); i++ {
+		if ctx.SourceContext[i] == '\n' {
 			start = core.SourceViewOffset(i + 1)
 			break
 		}
@@ -47,10 +46,9 @@ func (ctx *StringContext) WholeLineCommentsAfter(prevNodeEnd, nextNodeStart core
 // before the next '\n' in the source — i.e., on the same original source line.
 // Returns "" if none. At most one comment can exist per source line.
 func (ctx *StringContext) InlineComment(nodeEnd core.SourceViewOffset) string {
-	src := []rune(ctx.SourceContext)
-	lineEnd := core.SourceViewOffset(len(src))
-	for i := int(nodeEnd); i < len(src); i++ {
-		if src[i] == '\n' {
+	lineEnd := core.SourceViewOffset(len(ctx.SourceContext))
+	for i := int(nodeEnd); i < len(ctx.SourceContext); i++ {
+		if ctx.SourceContext[i] == '\n' {
 			lineEnd = core.SourceViewOffset(i)
 			break
 		}
