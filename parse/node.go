@@ -11,41 +11,27 @@ import (
 type StringContext struct {
 	core.SourceContext
 	Indent   int
-	Comments []lex.Comment // sorted by View.Start; never mutated; nil = no comments
+	Comments []lex.Comment // sorted by View.Start; never mutated
+	cursor   int           // index of next comment to process
 }
 
-// CommentsInRange returns all comments with Start in [start, end).
-// Uses binary search on the sorted Comments slice.
-// Used for whole-line comments where multiple comments may appear in a gap.
-func (ctx *StringContext) CommentsInRange(start, end core.SourceViewOffset) []lex.Comment {
-	lo := sort.Search(len(ctx.Comments), func(i int) bool {
-		return ctx.Comments[i].View.Start >= start
-	})
+// WholeLineCommentsBefore returns all unprocessed comments that appear before
+// nodeStart in the source. Advances the internal cursor.
+func (ctx *StringContext) WholeLineCommentsBefore(nodeStart core.SourceViewOffset) []lex.Comment {
 	hi := sort.Search(len(ctx.Comments), func(i int) bool {
-		return ctx.Comments[i].View.Start >= end
+		return ctx.Comments[i].View.Start >= nodeStart
 	})
-	return ctx.Comments[lo:hi]
+	result := ctx.Comments[ctx.cursor:hi]
+	ctx.cursor = hi
+	return result
 }
 
-// WholeLineCommentsAfter returns whole-line comments that appear between
-// prevNodeEnd and nextNodeStart. It skips past the first '\n' after prevNodeEnd
-// so that inline comments on the same line as the previous node are excluded
-// (those are handled by each node's own String() method via InlineComment).
-func (ctx *StringContext) WholeLineCommentsAfter(prevNodeEnd, nextNodeStart core.SourceViewOffset) []lex.Comment {
-	start := prevNodeEnd
-	for i := int(prevNodeEnd); i < len(ctx.SourceContext); i++ {
-		if ctx.SourceContext[i] == '\n' {
-			start = core.SourceViewOffset(i + 1)
-			break
-		}
-	}
-	return ctx.CommentsInRange(start, nextNodeStart)
-}
-
-// InlineComment returns the comment (if any) that starts after nodeEnd but
-// before the next '\n' in the source — i.e., on the same original source line.
-// Returns "" if none. At most one comment can exist per source line.
+// InlineComment returns the trailing comment on the same source line as nodeEnd,
+// if one exists. Advances the cursor past it.
 func (ctx *StringContext) InlineComment(nodeEnd core.SourceViewOffset) string {
+	if ctx.cursor >= len(ctx.Comments) {
+		return ""
+	}
 	lineEnd := core.SourceViewOffset(len(ctx.SourceContext))
 	for i := int(nodeEnd); i < len(ctx.SourceContext); i++ {
 		if ctx.SourceContext[i] == '\n' {
@@ -53,11 +39,10 @@ func (ctx *StringContext) InlineComment(nodeEnd core.SourceViewOffset) string {
 			break
 		}
 	}
-	lo := sort.Search(len(ctx.Comments), func(i int) bool {
-		return ctx.Comments[i].View.Start >= nodeEnd
-	})
-	if lo < len(ctx.Comments) && ctx.Comments[lo].View.Start < lineEnd {
-		return " " + string(ctx.Comments[lo].View.Raw(ctx.SourceContext))
+	c := ctx.Comments[ctx.cursor]
+	if c.View.Start >= nodeEnd && c.View.Start < lineEnd {
+		ctx.cursor++
+		return " " + string(c.View.Raw(ctx.SourceContext))
 	}
 	return ""
 }

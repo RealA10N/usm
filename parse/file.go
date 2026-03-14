@@ -44,20 +44,18 @@ func (n FileNode) String(ctx *StringContext) (s string) {
 	// because each node type is already parsed in source order and stored in order.
 	// we just need to merge the sorted lists in linear time.
 
-	prevEnd := core.SourceViewOffset(0)
 	for i, node := range nodes {
-		for _, c := range ctx.WholeLineCommentsAfter(prevEnd, node.View().Start) {
+		for _, c := range ctx.WholeLineCommentsBefore(node.View().Start) {
 			s += string(c.View.Raw(ctx.SourceContext)) + "\n"
 		}
 		s += node.String(ctx) + "\n"
-		prevEnd = node.View().End
 		if i != len(nodes)-1 {
 			s += "\n"
 		}
 	}
 
 	// Emit any trailing comments after the last node.
-	for _, c := range ctx.WholeLineCommentsAfter(prevEnd, ^core.SourceViewOffset(0)) {
+	for _, c := range ctx.WholeLineCommentsBefore(^core.SourceViewOffset(0)) {
 		s += string(c.View.Raw(ctx.SourceContext)) + "\n"
 	}
 
