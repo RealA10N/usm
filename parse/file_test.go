@@ -277,6 +277,17 @@ func TestFileWithOpenBraceInlineComment(t *testing.T) {
 	testExpectedFileFormat(t, src, expected)
 }
 
+func TestEmptyBlockWithComment(t *testing.T) {
+	src := `func @foo { ; nothing here
+}
+`
+	expected := `func @foo {
+	; nothing here
+}
+`
+	testExpectedFileFormat(t, src, expected)
+}
+
 func TestFileWithTrailingComments(t *testing.T) {
 	src := `func @foo {
 	ret

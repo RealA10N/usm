@@ -18,7 +18,23 @@ func (n BlockNode[NodeT]) View() core.UnmanagedSourceView {
 
 func (n BlockNode[NodeT]) String(ctx *StringContext) (s string) {
 	if len(n.Nodes) == 0 {
-		return "{ }"
+		// Consume any inline comment after '{' and any whole-line comments inside
+		// the block so they don't leak to the outer scope.
+		inline := ctx.InlineComment(n.UnmanagedSourceView.Start + 1)
+		inner := ctx.WholeLineCommentsBefore(n.UnmanagedSourceView.End)
+		if inline == nil && len(inner) == 0 {
+			return "{ }"
+		}
+		// The block has comments but no instructions; expand to multi-line.
+		prefix := strings.Repeat("\t", ctx.Indent+1)
+		s = "{\n"
+		if inline != nil {
+			s += prefix + string(inline.View.Raw(ctx.SourceContext)) + "\n"
+		}
+		for _, c := range inner {
+			s += prefix + string(c.View.Raw(ctx.SourceContext)) + "\n"
+		}
+		return s + strings.Repeat("\t", ctx.Indent) + "}"
 	}
 
 	s = "{\n"
