@@ -2,71 +2,19 @@ package parse
 
 import (
 	"slices"
-	"sort"
 	"strings"
 
 	"alon.kr/x/usm/core"
-	"alon.kr/x/usm/lex"
 )
 
 type StringContext struct {
 	core.SourceContext
-	Indent   int
-	Comments []lex.Comment // sorted by View.Start; never mutated
-	cursor   int           // index of next comment to process
-}
-
-// WholeLineCommentsBefore returns all unprocessed comments that appear before
-// nodeStart in the source. Advances the internal cursor.
-func (ctx *StringContext) WholeLineCommentsBefore(nodeStart core.SourceViewOffset) []lex.Comment {
-	hi := sort.Search(len(ctx.Comments), func(i int) bool {
-		return ctx.Comments[i].View.Start >= nodeStart
-	})
-	result := ctx.Comments[ctx.cursor:hi]
-	ctx.cursor = hi
-	return result
-}
-
-// FormatCommentsBeforeIndented returns all unprocessed whole-line comments
-// before until, with prefix prepended to each line. Advances the cursor.
-func (ctx *StringContext) FormatCommentsBeforeIndented(until core.SourceViewOffset, prefix string) string {
-	var s string
-	for _, c := range ctx.WholeLineCommentsBefore(until) {
-		s += prefix + string(c.View.Raw(ctx.SourceContext)) + "\n"
-	}
-	return s
-}
-
-// FormatCommentsBefore returns all unprocessed whole-line comments before until,
-// formatted as plain comment lines (no indent prefix). Advances the cursor.
-func (ctx *StringContext) FormatCommentsBefore(until core.SourceViewOffset) string {
-	return ctx.FormatCommentsBeforeIndented(until, "")
+	Indent int
 }
 
 // indent returns a string of tabs matching the current indentation level.
 func (ctx *StringContext) indent() string {
 	return strings.Repeat("\t", ctx.Indent)
-}
-
-// InlineComment returns the trailing comment on the same source line as nodeEnd,
-// if one exists. Advances the cursor past it.
-func (ctx *StringContext) InlineComment(nodeEnd core.SourceViewOffset) *lex.Comment {
-	if ctx.cursor >= len(ctx.Comments) {
-		return nil
-	}
-	lineEnd := core.SourceViewOffset(len(ctx.SourceContext))
-	for i := int(nodeEnd); i < len(ctx.SourceContext); i++ {
-		if ctx.SourceContext[i] == '\n' {
-			lineEnd = core.SourceViewOffset(i)
-			break
-		}
-	}
-	c := &ctx.Comments[ctx.cursor]
-	if c.View.Start >= nodeEnd && c.View.Start < lineEnd {
-		ctx.cursor++
-		return c
-	}
-	return nil
 }
 
 type Node interface {

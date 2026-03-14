@@ -84,7 +84,7 @@ func testExpectedInstruction(
 	result, err := lex.NewTokenizer().Tokenize(srcView)
 	assert.NoError(t, err)
 
-	tknView := parse.NewTokenView(result.Tokens)
+	tknView := parse.NewTokenView(result)
 	inst, perr := parse.NewInstructionParser().Parse(&tknView)
 	assert.Nil(t, perr)
 

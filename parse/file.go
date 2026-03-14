@@ -6,10 +6,11 @@ import (
 )
 
 type FileNode struct {
-	Functions []FunctionNode
-	Types     []TypeDeclarationNode
-	Constants []ConstDeclarationNode
-	Variables []VarDeclarationNode
+	Functions        []FunctionNode
+	Types            []TypeDeclarationNode
+	Constants        []ConstDeclarationNode
+	Variables        []VarDeclarationNode
+	TrailingComments []lex.Comment
 }
 
 func (n FileNode) View() core.UnmanagedSourceView {
@@ -45,7 +46,6 @@ func (n FileNode) String(ctx *StringContext) (s string) {
 	// we just need to merge the sorted lists in linear time.
 
 	for i, node := range nodes {
-		s += ctx.FormatCommentsBefore(node.View().Start)
 		s += node.String(ctx) + "\n"
 		if i != len(nodes)-1 {
 			s += "\n"
@@ -53,11 +53,13 @@ func (n FileNode) String(ctx *StringContext) (s string) {
 	}
 
 	// Emit any trailing comments after the last node.
-	if trailing := ctx.FormatCommentsBefore(^core.SourceViewOffset(0)); trailing != "" {
+	if len(n.TrailingComments) > 0 {
 		if len(nodes) > 0 {
 			s += "\n"
 		}
-		s += trailing
+		for _, c := range n.TrailingComments {
+			s += string(c.View.Raw(ctx.SourceContext)) + "\n"
+		}
 	}
 
 	return s
@@ -79,61 +81,57 @@ func NewFileParser() FileParser {
 	}
 }
 
-func (p FileParser) parseNextNode(v *TokenView, node *FileNode) core.Result {
-	v.ConsumeManyTokens(lex.SeparatorToken)
-	if v.Len() == 0 {
-		return nil
-	}
-
-	tkn, err := v.PeekToken(lex.TopLevelTokens...)
-	if err != nil {
-		return err
-	}
-
-	switch tkn.Type {
-	case lex.FuncKeywordToken:
-		fun, err := p.FunctionParser.Parse(v)
-		if err != nil {
-			return err
-		}
-		node.Functions = append(node.Functions, fun)
-	case lex.TypeKeywordToken:
-		typ, err := p.TypeDeclarationParser.Parse(v)
-		if err != nil {
-			return err
-		}
-		node.Types = append(node.Types, typ)
-	case lex.ConstKeywordToken:
-		constant, err := p.ConstDeclarationParser.Parse(v)
-		if err != nil {
-			return err
-		}
-		node.Constants = append(node.Constants, constant)
-	case lex.VarKeywordToken:
-		variable, err := p.VarDeclarationParser.Parse(v)
-		if err != nil {
-			return err
-		}
-		node.Variables = append(node.Variables, variable)
-	default:
-		return core.Result{
-			{
-				Type:     core.InternalErrorResult,
-				Message:  "Unexpected token",
-				Location: &tkn.View,
-			},
-		}
-	}
-
-	return nil
-}
-
 func (p FileParser) Parse(v *TokenView) (node FileNode, err core.Result) {
-	for v.Len() > 0 {
-		err = p.parseNextNode(v, &node)
-		if err != nil {
+	for {
+		pending := v.consumeLeadingComments()
+
+		if v.Len() == 0 {
+			node.TrailingComments = pending
 			return
 		}
+
+		tkn, err := v.PeekToken(lex.TopLevelTokens...)
+		if err != nil {
+			return node, err
+		}
+
+		switch tkn.Type {
+		case lex.FuncKeywordToken:
+			fun, err := p.FunctionParser.Parse(v)
+			if err != nil {
+				return node, err
+			}
+			fun.LeadingComments = pending
+			node.Functions = append(node.Functions, fun)
+		case lex.TypeKeywordToken:
+			typ, err := p.TypeDeclarationParser.Parse(v)
+			if err != nil {
+				return node, err
+			}
+			typ.LeadingComments = pending
+			node.Types = append(node.Types, typ)
+		case lex.ConstKeywordToken:
+			constant, err := p.ConstDeclarationParser.Parse(v)
+			if err != nil {
+				return node, err
+			}
+			constant.LeadingComments = pending
+			node.Constants = append(node.Constants, constant)
+		case lex.VarKeywordToken:
+			variable, err := p.VarDeclarationParser.Parse(v)
+			if err != nil {
+				return node, err
+			}
+			variable.LeadingComments = pending
+			node.Variables = append(node.Variables, variable)
+		default:
+			return node, core.Result{
+				{
+					Type:     core.InternalErrorResult,
+					Message:  "Unexpected token",
+					Location: &tkn.View,
+				},
+			}
+		}
 	}
-	return
 }

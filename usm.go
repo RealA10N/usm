@@ -163,7 +163,7 @@ func Run(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	tknView := parse.NewTokenView(lexResult.Tokens)
+	tknView := parse.NewTokenView(lexResult)
 	node, result := parse.NewFileParser().Parse(&tknView)
 	if result != nil {
 		printResultAndExit(view, result)

@@ -83,7 +83,7 @@ func testExpectedFunctionParsing(
 	result, err := lex.NewTokenizer().Tokenize(srcView)
 	assert.NoError(t, err)
 
-	v := parse.NewTokenView(result.Tokens)
+	v := parse.NewTokenView(result)
 	function, perr := parse.NewFunctionParser().Parse(&v)
 	assert.Nil(t, perr)
 

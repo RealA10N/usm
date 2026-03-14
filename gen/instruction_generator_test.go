@@ -130,7 +130,7 @@ func PrepareTestForInstructionGeneration(
 	t.Helper()
 
 	lexResult, err := lex.NewTokenizer().Tokenize(src)
-	tknView := parse.NewTokenView(lexResult.Tokens)
+	tknView := parse.NewTokenView(lexResult)
 	assert.NoError(t, err)
 
 	// TODO: do no use parser here? test only the instruction set unit.

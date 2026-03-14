@@ -8,10 +8,16 @@ import (
 )
 
 type InstructionNode struct {
-	Operator  core.UnmanagedSourceView
-	Arguments []ArgumentNode
-	Targets   []TargetNode
-	Labels    []LabelNode
+	Operator        core.UnmanagedSourceView
+	Arguments       []ArgumentNode
+	Targets         []TargetNode
+	Labels          []LabelNode
+	LeadingComments []lex.Comment  // whole-line comments before this instruction
+	TrailingComment *lex.Comment   // inline comment on the same line, after last token
+}
+
+func (n *InstructionNode) attachLeadingComments(c []lex.Comment) {
+	n.LeadingComments = c
 }
 
 func (n InstructionNode) View() (v core.UnmanagedSourceView) {
@@ -33,7 +39,12 @@ func (n InstructionNode) View() (v core.UnmanagedSourceView) {
 }
 
 func (n InstructionNode) stringLeadingComments(ctx *StringContext) string {
-	return ctx.FormatCommentsBeforeIndented(n.View().Start, ctx.indent())
+	prefix := ctx.indent()
+	var s string
+	for _, c := range n.LeadingComments {
+		s += prefix + string(c.View.Raw(ctx.SourceContext)) + "\n"
+	}
+	return s
 }
 
 func (n InstructionNode) stringLabels(ctx *StringContext) (s string) {
@@ -65,17 +76,18 @@ func (n InstructionNode) stringTargets(ctx *StringContext) (s string) {
 	return
 }
 
-func (n InstructionNode) stringInlineComment(ctx *StringContext) string {
-	if c := ctx.InlineComment(n.View().End); c != nil {
-		return " " + string(c.View.Raw(ctx.SourceContext))
+func (n InstructionNode) stringTrailingComment(ctx *StringContext) string {
+	if n.TrailingComment == nil {
+		return ""
 	}
-	return ""
+	return " " + string(n.TrailingComment.View.Raw(ctx.SourceContext))
 }
 
 func (n InstructionNode) String(ctx *StringContext) string {
 	return n.stringLeadingComments(ctx) +
 		n.stringLabels(ctx) +
-		ctx.indent() + n.stringTargets(ctx) + string(n.Operator.Raw(ctx.SourceContext)) + n.stringArguments(ctx) + n.stringInlineComment(ctx) + "\n"
+		ctx.indent() + n.stringTargets(ctx) + string(n.Operator.Raw(ctx.SourceContext)) +
+		n.stringArguments(ctx) + n.stringTrailingComment(ctx) + "\n"
 }
 
 type InstructionParser struct {
@@ -123,6 +135,9 @@ func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) core
 // Parsing of the following regular expression:
 //
 // > Lbl* ((Type? Reg)+ Eql)? Opr? Arg+ !Arg \n+
+//
+// Note: leading whole-line comments are NOT consumed here; they are captured
+// by BlockParser.parseBlockNodes and attached via attachLeadingComments.
 func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err core.Result) {
 	node.Labels, _ = ParseManyIgnoreSeparators(p.LabelParser, v)
 	node.Targets = ParseMany(p.TargetParser, v)
@@ -138,6 +153,7 @@ func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err core.R
 	}
 
 	node.Arguments = ParseMany(p.ArgumentParser, v)
+	node.TrailingComment = v.consumeTrailingComment()
 	err = v.ConsumeAtLeastTokens(1, lex.SeparatorToken)
 	return node, err
 }

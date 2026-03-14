@@ -7,20 +7,28 @@ import (
 
 type FunctionNode struct {
 	core.UnmanagedSourceView
-	Signature    FunctionSignatureNode
-	Instructions *BlockNode[InstructionNode]
+	Signature       FunctionSignatureNode
+	Instructions    *BlockNode[InstructionNode]
+	LeadingComments []lex.Comment
 }
 
 func (n FunctionNode) View() core.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 
+func (n *FunctionNode) attachLeadingComments(c []lex.Comment) {
+	n.LeadingComments = c
+}
+
 func (n FunctionNode) String(ctx *StringContext) string {
-	s := "func " + n.Signature.String(ctx)
+	var s string
+	for _, c := range n.LeadingComments {
+		s += string(c.View.Raw(ctx.SourceContext)) + "\n"
+	}
+	s += "func " + n.Signature.String(ctx)
 	if n.Instructions != nil {
 		s += " " + n.Instructions.String(ctx)
 	}
-
 	return s
 }
 

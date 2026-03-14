@@ -68,10 +68,10 @@ func TestSingleFunction(t *testing.T) {
 		},
 	}
 
-	result, err := lex.NewTokenizer().Tokenize(v)
+	tokens, err := lex.NewTokenizer().Tokenize(v)
 	assert.NoError(t, err)
 
-	tknsView := parse.NewTokenView(result.Tokens)
+	tknsView := parse.NewTokenView(tokens)
 	file, perr := parse.NewFileParser().Parse(&tknsView)
 
 	assert.Nil(t, perr)
@@ -207,14 +207,14 @@ func testExpectedFileFormat(t *testing.T, src string, expected string) {
 	t.Helper()
 
 	v := core.NewSourceView(src)
-	result, err := lex.NewTokenizer().Tokenize(v)
+	tokens, err := lex.NewTokenizer().Tokenize(v)
 	assert.NoError(t, err)
 
-	tknsView := parse.NewTokenView(result.Tokens)
+	tknsView := parse.NewTokenView(tokens)
 	file, perr := parse.NewFileParser().Parse(&tknsView)
 	assert.Nil(t, perr)
 
-	strCtx := parse.StringContext{SourceContext: v.Ctx(), Comments: result.Comments}
+	strCtx := parse.StringContext{SourceContext: v.Ctx()}
 	assert.Equal(t, expected, file.String(&strCtx))
 }
 

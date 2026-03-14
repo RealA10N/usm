@@ -21,7 +21,7 @@ func generateFunctionFromSource(
 	lexResult, err := lex.NewTokenizer().Tokenize(sourceView)
 	assert.NoError(t, err)
 
-	tknView := parse.NewTokenView(lexResult.Tokens)
+	tknView := parse.NewTokenView(lexResult)
 	node, result := parse.NewFunctionParser().Parse(&tknView)
 	assert.Nil(t, result)
 

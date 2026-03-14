@@ -68,7 +68,7 @@ func generateFileInfo(t *testing.T, source string) *gen.FileInfo {
 	lexResult, err := lex.NewTokenizer().Tokenize(srcView)
 	assert.NoError(t, err)
 
-	tknView := parse.NewTokenView(lexResult.Tokens)
+	tknView := parse.NewTokenView(lexResult)
 	fileNode, result := parse.NewFileParser().Parse(&tknView)
 	assert.Nil(t, result)
 

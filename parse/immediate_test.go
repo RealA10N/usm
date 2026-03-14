@@ -67,7 +67,7 @@ func testExpectedImmediate(t *testing.T, src, expected string) {
 	result, err := lex.NewTokenizer().Tokenize(srcView)
 	assert.NoError(t, err)
 
-	v := parse.NewTokenView(result.Tokens)
+	v := parse.NewTokenView(result)
 	immediate, perr := parse.NewImmediateParser().Parse(&v)
 	assert.Nil(t, perr)
 

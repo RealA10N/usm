@@ -76,12 +76,39 @@ func (v *TokenView) ConsumeManyTokens(
 	}
 }
 
-// Consume a token, but ignore any separator tokens that come before it.
+// Consume a token, but ignore any separator or comment tokens that come before it.
 func (v *TokenView) ConsumeTokenIgnoreSeparator(
 	expectedTypes ...lex.TokenType,
 ) (lex.Token, core.Result) {
-	v.ConsumeManyTokens(lex.SeparatorToken)
+	v.consumeLeadingComments()
 	return v.ConsumeToken(expectedTypes...)
+}
+
+// consumeLeadingComments consumes any interleaved separators and comment tokens,
+// returning the captured comments. This is used to collect whole-line comments
+// that appear before a node, so they can be attached to that node.
+func (v *TokenView) consumeLeadingComments() []lex.Comment {
+	var comments []lex.Comment
+	for {
+		v.ConsumeManyTokens(lex.SeparatorToken)
+		tkn, err := v.ConsumeToken(lex.CommentToken)
+		if err != nil {
+			return comments
+		}
+		comments = append(comments, lex.Comment{View: tkn.View})
+	}
+}
+
+// consumeTrailingComment consumes and returns the next token if it is a
+// CommentToken (an inline comment on the same line as the preceding node).
+// Returns nil if no comment token is next.
+func (v *TokenView) consumeTrailingComment() *lex.Comment {
+	tkn, err := v.ConsumeToken(lex.CommentToken)
+	if err != nil {
+		return nil
+	}
+	c := lex.Comment{View: tkn.View}
+	return &c
 }
 
 // Consume as many tokens as possible greedily, until we receive an error.
