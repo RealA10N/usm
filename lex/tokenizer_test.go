@@ -23,7 +23,6 @@ func assertExpectedTokens(t *testing.T, expected []tknDesc, actual []lex.Token, 
 	}
 }
 
-
 func TestAddOne(t *testing.T) {
 	code :=
 		`func $32 @addOne $32 %x {

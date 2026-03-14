@@ -12,8 +12,8 @@ type InstructionNode struct {
 	Arguments       []ArgumentNode
 	Targets         []TargetNode
 	Labels          []LabelNode
-	LeadingComments []lex.Comment  // whole-line comments before this instruction
-	TrailingComment *lex.Comment   // inline comment on the same line, after last token
+	LeadingComments []lex.Comment // whole-line comments before this instruction
+	TrailingComment *lex.Comment  // inline comment on the same line, after last token
 }
 
 func (n *InstructionNode) attachLeadingComments(c []lex.Comment) {

@@ -7,7 +7,7 @@ import (
 
 type BlockNode[NodeT Node] struct {
 	core.UnmanagedSourceView
-	Nodes           []NodeT
+	Nodes            []NodeT
 	TrailingComments []lex.Comment // whole-line comments before the closing '}'
 }
 
