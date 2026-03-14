@@ -81,10 +81,10 @@ func testExpectedInstruction(
 ) {
 	t.Helper()
 
-	tkns, err := lex.NewTokenizer().Tokenize(srcView)
+	result, err := lex.NewTokenizer().Tokenize(srcView)
 	assert.NoError(t, err)
 
-	tknView := parse.NewTokenView(tkns)
+	tknView := parse.NewTokenView(result.Tokens)
 	inst, perr := parse.NewInstructionParser().Parse(&tknView)
 	assert.Nil(t, perr)
 

@@ -12,7 +12,7 @@ type SpecificTokenizer interface {
 }
 
 type Tokenizer interface {
-	Tokenize(core.SourceView) ([]Token, error)
+	Tokenize(core.SourceView) (TokenizeResult, error)
 }
 
 type tokenizer struct {
@@ -41,11 +41,12 @@ func NewTokenizer() Tokenizer {
 	}
 }
 
-func (t tokenizer) Tokenize(view core.SourceView) (tkns []Token, err error) {
+func (t tokenizer) Tokenize(view core.SourceView) (result TokenizeResult, err error) {
 	for {
-		addSep := t.consumeWhitespace(&view)
+		addSep, comments := t.consumeWhitespace(&view)
+		result.Comments = append(result.Comments, comments...)
 		if addSep {
-			tkns = append(tkns, Token{Type: SeparatorToken})
+			result.Tokens = append(result.Tokens, Token{Type: SeparatorToken})
 		}
 
 		tkn, err := t.yieldToken(&view)
@@ -53,14 +54,14 @@ func (t tokenizer) Tokenize(view core.SourceView) (tkns []Token, err error) {
 			break
 		}
 
-		tkns = append(tkns, tkn)
+		result.Tokens = append(result.Tokens, tkn)
 	}
 
 	if view.Len() != 0 {
-		return tkns, err
+		return result, err
 	}
 
-	return tkns, nil
+	return result, nil
 }
 
 func (t tokenizer) yieldToken(view *core.SourceView) (tkn Token, err error) {
@@ -75,12 +76,30 @@ func (t tokenizer) yieldToken(view *core.SourceView) (tkn Token, err error) {
 	return
 }
 
-// Consume white spaces and return true if encountered a newline.
-func (tokenizer) consumeWhitespace(view *core.SourceView) bool {
-	idx := view.IndexFunc(not(unicode.IsSpace))
-	before, after := view.Partition(idx)
-	*view = after
-	return before.Contains('\n')
+// consumeWhitespace consumes whitespace (and any ';' comments) from the view.
+// Returns true if a newline was encountered, and any comments found.
+func (tokenizer) consumeWhitespace(view *core.SourceView) (sawNewline bool, comments []Comment) {
+	for {
+		// Consume whitespace; track whether a newline was seen.
+		idx := view.IndexFunc(not(unicode.IsSpace))
+		before, after := view.Partition(idx)
+		sawNewline = sawNewline || before.Contains('\n')
+		*view = after
+
+		// If the next character is not ';', we are done.
+		if !view.HasPrefix(core.NewSourceView(";")) {
+			break
+		}
+
+		// Capture the comment up to (but not including) the '\n' or EOF.
+		idx = view.IndexFunc(func(r rune) bool { return r == '\n' })
+		commentView, after := view.Partition(idx)
+		detached, _ := commentView.Detach()
+		comments = append(comments, Comment{View: detached})
+		*view = after
+		// The '\n' remains in view; the next iteration will pick it up.
+	}
+	return
 }
 
 // Provided a boolean predicate, returns a new boolean predicate which yields

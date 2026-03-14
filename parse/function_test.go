@@ -80,10 +80,10 @@ func testExpectedFunctionParsing(
 	t.Helper()
 
 	srcView := core.NewSourceView(src)
-	tkns, err := lex.NewTokenizer().Tokenize(srcView)
+	result, err := lex.NewTokenizer().Tokenize(srcView)
 	assert.NoError(t, err)
 
-	v := parse.NewTokenView(tkns)
+	v := parse.NewTokenView(result.Tokens)
 	function, perr := parse.NewFunctionParser().Parse(&v)
 	assert.Nil(t, perr)
 

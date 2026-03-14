@@ -68,10 +68,10 @@ func TestSingleFunction(t *testing.T) {
 		},
 	}
 
-	tkns, err := lex.NewTokenizer().Tokenize(v)
+	result, err := lex.NewTokenizer().Tokenize(v)
 	assert.NoError(t, err)
 
-	tknsView := parse.NewTokenView(tkns)
+	tknsView := parse.NewTokenView(result.Tokens)
 	file, perr := parse.NewFileParser().Parse(&tknsView)
 
 	assert.Nil(t, perr)
@@ -207,13 +207,57 @@ func testExpectedFileFormat(t *testing.T, src string, expected string) {
 	t.Helper()
 
 	v := core.NewSourceView(src)
-	tkns, err := lex.NewTokenizer().Tokenize(v)
+	result, err := lex.NewTokenizer().Tokenize(v)
 	assert.NoError(t, err)
 
-	tknsView := parse.NewTokenView(tkns)
+	tknsView := parse.NewTokenView(result.Tokens)
 	file, perr := parse.NewFileParser().Parse(&tknsView)
 	assert.Nil(t, perr)
 
-	strCtx := parse.StringContext{SourceContext: v.Ctx()}
+	strCtx := parse.StringContext{SourceContext: v.Ctx(), Comments: result.Comments}
 	assert.Equal(t, expected, file.String(&strCtx))
+}
+
+func TestFileWithInlineComment(t *testing.T) {
+	src := `func @foo {
+	ret ; done
+}
+`
+	testExpectedFileFormat(t, src, src)
+}
+
+func TestFileWithWholeLineComment(t *testing.T) {
+	src := `func @foo {
+	ret
+}
+
+; separator comment
+
+func @bar {
+	ret
+}
+`
+	// The formatter inserts one blank line between top-level nodes.
+	// The comment occupies that gap; no additional blank line is added after it.
+	expected := `func @foo {
+	ret
+}
+
+; separator comment
+func @bar {
+	ret
+}
+`
+	testExpectedFileFormat(t, src, expected)
+}
+
+func TestFileWithCommentInBlock(t *testing.T) {
+	src := `func @foo {
+	; first part
+	$32 %x = add %a %b
+	; second part
+	ret %x
+}
+`
+	testExpectedFileFormat(t, src, src)
 }

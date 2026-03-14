@@ -157,13 +157,13 @@ func Run(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	tokens, err := lex.NewTokenizer().Tokenize(view)
+	lexResult, err := lex.NewTokenizer().Tokenize(view)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error tokenizing: %v\n", err)
 		os.Exit(1)
 	}
 
-	tknView := parse.NewTokenView(tokens)
+	tknView := parse.NewTokenView(lexResult.Tokens)
 	node, result := parse.NewFileParser().Parse(&tknView)
 	if result != nil {
 		printResultAndExit(view, result)

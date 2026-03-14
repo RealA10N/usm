@@ -67,7 +67,8 @@ func (n InstructionNode) String(ctx *StringContext) string {
 	targets := n.stringTargets(ctx)
 	op := string(n.Operator.Raw(ctx.SourceContext))
 	arguments := n.stringArguments(ctx)
-	return labels + prefix + targets + op + arguments + "\n"
+	comment := ctx.InlineComment(n.View().End)
+	return labels + prefix + targets + op + arguments + comment + "\n"
 }
 
 type InstructionParser struct {

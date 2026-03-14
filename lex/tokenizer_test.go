@@ -23,6 +23,17 @@ func assertExpectedTokens(t *testing.T, expected []tknDesc, actual []lex.Token, 
 	}
 }
 
+type commentDesc struct{ txt string }
+
+func assertExpectedComments(t *testing.T, expected []commentDesc, actual []lex.Comment, ctx core.SourceContext) {
+	t.Helper()
+	assert.Len(t, actual, len(expected))
+	for i := range min(len(expected), len(actual)) {
+		actStr := string(actual[i].View.Raw(ctx))
+		assert.Equal(t, expected[i].txt, actStr)
+	}
+}
+
 func TestAddOne(t *testing.T) {
 	code :=
 		`func $32 @addOne $32 %x {
@@ -55,10 +66,11 @@ func TestAddOne(t *testing.T) {
 
 	view := core.NewSourceView(code)
 	_, ctx := view.Detach()
-	tkns, err := lex.NewTokenizer().Tokenize(view)
+	result, err := lex.NewTokenizer().Tokenize(view)
 
 	assert.NoError(t, err)
-	assertExpectedTokens(t, expected, tkns, ctx)
+	assertExpectedTokens(t, expected, result.Tokens, ctx)
+	assertExpectedComments(t, []commentDesc{}, result.Comments, ctx)
 }
 
 func TestPow(t *testing.T) {
@@ -182,8 +194,76 @@ func TestPow(t *testing.T) {
 
 	view := core.NewSourceView(code)
 	_, ctx := view.Detach()
-	tkns, err := lex.NewTokenizer().Tokenize(view)
+	result, err := lex.NewTokenizer().Tokenize(view)
 
 	assert.NoError(t, err)
-	assertExpectedTokens(t, expected, tkns, ctx)
+	assertExpectedTokens(t, expected, result.Tokens, ctx)
+	assertExpectedComments(t, []commentDesc{}, result.Comments, ctx)
+}
+
+func TestInlineComment(t *testing.T) {
+	code := "%0 = add %x %y ; adds x and y\nret %0\n"
+
+	expectedTokens := []tknDesc{
+		{"%0", lex.RegisterToken},
+		{"=", lex.EqualToken},
+		{"add", lex.OperatorToken},
+		{"%x", lex.RegisterToken},
+		{"%y", lex.RegisterToken},
+		{"", lex.SeparatorToken},
+		{"ret", lex.OperatorToken},
+		{"%0", lex.RegisterToken},
+		{"", lex.SeparatorToken},
+	}
+	expectedComments := []commentDesc{
+		{"; adds x and y"},
+	}
+
+	view := core.NewSourceView(code)
+	_, ctx := view.Detach()
+	result, err := lex.NewTokenizer().Tokenize(view)
+
+	assert.NoError(t, err)
+	assertExpectedTokens(t, expectedTokens, result.Tokens, ctx)
+	assertExpectedComments(t, expectedComments, result.Comments, ctx)
+}
+
+func TestWholeLineComment(t *testing.T) {
+	code := "; a comment\nret\n"
+
+	expectedTokens := []tknDesc{
+		{"", lex.SeparatorToken},
+		{"ret", lex.OperatorToken},
+		{"", lex.SeparatorToken},
+	}
+	expectedComments := []commentDesc{
+		{"; a comment"},
+	}
+
+	view := core.NewSourceView(code)
+	_, ctx := view.Detach()
+	result, err := lex.NewTokenizer().Tokenize(view)
+
+	assert.NoError(t, err)
+	assertExpectedTokens(t, expectedTokens, result.Tokens, ctx)
+	assertExpectedComments(t, expectedComments, result.Comments, ctx)
+}
+
+func TestCommentAtEOF(t *testing.T) {
+	code := "ret ; done"
+
+	expectedTokens := []tknDesc{
+		{"ret", lex.OperatorToken},
+	}
+	expectedComments := []commentDesc{
+		{"; done"},
+	}
+
+	view := core.NewSourceView(code)
+	_, ctx := view.Detach()
+	result, err := lex.NewTokenizer().Tokenize(view)
+
+	assert.NoError(t, err)
+	assertExpectedTokens(t, expectedTokens, result.Tokens, ctx)
+	assertExpectedComments(t, expectedComments, result.Comments, ctx)
 }

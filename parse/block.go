@@ -23,8 +23,18 @@ func (n BlockNode[NodeT]) String(ctx *StringContext) (s string) {
 
 	s = "{\n"
 	ctx.Indent++
+	prefix := strings.Repeat("\t", ctx.Indent)
+	prevEnd := n.UnmanagedSourceView.Start
 	for _, node := range n.Nodes {
+		for _, c := range ctx.WholeLineCommentsAfter(prevEnd, node.View().Start) {
+			s += prefix + string(c.View.Raw(ctx.SourceContext)) + "\n"
+		}
 		s += node.String(ctx)
+		prevEnd = node.View().End
+	}
+	// Comments between the last instruction and the closing '}'.
+	for _, c := range ctx.WholeLineCommentsAfter(prevEnd, n.UnmanagedSourceView.End) {
+		s += prefix + string(c.View.Raw(ctx.SourceContext)) + "\n"
 	}
 
 	ctx.Indent--
