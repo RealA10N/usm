@@ -23,7 +23,10 @@ func assertExpectedTokens(t *testing.T, expected []tknDesc, actual []lex.Token, 
 	}
 }
 
-type commentDesc struct{ txt string }
+type commentDesc struct {
+	txt   string
+	start core.SourceViewOffset
+}
 
 func assertExpectedComments(t *testing.T, expected []commentDesc, actual []lex.Comment, ctx core.SourceContext) {
 	t.Helper()
@@ -31,6 +34,7 @@ func assertExpectedComments(t *testing.T, expected []commentDesc, actual []lex.C
 	for i := range min(len(expected), len(actual)) {
 		actStr := string(actual[i].View.Raw(ctx))
 		assert.Equal(t, expected[i].txt, actStr)
+		assert.Equal(t, expected[i].start, actual[i].View.Start, "comment %q: wrong start offset", expected[i].txt)
 	}
 }
 
@@ -203,6 +207,8 @@ func TestPow(t *testing.T) {
 
 func TestInlineComment(t *testing.T) {
 	code := "%0 = add %x %y ; adds x and y\nret %0\n"
+	//       0123456789012345^
+	//                       15
 
 	expectedTokens := []tknDesc{
 		{"%0", lex.RegisterToken},
@@ -216,7 +222,7 @@ func TestInlineComment(t *testing.T) {
 		{"", lex.SeparatorToken},
 	}
 	expectedComments := []commentDesc{
-		{"; adds x and y"},
+		{"; adds x and y", 15},
 	}
 
 	view := core.NewSourceView(code)
@@ -230,6 +236,8 @@ func TestInlineComment(t *testing.T) {
 
 func TestWholeLineComment(t *testing.T) {
 	code := "; a comment\nret\n"
+	//       ^
+	//       0
 
 	expectedTokens := []tknDesc{
 		{"", lex.SeparatorToken},
@@ -237,7 +245,7 @@ func TestWholeLineComment(t *testing.T) {
 		{"", lex.SeparatorToken},
 	}
 	expectedComments := []commentDesc{
-		{"; a comment"},
+		{"; a comment", 0},
 	}
 
 	view := core.NewSourceView(code)
@@ -251,12 +259,14 @@ func TestWholeLineComment(t *testing.T) {
 
 func TestCommentAtEOF(t *testing.T) {
 	code := "ret ; done"
+	//       0123^
+	//           4
 
 	expectedTokens := []tknDesc{
 		{"ret", lex.OperatorToken},
 	}
 	expectedComments := []commentDesc{
-		{"; done"},
+		{"; done", 4},
 	}
 
 	view := core.NewSourceView(code)
