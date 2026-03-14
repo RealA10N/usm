@@ -32,12 +32,8 @@ func (n InstructionNode) View() (v core.UnmanagedSourceView) {
 	return
 }
 
-func (n InstructionNode) stringLeadingComments(ctx *StringContext) (s string) {
-	prefix := strings.Repeat("\t", ctx.Indent)
-	for _, c := range ctx.WholeLineCommentsBefore(n.View().Start) {
-		s += prefix + string(c.View.Raw(ctx.SourceContext)) + "\n"
-	}
-	return
+func (n InstructionNode) stringLeadingComments(ctx *StringContext) string {
+	return ctx.FormatCommentsBeforeIndented(n.View().Start, ctx.indent())
 }
 
 func (n InstructionNode) stringLabels(ctx *StringContext) (s string) {
@@ -69,18 +65,17 @@ func (n InstructionNode) stringTargets(ctx *StringContext) (s string) {
 	return
 }
 
-func (n InstructionNode) String(ctx *StringContext) string {
-	leading := n.stringLeadingComments(ctx)
-	labels := n.stringLabels(ctx)
-	prefix := strings.Repeat("\t", ctx.Indent)
-	targets := n.stringTargets(ctx)
-	op := string(n.Operator.Raw(ctx.SourceContext))
-	arguments := n.stringArguments(ctx)
-	comment := ""
+func (n InstructionNode) stringInlineComment(ctx *StringContext) string {
 	if c := ctx.InlineComment(n.View().End); c != nil {
-		comment = " " + string(c.View.Raw(ctx.SourceContext))
+		return " " + string(c.View.Raw(ctx.SourceContext))
 	}
-	return leading + labels + prefix + targets + op + arguments + comment + "\n"
+	return ""
+}
+
+func (n InstructionNode) String(ctx *StringContext) string {
+	return n.stringLeadingComments(ctx) +
+		n.stringLabels(ctx) +
+		ctx.indent() + n.stringTargets(ctx) + string(n.Operator.Raw(ctx.SourceContext)) + n.stringArguments(ctx) + n.stringInlineComment(ctx) + "\n"
 }
 
 type InstructionParser struct {

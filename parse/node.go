@@ -3,6 +3,7 @@ package parse
 import (
 	"slices"
 	"sort"
+	"strings"
 
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/lex"
@@ -26,14 +27,25 @@ func (ctx *StringContext) WholeLineCommentsBefore(nodeStart core.SourceViewOffse
 	return result
 }
 
+// FormatCommentsBeforeIndented returns all unprocessed whole-line comments
+// before until, with prefix prepended to each line. Advances the cursor.
+func (ctx *StringContext) FormatCommentsBeforeIndented(until core.SourceViewOffset, prefix string) string {
+	var s string
+	for _, c := range ctx.WholeLineCommentsBefore(until) {
+		s += prefix + string(c.View.Raw(ctx.SourceContext)) + "\n"
+	}
+	return s
+}
+
 // FormatCommentsBefore returns all unprocessed whole-line comments before until,
 // formatted as plain comment lines (no indent prefix). Advances the cursor.
 func (ctx *StringContext) FormatCommentsBefore(until core.SourceViewOffset) string {
-	var s string
-	for _, c := range ctx.WholeLineCommentsBefore(until) {
-		s += string(c.View.Raw(ctx.SourceContext)) + "\n"
-	}
-	return s
+	return ctx.FormatCommentsBeforeIndented(until, "")
+}
+
+// indent returns a string of tabs matching the current indentation level.
+func (ctx *StringContext) indent() string {
+	return strings.Repeat("\t", ctx.Indent)
 }
 
 // InlineComment returns the trailing comment on the same source line as nodeEnd,

@@ -288,6 +288,25 @@ func TestEmptyBlockWithComment(t *testing.T) {
 	testExpectedFileFormat(t, src, expected)
 }
 
+func TestEmptyBlockWithTrailingInlineComment(t *testing.T) {
+	// A comment after '}' is not inside the block; it should not be consumed
+	// by the block formatter. It migrates to a whole-line comment in the outer scope.
+	src := `func @foo { } ; outer comment
+
+func @bar {
+	ret
+}
+`
+	expected := `func @foo { }
+
+; outer comment
+func @bar {
+	ret
+}
+`
+	testExpectedFileFormat(t, src, expected)
+}
+
 func TestFileWithTrailingComments(t *testing.T) {
 	src := `func @foo {
 	ret
