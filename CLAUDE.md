@@ -1,12 +1,12 @@
 # CLAUDE.md — USM Compiler Framework
 
-This file describes the codebase structure, development workflows, and conventions
-for AI assistants working in this repository.
+This file describes the codebase structure, development workflows, and
+conventions for AI assistants working in this repository.
 
 ## Project Overview
 
-**USM** is a universal, type-safe assembly language and compiler framework written
-in Go. It provides:
+**USM** is a universal, type-safe assembly language and compiler framework
+written in Go. It provides:
 
 - A typed assembly language (`.usm` source files)
 - A multi-pass compilation pipeline (parsing → optimization → code generation)
@@ -43,14 +43,14 @@ usm/
 
 All common tasks are managed with [just](https://github.com/casey/just).
 
-| Command       | Description                                   |
-| ------------- | --------------------------------------------- |
-| `just build`  | Compile to `usm.out` binary                   |
-| `just test`   | Run all tests (uses `richgo` if available)    |
-| `just cover`  | Run tests and generate `coverage.out`         |
-| `just fmt`    | Format code (`go fmt`, `go mod tidy`, mdformat) |
-| `just setup`  | Install dev tools (`richgo`, `mdformat`)      |
-| `just cloc`   | Count lines of code (non-test files)          |
+| Command      | Description                                     |
+| ------------ | ----------------------------------------------- |
+| `just build` | Compile to `usm.out` binary                     |
+| `just test`  | Run all tests (uses `richgo` if available)      |
+| `just cover` | Run tests and generate `coverage.out`           |
+| `just fmt`   | Format code (`go fmt`, `go mod tidy`, mdformat) |
+| `just setup` | Install dev tools (`richgo`, `mdformat`)        |
+| `just cloc`  | Count lines of code (non-test files)            |
 
 Before committing, run `just fmt` and `just test`.
 
@@ -62,12 +62,12 @@ usm <input.usm> [transformation...]
 
 Available transformations (in order):
 
-| Name                               | Effect                              |
-| ---------------------------------- | ----------------------------------- |
-| `static-single-assignment` / `ssa` | Convert to SSA form                 |
-| `dead-code-elimination` / `dce`    | Remove unused instructions          |
-| `aarch64` / `arm64`                | Translate USM → AArch64 assembly    |
-| `macho` / `macho-obj`              | Emit Mach-O `.o` object file        |
+| Name                               | Effect                           |
+| ---------------------------------- | -------------------------------- |
+| `static-single-assignment` / `ssa` | Convert to SSA form              |
+| `dead-code-elimination` / `dce`    | Remove unused instructions       |
+| `aarch64` / `arm64`                | Translate USM → AArch64 assembly |
+| `macho` / `macho-obj`              | Emit Mach-O `.o` object file     |
 
 Typical pipeline: `usm input.usm ssa dce aarch64 macho`
 
@@ -173,8 +173,8 @@ package.
 
 1. Create a file in `opt/`.
 2. The pass receives a `*gen.FunctionGenerationContext` (or similar IR).
-3. Implement liveness/dataflow analysis if needed — see `opt/dead_code_elimination.go`
-   as a reference.
+3. Implement liveness/dataflow analysis if needed — see
+   `opt/dead_code_elimination.go` as a reference.
 4. Passes must run **after SSA construction** if they rely on SSA properties.
 5. Register the pass as a `transform.Transformation`.
 
@@ -191,21 +191,20 @@ All PRs must pass CI. Run `just cover` locally before pushing.
 
 ## Go Module
 
-Module path: `alon.kr/x/usm`
-Go version: 1.23.0
+Module path: `alon.kr/x/usm` Go version: 1.23.0
 
 Key dependencies:
 
-| Package                         | Purpose                              |
-| ------------------------------- | ------------------------------------ |
-| `alon.kr/x/aarch64codegen`      | AArch64 machine code encoding        |
-| `alon.kr/x/aarch64-macho`       | Mach-O object file generation        |
-| `alon.kr/x/faststringmap`       | Fast string lookup                   |
-| `alon.kr/x/list`, `set`, `stack`, `graph`, `view` | Generic data structures |
-| `spf13/cobra`                   | CLI framework                        |
-| `fatih/color`                   | Colored terminal output              |
-| `agnivade/levenshtein`          | Edit distance for suggestions        |
-| `stretchr/testify`              | Test assertions                      |
+| Package                                           | Purpose                       |
+| ------------------------------------------------- | ----------------------------- |
+| `alon.kr/x/aarch64codegen`                        | AArch64 machine code encoding |
+| `alon.kr/x/aarch64-macho`                         | Mach-O object file generation |
+| `alon.kr/x/faststringmap`                         | Fast string lookup            |
+| `alon.kr/x/list`, `set`, `stack`, `graph`, `view` | Generic data structures       |
+| `spf13/cobra`                                     | CLI framework                 |
+| `fatih/color`                                     | Colored terminal output       |
+| `agnivade/levenshtein`                            | Edit distance for suggestions |
+| `stretchr/testify`                                | Test assertions               |
 
 ## USM Language Quick Reference
 
