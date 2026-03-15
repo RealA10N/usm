@@ -7,8 +7,9 @@ import (
 
 type BlockNode[NodeT Node] struct {
 	core.UnmanagedSourceView
-	Nodes            []NodeT
-	TrailingComments []lex.Comment // whole-line comments before the closing '}'
+	Nodes []NodeT
+	// TrailingComments holds whole-line comments before the closing '}'.
+	TrailingComments []lex.Comment
 }
 
 func (n BlockNode[NodeT]) View() core.UnmanagedSourceView {
@@ -25,9 +26,7 @@ func (n BlockNode[NodeT]) String(ctx *StringContext) (s string) {
 	for _, node := range n.Nodes {
 		s += node.String(ctx)
 	}
-	for _, c := range n.TrailingComments {
-		s += ctx.indent() + string(c.View.Raw(ctx.SourceContext)) + "\n"
-	}
+	s += ctx.renderComments(n.TrailingComments)
 	ctx.Indent--
 	s += ctx.indent() + "}"
 	return

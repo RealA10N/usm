@@ -81,38 +81,39 @@ func (t tokenizer) yieldToken(view *core.SourceView) (tkn Token, err error) {
 func (tokenizer) consumeWhitespace(view *core.SourceView) []Token {
 	var tokens []Token
 	for {
-		if consumeSpaces(view) {
-			tokens = append(tokens, Token{Type: SeparatorToken})
-		}
-		comment, ok := consumeComment(view)
-		if !ok {
+		consumeSpaces(view, &tokens)
+		if !consumeComment(view, &tokens) {
 			break
 		}
-		tokens = append(tokens, comment)
 	}
 	return tokens
 }
 
-// consumeSpaces advances past leading whitespace and returns true if a newline was among them.
-func consumeSpaces(view *core.SourceView) bool {
+// consumeSpaces advances past leading whitespace, appending a SeparatorToken to
+// tokens if a newline was among them.
+func consumeSpaces(view *core.SourceView, tokens *[]Token) {
 	idx := view.IndexFunc(not(unicode.IsSpace))
 	before, after := view.Partition(idx)
 	*view = after
-	return before.Contains('\n')
+	if before.Contains('\n') {
+		*tokens = append(*tokens, Token{Type: SeparatorToken})
+	}
 }
 
-// consumeComment advances past a ';'-style line comment if one is present.
-// The trailing '\n' is left in the view so the caller can detect the line boundary.
-// Returns a CommentToken and true, or the zero value and false if no comment was found.
-func consumeComment(view *core.SourceView) (Token, bool) {
+// consumeComment advances past a ';'-style line comment if one is present,
+// appending a CommentToken to tokens and returning true. The trailing '\n' is
+// left in the view so the caller can detect the line boundary. Returns false
+// (and leaves tokens unchanged) if no comment was found.
+func consumeComment(view *core.SourceView, tokens *[]Token) bool {
 	if !view.HasPrefix(core.NewSourceView(";")) {
-		return Token{}, false
+		return false
 	}
 	idx := view.IndexFunc(func(r rune) bool { return r == '\n' })
 	commentView, after := view.Partition(idx)
 	detached, _ := commentView.Detach()
 	*view = after
-	return Token{Type: CommentToken, View: detached}, true
+	*tokens = append(*tokens, Token{Type: CommentToken, View: detached})
+	return true
 }
 
 // Provided a boolean predicate, returns a new boolean predicate which yields

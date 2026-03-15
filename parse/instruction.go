@@ -8,12 +8,14 @@ import (
 )
 
 type InstructionNode struct {
-	Operator        core.UnmanagedSourceView
-	Arguments       []ArgumentNode
-	Targets         []TargetNode
-	Labels          []LabelNode
-	LeadingComments []lex.Comment // whole-line comments before this instruction
-	TrailingComment *lex.Comment  // inline comment on the same line, after last token
+	Operator  core.UnmanagedSourceView
+	Arguments []ArgumentNode
+	Targets   []TargetNode
+	Labels    []LabelNode
+	// LeadingComments holds whole-line comments before this instruction.
+	LeadingComments []lex.Comment
+	// TrailingComment holds the inline comment on the same line, after the last token.
+	TrailingComment *lex.Comment
 }
 
 func (n *InstructionNode) attachLeadingComments(c []lex.Comment) {
@@ -36,15 +38,6 @@ func (n InstructionNode) View() (v core.UnmanagedSourceView) {
 	}
 
 	return
-}
-
-func (n InstructionNode) stringLeadingComments(ctx *StringContext) string {
-	prefix := ctx.indent()
-	var s string
-	for _, c := range n.LeadingComments {
-		s += prefix + string(c.View.Raw(ctx.SourceContext)) + "\n"
-	}
-	return s
 }
 
 func (n InstructionNode) stringLabels(ctx *StringContext) (s string) {
@@ -84,7 +77,7 @@ func (n InstructionNode) stringTrailingComment(ctx *StringContext) string {
 }
 
 func (n InstructionNode) String(ctx *StringContext) string {
-	return n.stringLeadingComments(ctx) +
+	return ctx.renderComments(n.LeadingComments) +
 		n.stringLabels(ctx) +
 		ctx.indent() + n.stringTargets(ctx) + string(n.Operator.Raw(ctx.SourceContext)) +
 		n.stringArguments(ctx) + n.stringTrailingComment(ctx) + "\n"

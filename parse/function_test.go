@@ -69,6 +69,31 @@ func TestFunctionOneLine(t *testing.T) {
 	testExpectedFunctionParsing(t, src, expected, expectedString)
 }
 
+// TestFunctionEmptyBodyWithTrailingComment verifies that a block with no
+// instructions but a whole-line trailing comment is NOT collapsed to "{ }".
+// The comment must be rendered indented inside the braces.
+func TestFunctionEmptyBodyWithTrailingComment(t *testing.T) {
+	src := "func @foo {\n\t; trailing comment\n}"
+
+	expected := parse.FunctionNode{
+		UnmanagedSourceView: core.UnmanagedSourceView{Start: 0, End: 33},
+		Signature: parse.FunctionSignatureNode{
+			UnmanagedSourceView: core.UnmanagedSourceView{Start: 5, End: 9},
+			Identifier:          core.UnmanagedSourceView{Start: 5, End: 9},
+		},
+		Instructions: &parse.BlockNode[parse.InstructionNode]{
+			UnmanagedSourceView: core.UnmanagedSourceView{Start: 10, End: 33},
+			TrailingComments: []lex.Comment{
+				{View: core.UnmanagedSourceView{Start: 13, End: 31}},
+			},
+		},
+	}
+
+	expectedString := "func @foo {\n\t; trailing comment\n}"
+
+	testExpectedFunctionParsing(t, src, expected, expectedString)
+}
+
 // MARK: Helpers
 
 func testExpectedFunctionParsing(
