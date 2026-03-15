@@ -26,10 +26,10 @@ func buildInstructionFromSource(
 	srcView := core.NewSourceView(src)
 
 	tokenizer := lex.NewTokenizer()
-	tkns, err := tokenizer.Tokenize(srcView)
+	lexResult, err := tokenizer.Tokenize(srcView)
 	assert.NoError(t, err)
 
-	tknsView := parse.NewTokenView(tkns)
+	tknsView := parse.NewTokenView(lexResult)
 	p := parse.NewInstructionParser()
 	node, result := p.Parse(&tknsView)
 	assert.Nil(t, result)

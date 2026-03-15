@@ -41,26 +41,23 @@ func NewTokenizer() Tokenizer {
 	}
 }
 
-func (t tokenizer) Tokenize(view core.SourceView) (tkns []Token, err error) {
+func (t tokenizer) Tokenize(view core.SourceView) (tokens []Token, err error) {
 	for {
-		addSep := t.consumeWhitespace(&view)
-		if addSep {
-			tkns = append(tkns, Token{Type: SeparatorToken})
-		}
+		tokens = append(tokens, t.consumeWhitespace(&view)...)
 
 		tkn, err := t.yieldToken(&view)
 		if err != nil {
 			break
 		}
 
-		tkns = append(tkns, tkn)
+		tokens = append(tokens, tkn)
 	}
 
 	if view.Len() != 0 {
-		return tkns, err
+		return tokens, err
 	}
 
-	return tkns, nil
+	return tokens, nil
 }
 
 func (t tokenizer) yieldToken(view *core.SourceView) (tkn Token, err error) {
@@ -75,12 +72,48 @@ func (t tokenizer) yieldToken(view *core.SourceView) (tkn Token, err error) {
 	return
 }
 
-// Consume white spaces and return true if encountered a newline.
-func (tokenizer) consumeWhitespace(view *core.SourceView) bool {
+// consumeWhitespace consumes interleaved whitespace and ';' comments, returning
+// the resulting token sequence. A SeparatorToken is emitted immediately after
+// each run of whitespace that contains a newline; CommentTokens follow in source
+// order. This ensures that a comment on a new line appears after the separator
+// for that line, so the parser can distinguish inline comments from leading
+// comments of the next node.
+func (tokenizer) consumeWhitespace(view *core.SourceView) []Token {
+	var tokens []Token
+	for {
+		consumeSpaces(view, &tokens)
+		if !consumeComment(view, &tokens) {
+			break
+		}
+	}
+	return tokens
+}
+
+// consumeSpaces advances past leading whitespace, appending a SeparatorToken to
+// tokens if a newline was among them.
+func consumeSpaces(view *core.SourceView, tokens *[]Token) {
 	idx := view.IndexFunc(not(unicode.IsSpace))
 	before, after := view.Partition(idx)
 	*view = after
-	return before.Contains('\n')
+	if before.Contains('\n') {
+		*tokens = append(*tokens, Token{Type: SeparatorToken})
+	}
+}
+
+// consumeComment advances past a ';'-style line comment if one is present,
+// appending a CommentToken to tokens and returning true. The trailing '\n' is
+// left in the view so the caller can detect the line boundary. Returns false
+// (and leaves tokens unchanged) if no comment was found.
+func consumeComment(view *core.SourceView, tokens *[]Token) bool {
+	if !view.HasPrefix(core.NewSourceView(";")) {
+		return false
+	}
+	idx := view.IndexFunc(func(r rune) bool { return r == '\n' })
+	commentView, after := view.Partition(idx)
+	detached, _ := commentView.Detach()
+	*view = after
+	*tokens = append(*tokens, Token{Type: CommentToken, View: detached})
+	return true
 }
 
 // Provided a boolean predicate, returns a new boolean predicate which yields

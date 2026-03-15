@@ -55,10 +55,10 @@ func TestAddOne(t *testing.T) {
 
 	view := core.NewSourceView(code)
 	_, ctx := view.Detach()
-	tkns, err := lex.NewTokenizer().Tokenize(view)
+	tokens, err := lex.NewTokenizer().Tokenize(view)
 
 	assert.NoError(t, err)
-	assertExpectedTokens(t, expected, tkns, ctx)
+	assertExpectedTokens(t, expected, tokens, ctx)
 }
 
 func TestPow(t *testing.T) {
@@ -182,8 +182,87 @@ func TestPow(t *testing.T) {
 
 	view := core.NewSourceView(code)
 	_, ctx := view.Detach()
-	tkns, err := lex.NewTokenizer().Tokenize(view)
+	tokens, err := lex.NewTokenizer().Tokenize(view)
 
 	assert.NoError(t, err)
-	assertExpectedTokens(t, expected, tkns, ctx)
+	assertExpectedTokens(t, expected, tokens, ctx)
+}
+
+func TestInlineComment(t *testing.T) {
+	code := "%0 = add %x %y ; adds x and y\nret %0\n"
+
+	expected := []tknDesc{
+		{"%0", lex.RegisterToken},
+		{"=", lex.EqualToken},
+		{"add", lex.OperatorToken},
+		{"%x", lex.RegisterToken},
+		{"%y", lex.RegisterToken},
+		{"; adds x and y", lex.CommentToken},
+		{"", lex.SeparatorToken},
+		{"ret", lex.OperatorToken},
+		{"%0", lex.RegisterToken},
+		{"", lex.SeparatorToken},
+	}
+
+	view := core.NewSourceView(code)
+	_, ctx := view.Detach()
+	tokens, err := lex.NewTokenizer().Tokenize(view)
+
+	assert.NoError(t, err)
+	assertExpectedTokens(t, expected, tokens, ctx)
+}
+
+func TestWholeLineComment(t *testing.T) {
+	code := "; a comment\nret\n"
+
+	expected := []tknDesc{
+		{"; a comment", lex.CommentToken},
+		{"", lex.SeparatorToken},
+		{"ret", lex.OperatorToken},
+		{"", lex.SeparatorToken},
+	}
+
+	view := core.NewSourceView(code)
+	_, ctx := view.Detach()
+	tokens, err := lex.NewTokenizer().Tokenize(view)
+
+	assert.NoError(t, err)
+	assertExpectedTokens(t, expected, tokens, ctx)
+}
+
+func TestCommentAtEOF(t *testing.T) {
+	code := "ret ; done"
+
+	expected := []tknDesc{
+		{"ret", lex.OperatorToken},
+		{"; done", lex.CommentToken},
+	}
+
+	view := core.NewSourceView(code)
+	_, ctx := view.Detach()
+	tokens, err := lex.NewTokenizer().Tokenize(view)
+
+	assert.NoError(t, err)
+	assertExpectedTokens(t, expected, tokens, ctx)
+}
+
+// TestCommentAfterOpenBrace verifies that a comment on the same line as '{'
+// (no newline between them) produces no separator between '{' and the comment.
+// The parser uses the absence of a preceding separator to recognise the comment
+// as belonging to the block interior, not as a trailing inline comment of the
+// outer instruction.
+func TestCommentAfterOpenBrace(t *testing.T) {
+	code := "{ ; comment in the same line"
+
+	expected := []tknDesc{
+		{"{", lex.LeftCurlyBraceToken},
+		{"; comment in the same line", lex.CommentToken},
+	}
+
+	view := core.NewSourceView(code)
+	_, ctx := view.Detach()
+	tokens, err := lex.NewTokenizer().Tokenize(view)
+
+	assert.NoError(t, err)
+	assertExpectedTokens(t, expected, tokens, ctx)
 }

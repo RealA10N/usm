@@ -25,6 +25,7 @@ const (
 	RepeatToken
 	OperatorToken
 	SeparatorToken
+	CommentToken
 )
 
 var TopLevelTokens = []TokenType{
@@ -52,6 +53,7 @@ var tokenNames = map[TokenType]string{
 	RepeatToken:          "Repeat",
 	OperatorToken:        "Operator",
 	SeparatorToken:       `\n`,
+	CommentToken:         "Comment",
 }
 
 func (tkn TokenType) String() string {

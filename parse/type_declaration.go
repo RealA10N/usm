@@ -9,18 +9,23 @@ import (
 
 type TypeDeclarationNode struct {
 	core.UnmanagedSourceView
-	Identifier core.UnmanagedSourceView
-	Fields     BlockNode[TypeFieldNode]
+	Identifier      core.UnmanagedSourceView
+	Fields          BlockNode[TypeFieldNode]
+	LeadingComments []lex.Comment
 }
 
 func (n TypeDeclarationNode) View() core.UnmanagedSourceView {
 	return n.UnmanagedSourceView
 }
 
+func (n *TypeDeclarationNode) attachLeadingComments(c []lex.Comment) {
+	n.LeadingComments = c
+}
+
 func (n TypeDeclarationNode) String(ctx *StringContext) string {
 	id := string(n.Identifier.Raw(ctx.SourceContext))
 	fields := n.Fields.String(ctx)
-	return "type " + id + " " + fields
+	return ctx.renderComments(n.LeadingComments) + "type " + id + " " + fields
 }
 
 // MARK: Parser

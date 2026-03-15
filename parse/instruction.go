@@ -12,6 +12,14 @@ type InstructionNode struct {
 	Arguments []ArgumentNode
 	Targets   []TargetNode
 	Labels    []LabelNode
+	// LeadingComments holds whole-line comments before this instruction.
+	LeadingComments []lex.Comment
+	// TrailingComment holds the inline comment on the same line, after the last token.
+	TrailingComment *lex.Comment
+}
+
+func (n *InstructionNode) attachLeadingComments(c []lex.Comment) {
+	n.LeadingComments = c
 }
 
 func (n InstructionNode) View() (v core.UnmanagedSourceView) {
@@ -61,13 +69,18 @@ func (n InstructionNode) stringTargets(ctx *StringContext) (s string) {
 	return
 }
 
+func (n InstructionNode) stringTrailingComment(ctx *StringContext) string {
+	if n.TrailingComment == nil {
+		return ""
+	}
+	return " " + string(n.TrailingComment.View.Raw(ctx.SourceContext))
+}
+
 func (n InstructionNode) String(ctx *StringContext) string {
-	labels := n.stringLabels(ctx)
-	prefix := strings.Repeat("\t", ctx.Indent)
-	targets := n.stringTargets(ctx)
-	op := string(n.Operator.Raw(ctx.SourceContext))
-	arguments := n.stringArguments(ctx)
-	return labels + prefix + targets + op + arguments + "\n"
+	return ctx.renderComments(n.LeadingComments) +
+		n.stringLabels(ctx) +
+		ctx.indent() + n.stringTargets(ctx) + string(n.Operator.Raw(ctx.SourceContext)) +
+		n.stringArguments(ctx) + n.stringTrailingComment(ctx) + "\n"
 }
 
 type InstructionParser struct {
@@ -115,6 +128,9 @@ func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) core
 // Parsing of the following regular expression:
 //
 // > Lbl* ((Type? Reg)+ Eql)? Opr? Arg+ !Arg \n+
+//
+// Note: leading whole-line comments are NOT consumed here; they are captured
+// by BlockParser.parseBlockNodes and attached via attachLeadingComments.
 func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err core.Result) {
 	node.Labels, _ = ParseManyIgnoreSeparators(p.LabelParser, v)
 	node.Targets = ParseMany(p.TargetParser, v)
@@ -130,6 +146,7 @@ func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err core.R
 	}
 
 	node.Arguments = ParseMany(p.ArgumentParser, v)
+	node.TrailingComment = v.consumeTrailingComment()
 	err = v.ConsumeAtLeastTokens(1, lex.SeparatorToken)
 	return node, err
 }

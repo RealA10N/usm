@@ -28,7 +28,8 @@ func NewConstParser() Parser[ConstNode] {
 // a lot of duplicated code.
 
 type ConstDeclarationNode struct {
-	Declaration GlobalDeclarationNode
+	Declaration     GlobalDeclarationNode
+	LeadingComments []lex.Comment
 }
 
 func (n ConstDeclarationNode) View() core.UnmanagedSourceView {
@@ -36,8 +37,12 @@ func (n ConstDeclarationNode) View() core.UnmanagedSourceView {
 	return n.Declaration.View()
 }
 
+func (n *ConstDeclarationNode) attachLeadingComments(c []lex.Comment) {
+	n.LeadingComments = c
+}
+
 func (n ConstDeclarationNode) String(ctx *StringContext) string {
-	return "const " + n.Declaration.String(ctx)
+	return ctx.renderComments(n.LeadingComments) + "const " + n.Declaration.String(ctx)
 }
 
 type ConstDeclarationParser struct {

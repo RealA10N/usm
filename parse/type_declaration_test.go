@@ -61,10 +61,10 @@ func testExpectedTypeDeclaration(t *testing.T, src, expected string) {
 
 	srcView := core.NewSourceView(src)
 	ctx := srcView.Ctx()
-	tkns, err := lex.NewTokenizer().Tokenize(srcView)
+	result, err := lex.NewTokenizer().Tokenize(srcView)
 	assert.NoError(t, err)
 
-	tknView := parse.NewTokenView(tkns)
+	tknView := parse.NewTokenView(result)
 	p := parse.NewTypeDeclarationParser()
 	typ, perr := p.Parse(&tknView)
 	assert.Nil(t, perr)

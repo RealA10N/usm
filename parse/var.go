@@ -26,7 +26,8 @@ func NewVarParser() Parser[VarNode] {
 // MARK: Declaration
 
 type VarDeclarationNode struct {
-	Declaration GlobalDeclarationNode
+	Declaration     GlobalDeclarationNode
+	LeadingComments []lex.Comment
 }
 
 func (n VarDeclarationNode) View() core.UnmanagedSourceView {
@@ -34,8 +35,12 @@ func (n VarDeclarationNode) View() core.UnmanagedSourceView {
 	return n.Declaration.View()
 }
 
+func (n *VarDeclarationNode) attachLeadingComments(c []lex.Comment) {
+	n.LeadingComments = c
+}
+
 func (n VarDeclarationNode) String(ctx *StringContext) string {
-	return "var " + n.Declaration.String(ctx)
+	return ctx.renderComments(n.LeadingComments) + "var " + n.Declaration.String(ctx)
 }
 
 type VarDeclarationParser struct {

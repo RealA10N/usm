@@ -71,6 +71,21 @@ func TestInstructionWithImmediateValuesAndLabel(t *testing.T) {
 	testExpectedInstruction(t, srcView, expected, expectedString)
 }
 
+// TestInstructionWithTrailingComment verifies that an inline comment after the
+// last argument is parsed into TrailingComment (not swallowed or dropped).
+func TestInstructionWithTrailingComment(t *testing.T) {
+	srcView := core.NewSourceView("ret ; done\n")
+	unmanaged := srcView.Unmanaged()
+	comment := lex.Comment{View: unmanaged.Subview(4, 10)}
+
+	expected := parse.InstructionNode{
+		Operator:        unmanaged.Subview(0, 3),
+		TrailingComment: &comment,
+	}
+
+	testExpectedInstruction(t, srcView, expected, "\tret ; done\n")
+}
+
 // MARK: Helpers
 
 func testExpectedInstruction(
@@ -81,10 +96,10 @@ func testExpectedInstruction(
 ) {
 	t.Helper()
 
-	tkns, err := lex.NewTokenizer().Tokenize(srcView)
+	result, err := lex.NewTokenizer().Tokenize(srcView)
 	assert.NoError(t, err)
 
-	tknView := parse.NewTokenView(tkns)
+	tknView := parse.NewTokenView(result)
 	inst, perr := parse.NewInstructionParser().Parse(&tknView)
 	assert.Nil(t, perr)
 
