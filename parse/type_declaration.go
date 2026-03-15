@@ -23,13 +23,9 @@ func (n *TypeDeclarationNode) attachLeadingComments(c []lex.Comment) {
 }
 
 func (n TypeDeclarationNode) String(ctx *StringContext) string {
-	var s string
-	for _, c := range n.LeadingComments {
-		s += string(c.View.Raw(ctx.SourceContext)) + "\n"
-	}
 	id := string(n.Identifier.Raw(ctx.SourceContext))
 	fields := n.Fields.String(ctx)
-	return s + "type " + id + " " + fields
+	return ctx.renderComments(n.LeadingComments) + "type " + id + " " + fields
 }
 
 // MARK: Parser

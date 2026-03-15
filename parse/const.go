@@ -42,11 +42,7 @@ func (n *ConstDeclarationNode) attachLeadingComments(c []lex.Comment) {
 }
 
 func (n ConstDeclarationNode) String(ctx *StringContext) string {
-	var s string
-	for _, c := range n.LeadingComments {
-		s += string(c.View.Raw(ctx.SourceContext)) + "\n"
-	}
-	return s + "const " + n.Declaration.String(ctx)
+	return ctx.renderComments(n.LeadingComments) + "const " + n.Declaration.String(ctx)
 }
 
 type ConstDeclarationParser struct {

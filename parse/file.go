@@ -57,9 +57,7 @@ func (n FileNode) String(ctx *StringContext) (s string) {
 		if len(nodes) > 0 {
 			s += "\n"
 		}
-		for _, c := range n.TrailingComments {
-			s += string(c.View.Raw(ctx.SourceContext)) + "\n"
-		}
+		s += ctx.renderComments(n.TrailingComments)
 	}
 
 	return s

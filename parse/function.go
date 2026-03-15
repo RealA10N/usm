@@ -21,10 +21,7 @@ func (n *FunctionNode) attachLeadingComments(c []lex.Comment) {
 }
 
 func (n FunctionNode) String(ctx *StringContext) string {
-	var s string
-	for _, c := range n.LeadingComments {
-		s += string(c.View.Raw(ctx.SourceContext)) + "\n"
-	}
+	s := ctx.renderComments(n.LeadingComments)
 	s += "func " + n.Signature.String(ctx)
 	if n.Instructions != nil {
 		s += " " + n.Instructions.String(ctx)

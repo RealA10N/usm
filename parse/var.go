@@ -40,11 +40,7 @@ func (n *VarDeclarationNode) attachLeadingComments(c []lex.Comment) {
 }
 
 func (n VarDeclarationNode) String(ctx *StringContext) string {
-	var s string
-	for _, c := range n.LeadingComments {
-		s += string(c.View.Raw(ctx.SourceContext)) + "\n"
-	}
-	return s + "var " + n.Declaration.String(ctx)
+	return ctx.renderComments(n.LeadingComments) + "var " + n.Declaration.String(ctx)
 }
 
 type VarDeclarationParser struct {

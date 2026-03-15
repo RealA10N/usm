@@ -316,3 +316,28 @@ func TestFileWithTrailingComments(t *testing.T) {
 `
 	testExpectedFileFormat(t, src, src)
 }
+
+func TestFileWithLeadingCommentOnTypeDeclaration(t *testing.T) {
+	src := `; describes the type
+type $foo { }
+`
+	testExpectedFileFormat(t, src, src)
+}
+
+func TestFileWithLeadingCommentOnConst(t *testing.T) {
+	src := `; a named constant
+const @pi $struct {
+	#314
+}
+`
+	testExpectedFileFormat(t, src, src)
+}
+
+func TestFileWithLeadingCommentOnVar(t *testing.T) {
+	src := `; a global variable
+var @counter $struct {
+	#0
+}
+`
+	testExpectedFileFormat(t, src, src)
+}
