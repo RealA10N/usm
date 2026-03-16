@@ -226,7 +226,7 @@ func cpProcessInstruction(
 // All instructions in the function must implement
 // ConstantPropagationSupportedInstruction.
 func ConstantPropagation(function *gen.FunctionInfo) core.ResultList {
-	cfInfo := NewFunctionControlFlowInfo(function)
+	cfInfo := gen.NewFunctionControlFlowInfo(function)
 	n := uint(len(cfInfo.BasicBlocks))
 	forest := cfInfo.ControlFlowGraph.DfsForest()
 
