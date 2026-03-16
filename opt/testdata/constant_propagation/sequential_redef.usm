@@ -1,0 +1,20 @@
+func @use $64 %reg
+
+; %x is assigned twice in the same block. The second definition (#99) is the
+; unique reaching definition at the use, so CP propagates #99.
+; Both definitions have the same block, satisfying the same-block guard.
+func @input {
+.entry
+	$64 %x = $64 #1
+	$64 %x = $64 #99
+	call @use %x
+	ret
+}
+
+func @expected {
+.entry
+	$64 %x = $64 #1
+	$64 %x = $64 #99
+	call @use $64 #99
+	ret
+}

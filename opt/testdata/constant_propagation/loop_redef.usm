@@ -1,0 +1,31 @@
+func $64 @getcond
+
+func @use $64 %reg
+
+; %x is defined with constant #5 in .entry, then redefined in the loop body.
+; Because %x has two definitions, CP must NOT propagate #5 anywhere.
+func @input {
+.entry
+	$64 %x = $64 #5
+	j .loop
+.loop
+	$64 %cond = call @getcond
+	$64 %x = add %x $64 #1
+	jnz %cond .done
+.done
+	call @use %x
+	ret
+}
+
+func @expected {
+.entry
+	$64 %x = $64 #5
+	j .loop
+.loop
+	$64 %cond = call @getcond
+	$64 %x = add %x $64 #1
+	jnz %cond .done
+.done
+	call @use %x
+	ret
+}

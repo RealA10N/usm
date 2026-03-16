@@ -14,6 +14,9 @@ type J struct {
 	opt.CriticalInstruction
 	opt.UsesNothingInstruction
 	opt.DefinesNothingInstruction
+
+	// Constant Propagation
+	opt.PropagatesNoConstants
 }
 
 func NewJump() J {

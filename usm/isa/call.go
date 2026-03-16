@@ -16,6 +16,9 @@ type Call struct {
 	opt.CriticalInstruction
 	opt.UsesArgumentsInstruction
 	opt.DefinesTargetsInstruction
+
+	// Constant Propagation
+	opt.PropagatesNoConstants
 }
 
 func NewCall() gen.InstructionDefinition {

@@ -1,7 +1,10 @@
 package usmisa
 
 import (
+	"math/big"
+
 	"alon.kr/x/usm/gen"
+	"alon.kr/x/usm/opt"
 )
 
 type Sub struct {
@@ -15,4 +18,10 @@ func NewSub() gen.InstructionDefinition {
 
 func (Sub) Operator(*gen.InstructionInfo) string {
 	return "sub"
+}
+
+func (Sub) PropagateConstants(info *gen.InstructionInfo) []opt.ConstantDefinition {
+	return foldBinaryConstants(info, func(l, r *big.Int) *big.Int {
+		return new(big.Int).Sub(l, r)
+	})
 }

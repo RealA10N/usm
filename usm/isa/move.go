@@ -19,6 +19,24 @@ type Move struct {
 	opt.DefinesTargetsInstruction
 }
 
+// PropagateConstants returns the immediate constant assigned to the target
+// register if the source argument is a constant immediate, otherwise nil.
+func (Move) PropagateConstants(info *gen.InstructionInfo) []opt.ConstantDefinition {
+	if len(info.Arguments) != 1 || len(info.Targets) != 1 {
+		return nil
+	}
+
+	immediate, ok := info.Arguments[0].(*gen.ImmediateInfo)
+	if !ok {
+		return nil
+	}
+
+	return []opt.ConstantDefinition{{
+		Register:  info.Targets[0].Register,
+		Immediate: immediate,
+	}}
+}
+
 func NewMove() gen.InstructionDefinition {
 	return Move{}
 }

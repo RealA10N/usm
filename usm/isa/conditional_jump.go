@@ -14,6 +14,9 @@ type ConditionalJump struct {
 	opt.CriticalInstruction
 	opt.UsesArgumentsInstruction
 	opt.DefinesNothingInstruction
+
+	// Constant Propagation
+	opt.PropagatesNoConstants
 }
 
 func (ConditionalJump) Validate(info *gen.InstructionInfo) core.ResultList {

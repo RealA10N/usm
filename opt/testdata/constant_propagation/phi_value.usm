@@ -1,0 +1,25 @@
+func @use $64 %reg
+
+func @input {
+.entry
+	$64 %c = $64 #1
+	j .merge
+.other
+	j .merge
+.merge
+	$64 %v = phi .entry %c .other $64 #2
+	call @use %v
+	ret
+}
+
+func @expected {
+.entry
+	$64 %c = $64 #1
+	j .merge
+.other
+	j .merge
+.merge
+	$64 %v = phi .entry $64 #1 .other $64 #2
+	call @use %v
+	ret
+}

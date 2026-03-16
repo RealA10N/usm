@@ -1,0 +1,33 @@
+func $64 @getcond
+
+func @use $64 %reg
+
+; When all incoming value arguments of a phi are the same constant, the phi
+; yields that constant and CP propagates it to downstream uses.
+func @input {
+.entry
+	$64 %cond = call @getcond
+	jnz %cond .left
+.right
+	j .merge
+.left
+	j .merge
+.merge
+	$64 %x = phi .right $64 #7 .left $64 #7
+	call @use %x
+	ret
+}
+
+func @expected {
+.entry
+	$64 %cond = call @getcond
+	jnz %cond .left
+.right
+	j .merge
+.left
+	j .merge
+.merge
+	$64 %x = phi .right $64 #7 .left $64 #7
+	call @use $64 #7
+	ret
+}

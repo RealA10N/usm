@@ -65,11 +65,12 @@ Available transformations (in order):
 | Name                               | Effect                              |
 | ---------------------------------- | ----------------------------------- |
 | `static-single-assignment` / `ssa` | Convert to SSA form                 |
+| `constant-propagation` / `cp`      | Propagate and fold constants        |
 | `dead-code-elimination` / `dce`    | Remove unused instructions          |
 | `aarch64` / `arm64`                | Translate USM → AArch64 assembly    |
 | `macho` / `macho-obj`              | Emit Mach-O `.o` object file        |
 
-Typical pipeline: `usm input.usm ssa dce aarch64 macho`
+Typical pipeline: `usm input.usm ssa cp dce aarch64 macho`
 
 ## Architecture: Key Patterns
 
@@ -93,6 +94,9 @@ Instructions declare capabilities via trait interfaces:
 - `NonBranchingInstruction` — falls through to the next instruction
 - `Uses(i int)` — returns the i-th used value (for liveness analysis)
 - `Defines()` — returns the defined value (for SSA/DCE)
+- `PropagateConstants(info) []ConstantDefinition` — for constant propagation:
+  returns (register, immediate) pairs that are known-constant after this
+  instruction executes; embed `opt.PropagatesNoConstants` as the default no-op
 
 ### Result/Error System (`core`)
 
@@ -172,11 +176,34 @@ package.
 ## Adding a New Optimization Pass
 
 1. Create a file in `opt/`.
-2. The pass receives a `*gen.FunctionGenerationContext` (or similar IR).
+2. The pass receives a `*gen.FunctionInfo` (or similar IR).
 3. Implement liveness/dataflow analysis if needed — see `opt/dead_code_elimination.go`
-   as a reference.
+   and `opt/constant_propagation.go` as references.
 4. Passes must run **after SSA construction** if they rely on SSA properties.
 5. Register the pass as a `transform.Transformation`.
+
+### Constant Propagation Pass (`opt/constant_propagation.go`)
+
+Propagates known-constant registers to their use sites and folds constant
+expressions. Uses a DFS over the CFG (`ControlFlowGraph.Dfs(0).Timeline`) with
+a per-register reaching-constants stack (mirrors `opt/ssa.ReachingDefinitionsSet`):
+
+- Only tracks registers with exactly **one reachable definition**. Unreachable
+  definitions (dead code, isolated loops) do not count. Registers with multiple
+  reachable definitions are propagated only when all those definitions are
+  sequential redefinitions in the same basic block (later definitions shadow
+  earlier ones on the DFS stack). Diamond joins and cross-block redefinitions
+  are never propagated.
+- After substituting arguments, calls `PropagateConstants` on the instruction to
+  fold constant expressions (e.g. `add #2 #3 → #5`). Folded results propagate
+  to downstream uses in the same DFS scope.
+- Uses CFG DFS (not dominator-tree DFS) to correctly handle unreachable blocks:
+  Lengauer-Tarjan assigns `PreOrder=0` to unvisited nodes, which can corrupt the
+  dominator tree when unreachable blocks are present.
+
+To support a new instruction in CP: implement `PropagateConstants` or embed
+`opt.PropagatesNoConstants`. Binary arithmetic helpers (`foldBinaryConstants`) live
+in `usm/isa/binary_calculation.go`.
 
 ## CI/CD
 

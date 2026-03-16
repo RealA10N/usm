@@ -1,0 +1,17 @@
+func @use $64 %reg
+
+func @input {
+.entry
+	$64 %x = $64 #5
+	$64 %y = %x
+	call @use %y
+	ret
+}
+
+func @expected {
+.entry
+	$64 %x = $64 #5
+	$64 %y = $64 #5
+	call @use $64 #5
+	ret
+}

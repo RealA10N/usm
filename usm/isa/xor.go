@@ -1,7 +1,10 @@
 package usmisa
 
 import (
+	"math/big"
+
 	"alon.kr/x/usm/gen"
+	"alon.kr/x/usm/opt"
 )
 
 type Xor struct {
@@ -15,4 +18,10 @@ func NewXor() gen.InstructionDefinition {
 
 func (Xor) Operator(*gen.InstructionInfo) string {
 	return "xor"
+}
+
+func (Xor) PropagateConstants(info *gen.InstructionInfo) []opt.ConstantDefinition {
+	return foldBinaryConstants(info, func(l, r *big.Int) *big.Int {
+		return new(big.Int).Xor(l, r)
+	})
 }

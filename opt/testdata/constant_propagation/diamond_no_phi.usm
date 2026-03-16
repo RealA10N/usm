@@ -1,0 +1,35 @@
+func $64 @getcond
+
+func @use $64 %reg
+
+; Two branches assign different constants to %val without a phi node.
+; %val has two definitions, so CP must NOT propagate either value to .merge.
+func @input {
+.entry
+	$64 %cond = call @getcond
+	jnz %cond .left
+.right
+	$64 %val = $64 #1
+	j .merge
+.left
+	$64 %val = $64 #2
+	j .merge
+.merge
+	call @use %val
+	ret
+}
+
+func @expected {
+.entry
+	$64 %cond = call @getcond
+	jnz %cond .left
+.right
+	$64 %val = $64 #1
+	j .merge
+.left
+	$64 %val = $64 #2
+	j .merge
+.merge
+	call @use %val
+	ret
+}
