@@ -13,6 +13,9 @@ type ImmediateInfo struct {
 	// TODO: more complex and complete representation of immediate structs.
 }
 
+func (*ImmediateInfo) OnAttach(*InstructionInfo) {}
+func (*ImmediateInfo) OnDetach(*InstructionInfo) {}
+
 func (i *ImmediateInfo) Declaration() *core.UnmanagedSourceView {
 	return &i.declaration
 }

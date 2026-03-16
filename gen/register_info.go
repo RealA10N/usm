@@ -61,3 +61,13 @@ func (i *RegisterInfo) RemoveDefinition(info *InstructionInfo) {
 func (i *RegisterInfo) AddUsage(info *InstructionInfo) {
 	i.Usages = append(i.Usages, info)
 }
+
+// RemoveUsage removes one occurrence of info from the Usages list.
+// If the same instruction appears multiple times (e.g. "add %x %x" adds two
+// entries), each call removes exactly one entry — matching one argument
+// position being detached — so the count stays consistent.
+func (i *RegisterInfo) RemoveUsage(info *InstructionInfo) {
+	if idx := slices.Index(i.Usages, info); idx != -1 {
+		i.Usages = slices.Delete(i.Usages, idx, idx+1)
+	}
+}

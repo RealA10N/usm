@@ -8,6 +8,9 @@ type GlobalArgumentInfo struct {
 	declaration *core.UnmanagedSourceView
 }
 
+func (*GlobalArgumentInfo) OnAttach(*InstructionInfo) {}
+func (*GlobalArgumentInfo) OnDetach(*InstructionInfo) {}
+
 func (g *GlobalArgumentInfo) Declaration() *core.UnmanagedSourceView {
 	return g.declaration
 }
