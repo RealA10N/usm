@@ -42,11 +42,6 @@ func newCPNotSupportedError(instruction *gen.InstructionInfo) core.ResultList {
 	}})
 }
 
-// cpBlockSeparator is the sentinel pushed onto cpReachingConstants.registerPushes
-// to mark the boundary between basic blocks in the DFS.
-// Mirrors the blockSeparator sentinel used in ReachingDefinitionsSet (opt/ssa).
-const cpBlockSeparator = ^uint(0)
-
 // cpReachingConstants tracks, for each register, the constant value of its
 // reaching definition at the current position in a DFS forest traversal.
 //
@@ -55,16 +50,13 @@ const cpBlockSeparator = ^uint(0)
 // DFS tree root to the current block, and pushBlock/popBlock scope those
 // values to the block's DFS subtree.
 type cpReachingConstants struct {
-	// Per-register stacks of reaching constant values (nil = not constant).
-	registerStacks []stack.Stack[*gen.ImmediateInfo]
+	// Per-register stacks of reaching constant values, created on demand.
+	registerStacks map[*gen.RegisterInfo]*stack.Stack[*gen.ImmediateInfo]
 
-	// Records which register indices were pushed in each block, with
-	// cpBlockSeparator values marking block boundaries. Mirrors
+	// Records which registers were pushed in each block, with nil entries
+	// marking block boundaries. Mirrors
 	// ReachingDefinitionsSet.registerDefinitionPushes in opt/ssa.
-	registerPushes stack.Stack[uint]
-
-	// Maps each *RegisterInfo to its index in registerStacks.
-	registersToIndex map[*gen.RegisterInfo]uint
+	registerPushes stack.Stack[*gen.RegisterInfo]
 
 	// Maps each basic block to the index of its DFS tree root (its component
 	// ID). Used by define() to determine whether a definition belongs to the
@@ -72,51 +64,24 @@ type cpReachingConstants struct {
 	blockComponent map[*gen.BasicBlockInfo]uint
 }
 
-// collectRegisters scans all instruction targets in the given blocks to build
-// a register→index map. Scanning targets directly (rather than using
-// function.Registers) ensures that registers introduced by any prior
-// transformation pass are included.
-func collectRegisters(blocks []*gen.BasicBlockInfo) (map[*gen.RegisterInfo]uint, uint) {
-	index := make(map[*gen.RegisterInfo]uint)
-	var count uint
-	for _, block := range blocks {
-		for _, instruction := range block.Instructions {
-			for _, target := range instruction.Targets {
-				if _, ok := index[target.Register]; !ok {
-					index[target.Register] = count
-					count++
-				}
-			}
-		}
-	}
-	return index, count
-}
-
 func newCPReachingConstants(
-	blocks []*gen.BasicBlockInfo,
 	blockComponent map[*gen.BasicBlockInfo]uint,
 ) cpReachingConstants {
-	registersToIndex, count := collectRegisters(blocks)
 	return cpReachingConstants{
-		registerStacks:   make([]stack.Stack[*gen.ImmediateInfo], count),
-		registerPushes:   stack.New[uint](),
-		registersToIndex: registersToIndex,
-		blockComponent:   blockComponent,
+		registerStacks: make(map[*gen.RegisterInfo]*stack.Stack[*gen.ImmediateInfo]),
+		registerPushes: stack.New[*gen.RegisterInfo](),
+		blockComponent: blockComponent,
 	}
 }
 
 // get returns the constant value of the reaching definition for reg at the
 // current DFS position, or nil if no constant reaching definition is known.
 func (c *cpReachingConstants) get(reg *gen.RegisterInfo) *gen.ImmediateInfo {
-	idx, ok := c.registersToIndex[reg]
-	if !ok {
+	stk, ok := c.registerStacks[reg]
+	if !ok || len(*stk) == 0 {
 		return nil
 	}
-	stk := c.registerStacks[idx]
-	if len(stk) == 0 {
-		return nil
-	}
-	return stk[len(stk)-1]
+	return stk.Top()
 }
 
 // define records a new constant reaching definition for reg in currentBlock.
@@ -152,25 +117,27 @@ func (c *cpReachingConstants) define(
 		}
 	}
 
-	idx, ok := c.registersToIndex[reg]
+	stk, ok := c.registerStacks[reg]
 	if !ok {
-		return
+		newStk := stack.New[*gen.ImmediateInfo]()
+		stk = &newStk
+		c.registerStacks[reg] = stk
 	}
-	c.registerPushes.Push(idx)
-	c.registerStacks[idx].Push(imm)
+	stk.Push(imm)
+	c.registerPushes.Push(reg)
 }
 
 func (c *cpReachingConstants) pushBlock() {
-	c.registerPushes.Push(cpBlockSeparator)
+	c.registerPushes.Push(nil)
 }
 
 func (c *cpReachingConstants) popBlock() {
-	for c.registerPushes.Top() != cpBlockSeparator {
-		idx := c.registerPushes.Top()
+	for c.registerPushes.Top() != nil {
+		reg := c.registerPushes.Top()
 		c.registerPushes.Pop()
-		c.registerStacks[idx].Pop()
+		c.registerStacks[reg].Pop()
 	}
-	c.registerPushes.Pop() // pop the block separator itself
+	c.registerPushes.Pop() // pop the nil block separator itself
 }
 
 // cpProcessInstruction performs constant propagation for one instruction:
@@ -248,7 +215,7 @@ func ConstantPropagation(function *gen.FunctionInfo) core.ResultList {
 		blockComponent[block] = componentOf[uint(i)]
 	}
 
-	reaching := newCPReachingConstants(cfInfo.BasicBlocks, blockComponent)
+	reaching := newCPReachingConstants(blockComponent)
 	results := core.ResultList{}
 
 	for _, event := range forest.Timeline {
