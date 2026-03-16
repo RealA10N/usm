@@ -8,7 +8,6 @@ import (
 	"alon.kr/x/set"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
-	"alon.kr/x/usm/opt"
 )
 
 type forwardingRegisterDescriptor struct {
@@ -78,7 +77,7 @@ type FunctionSsaInfo struct {
 
 	// Embeds the basic-block list, block-to-index mapping, and CFG that are
 	// shared with other passes (e.g. constant propagation).
-	opt.FunctionControlFlowInfo
+	gen.FunctionControlFlowInfo
 
 	SsaConstructionScheme SsaConstructionScheme
 
@@ -101,7 +100,7 @@ func NewFunctionSsaInfo(
 	function *gen.FunctionInfo,
 	ssaConstructionScheme SsaConstructionScheme,
 ) FunctionSsaInfo {
-	cfInfo := opt.NewFunctionControlFlowInfo(function)
+	cfInfo := gen.NewFunctionControlFlowInfo(function)
 	dominatorJoinGraph := cfInfo.ControlFlowGraph.DominatorJoinGraph(0)
 
 	baseRegisters := function.Registers.GetAllRegisters()

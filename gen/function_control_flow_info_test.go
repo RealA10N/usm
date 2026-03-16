@@ -1,9 +1,9 @@
-package opt_test
+package gen_test
 
 import (
 	"testing"
 
-	"alon.kr/x/usm/opt"
+	"alon.kr/x/usm/gen"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -11,17 +11,15 @@ import (
 // TestNewFunctionControlFlowInfo_SingleBlock checks that a function whose only
 // instruction is a return produces a CFG with one node and no forward edges.
 func TestNewFunctionControlFlowInfo_SingleBlock(t *testing.T) {
-	source := `
-func $64 @f $64 %n {
+	src := `func $32 @f $32 %n {
 .entry
-	ret %n
+	ret
 }
 `
-	file := generateFileInfo(t, source)
-	fn := file.GetFunction("@f")
-	require.NotNil(t, fn)
+	fn, results := generateFunctionFromSource(t, src)
+	require.True(t, results.IsEmpty())
 
-	info := opt.NewFunctionControlFlowInfo(fn)
+	info := gen.NewFunctionControlFlowInfo(fn)
 
 	assert.Len(t, info.BasicBlocks, 1)
 	assert.Len(t, info.BasicBlocksToIndex, 1)
@@ -36,20 +34,18 @@ func $64 @f $64 %n {
 func TestNewFunctionControlFlowInfo_BlockToIndexMapping(t *testing.T) {
 	// jz creates a fall-through block AND a branch target block, so we get
 	// three blocks: entry, fall-through (ret), and .end (ret).
-	source := `
-func $64 @f $64 %n {
+	src := `func $32 @f $32 %n {
 .entry
 	jz %n .end
-	ret %n
+	ret
 .end
-	ret %n
+	ret
 }
 `
-	file := generateFileInfo(t, source)
-	fn := file.GetFunction("@f")
-	require.NotNil(t, fn)
+	fn, results := generateFunctionFromSource(t, src)
+	require.True(t, results.IsEmpty())
 
-	info := opt.NewFunctionControlFlowInfo(fn)
+	info := gen.NewFunctionControlFlowInfo(fn)
 
 	require.Equal(t, len(info.BasicBlocks), len(info.BasicBlocksToIndex))
 	for i, block := range info.BasicBlocks {
@@ -63,19 +59,17 @@ func $64 @f $64 %n {
 // unconditional jump (j) produces exactly one forward edge from the jumping
 // block to its target.
 func TestNewFunctionControlFlowInfo_UnconditionalJump(t *testing.T) {
-	source := `
-func $64 @f $64 %n {
+	src := `func $32 @f $32 %n {
 .entry
 	j .end
 .end
-	ret %n
+	ret
 }
 `
-	file := generateFileInfo(t, source)
-	fn := file.GetFunction("@f")
-	require.NotNil(t, fn)
+	fn, results := generateFunctionFromSource(t, src)
+	require.True(t, results.IsEmpty())
 
-	info := opt.NewFunctionControlFlowInfo(fn)
+	info := gen.NewFunctionControlFlowInfo(fn)
 
 	require.Len(t, info.BasicBlocks, 2)
 	require.NotNil(t, info.ControlFlowGraph)
@@ -94,23 +88,21 @@ func $64 @f $64 %n {
 // The jz instruction causes an implicit block split, so there are three blocks:
 //
 //	block 0 – .entry containing "jz %n .end"
-//	block 1 – implicit fall-through block containing "ret %n"
-//	block 2 – .end containing "ret %n"
+//	block 1 – implicit fall-through block containing "ret"
+//	block 2 – .end containing "ret"
 func TestNewFunctionControlFlowInfo_ConditionalBranch(t *testing.T) {
-	source := `
-func $64 @f $64 %n {
+	src := `func $32 @f $32 %n {
 .entry
 	jz %n .end
-	ret %n
+	ret
 .end
-	ret %n
+	ret
 }
 `
-	file := generateFileInfo(t, source)
-	fn := file.GetFunction("@f")
-	require.NotNil(t, fn)
+	fn, results := generateFunctionFromSource(t, src)
+	require.True(t, results.IsEmpty())
 
-	info := opt.NewFunctionControlFlowInfo(fn)
+	info := gen.NewFunctionControlFlowInfo(fn)
 
 	require.Len(t, info.BasicBlocks, 3)
 	require.NotNil(t, info.ControlFlowGraph)
