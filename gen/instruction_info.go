@@ -60,6 +60,15 @@ func (i *InstructionInfo) AppendArgument(arguments ...ArgumentInfo) {
 	i.Arguments = append(i.Arguments, arguments...)
 }
 
+// SubstituteArgument replaces the argument at the given index with newArg,
+// keeping any back-references (e.g. register usage lists) consistent by
+// delegating to OnDetach on the old argument and OnAttach on the new one.
+func (i *InstructionInfo) SubstituteArgument(index int, newArg ArgumentInfo) {
+	i.Arguments[index].OnDetach(i)
+	newArg.OnAttach(i)
+	i.Arguments[index] = newArg
+}
+
 // Updates the internal instruction instance to the provided one.
 //
 // This can be used to update the instruction, but keep the same arguments and

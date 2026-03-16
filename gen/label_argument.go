@@ -23,6 +23,9 @@ func NewLabelArgumentInfo(
 	}
 }
 
+func (*LabelArgumentInfo) OnAttach(*InstructionInfo) {}
+func (*LabelArgumentInfo) OnDetach(*InstructionInfo) {}
+
 func (i *LabelArgumentInfo) Declaration() *core.UnmanagedSourceView {
 	return i.declaration
 }

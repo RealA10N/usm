@@ -45,13 +45,14 @@ func (s *ConstructionScheme) NewRenamedRegister(
 }
 
 func (s *ConstructionScheme) renameArgument(
+	instruction *gen.InstructionInfo,
 	argument gen.ArgumentInfo,
 	reachingSet ssa.ReachingDefinitionsSet,
 ) core.ResultList {
 	if argument, ok := argument.(*gen.RegisterArgumentInfo); ok {
 		baseRegister := argument.Register
 		renamedRegister := reachingSet.GetReachingDefinition(baseRegister)
-		argument.SwitchRegister(renamedRegister)
+		argument.SwitchRegister(instruction, renamedRegister)
 	}
 
 	return core.ResultList{}
@@ -74,7 +75,7 @@ func (s *ConstructionScheme) renameInstruction(
 ) core.ResultList {
 	// First, we rename the arguments.
 	for _, argument := range instruction.Arguments {
-		results := s.renameArgument(argument, reachingSet)
+		results := s.renameArgument(instruction, argument, reachingSet)
 		if !results.IsEmpty() {
 			return results
 		}
