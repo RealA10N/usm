@@ -8,6 +8,7 @@ import (
 	"alon.kr/x/set"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
+	"alon.kr/x/usm/opt"
 )
 
 type forwardingRegisterDescriptor struct {
@@ -75,14 +76,11 @@ func (p *phiInstructionDescriptor) CommitForwardingRegisters() core.ResultList {
 type FunctionSsaInfo struct {
 	*gen.FunctionInfo
 
+	// Embeds the basic-block list, block-to-index mapping, and CFG that are
+	// shared with other passes (e.g. constant propagation).
+	opt.FunctionControlFlowInfo
+
 	SsaConstructionScheme SsaConstructionScheme
-
-	// A linear representation of all basic blocks in the function.
-	BasicBlocks []*gen.BasicBlockInfo
-
-	// A mapping between all basic blocks in the function and their index in the
-	// Blocks slice.
-	BasicBlocksToIndex map[*gen.BasicBlockInfo]uint
 
 	// A mapping between all basic blocks and the phi instructions that they
 	// define in their entry.
@@ -96,7 +94,6 @@ type FunctionSsaInfo struct {
 	// A mapping from (base) registers to their index in the registers slice.
 	RegistersToIndex map[*gen.RegisterInfo]uint
 
-	ControlFlowGraph   *graph.Graph
 	DominatorJoinGraph *graph.DominatorJoinGraph
 }
 
@@ -104,24 +101,19 @@ func NewFunctionSsaInfo(
 	function *gen.FunctionInfo,
 	ssaConstructionScheme SsaConstructionScheme,
 ) FunctionSsaInfo {
-	basicBlocks := function.CollectBasicBlocks()
-	basicBlockToIndex := createMappingToIndex(basicBlocks)
-	forwardEdges := getBasicBlocksForwardEdges(basicBlocks, basicBlockToIndex)
-	graph := graph.NewGraph(forwardEdges)
-	dominatorJoinGraph := graph.DominatorJoinGraph(0)
+	cfInfo := opt.NewFunctionControlFlowInfo(function)
+	dominatorJoinGraph := cfInfo.ControlFlowGraph.DominatorJoinGraph(0)
 
 	baseRegisters := function.Registers.GetAllRegisters()
 	registersToIndex := createMappingToIndex(baseRegisters)
 
 	return FunctionSsaInfo{
 		FunctionInfo:            function,
+		FunctionControlFlowInfo: cfInfo,
 		SsaConstructionScheme:   ssaConstructionScheme,
-		BasicBlocks:             basicBlocks,
-		BasicBlocksToIndex:      basicBlockToIndex,
-		PhiInstructionsPerBlock: make([][]phiInstructionDescriptor, len(basicBlocks)),
+		PhiInstructionsPerBlock: make([][]phiInstructionDescriptor, len(cfInfo.BasicBlocks)),
 		BaseRegisters:           baseRegisters,
 		RegistersToIndex:        registersToIndex,
-		ControlFlowGraph:        &graph,
 		DominatorJoinGraph:      &dominatorJoinGraph,
 	}
 }
@@ -134,28 +126,6 @@ func createMappingToIndex[T comparable](
 		mapping[element] = uint(i)
 	}
 	return mapping
-}
-
-func getSingleBasicBlockForwardEdges(
-	block *gen.BasicBlockInfo,
-	basicBlockToIndex map[*gen.BasicBlockInfo]uint,
-) []uint {
-	indices := make([]uint, 0, len(block.ForwardEdges))
-	for _, targetBlock := range block.ForwardEdges {
-		indices = append(indices, basicBlockToIndex[targetBlock])
-	}
-	return indices
-}
-
-func getBasicBlocksForwardEdges(
-	blocks []*gen.BasicBlockInfo,
-	basicBlockToIndex map[*gen.BasicBlockInfo]uint,
-) [][]uint {
-	edges := make([][]uint, len(blocks))
-	for i, block := range blocks {
-		edges[i] = getSingleBasicBlockForwardEdges(block, basicBlockToIndex)
-	}
-	return edges
 }
 
 // Returns all the basic blocks in which the provided register is defined.
