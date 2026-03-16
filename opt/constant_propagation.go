@@ -42,6 +42,11 @@ func newCPNotSupportedError(instruction *gen.InstructionInfo) core.ResultList {
 	}})
 }
 
+// cpBlockSeparator is the sentinel pushed onto cpReachingConstants.registerPushes
+// to mark the boundary between basic blocks in the DFS.
+// Mirrors the blockSeparator sentinel used in ReachingDefinitionsSet (opt/ssa).
+const cpBlockSeparator = ^uint(0)
+
 // cpReachingConstants tracks, for each register, the constant value of its
 // reaching definition at the current position in a DFS forest traversal.
 //
@@ -50,13 +55,18 @@ func newCPNotSupportedError(instruction *gen.InstructionInfo) core.ResultList {
 // DFS tree root to the current block, and pushBlock/popBlock scope those
 // values to the block's DFS subtree.
 type cpReachingConstants struct {
-	// Per-register stacks of reaching constant values, created on demand.
-	registerStacks map[*gen.RegisterInfo]*stack.Stack[*gen.ImmediateInfo]
+	// Per-register stacks of reaching constant values. Indices are assigned
+	// lazily via registersToIndex the first time a register is defined.
+	registerStacks []stack.Stack[*gen.ImmediateInfo]
 
-	// Records which registers were pushed in each block, with nil entries
-	// marking block boundaries. Mirrors
+	// Records which register indices were pushed in each block, with
+	// cpBlockSeparator values marking block boundaries. Mirrors
 	// ReachingDefinitionsSet.registerDefinitionPushes in opt/ssa.
-	registerPushes stack.Stack[*gen.RegisterInfo]
+	registerPushes stack.Stack[uint]
+
+	// Maps each *RegisterInfo to its index in registerStacks. Entries are
+	// added on demand in define().
+	registersToIndex map[*gen.RegisterInfo]uint
 
 	// Maps each basic block to the index of its DFS tree root (its component
 	// ID). Used by define() to determine whether a definition belongs to the
@@ -68,20 +78,25 @@ func newCPReachingConstants(
 	blockComponent map[*gen.BasicBlockInfo]uint,
 ) cpReachingConstants {
 	return cpReachingConstants{
-		registerStacks: make(map[*gen.RegisterInfo]*stack.Stack[*gen.ImmediateInfo]),
-		registerPushes: stack.New[*gen.RegisterInfo](),
-		blockComponent: blockComponent,
+		registerStacks:   []stack.Stack[*gen.ImmediateInfo]{},
+		registerPushes:   stack.New[uint](),
+		registersToIndex: make(map[*gen.RegisterInfo]uint),
+		blockComponent:   blockComponent,
 	}
 }
 
 // get returns the constant value of the reaching definition for reg at the
 // current DFS position, or nil if no constant reaching definition is known.
 func (c *cpReachingConstants) get(reg *gen.RegisterInfo) *gen.ImmediateInfo {
-	stk, ok := c.registerStacks[reg]
-	if !ok || len(*stk) == 0 {
+	idx, ok := c.registersToIndex[reg]
+	if !ok {
 		return nil
 	}
-	return stk.Top()
+	stk := c.registerStacks[idx]
+	if len(stk) == 0 {
+		return nil
+	}
+	return stk[len(stk)-1]
 }
 
 // define records a new constant reaching definition for reg in currentBlock.
@@ -117,27 +132,27 @@ func (c *cpReachingConstants) define(
 		}
 	}
 
-	stk, ok := c.registerStacks[reg]
+	idx, ok := c.registersToIndex[reg]
 	if !ok {
-		newStk := stack.New[*gen.ImmediateInfo]()
-		stk = &newStk
-		c.registerStacks[reg] = stk
+		idx = uint(len(c.registerStacks))
+		c.registersToIndex[reg] = idx
+		c.registerStacks = append(c.registerStacks, stack.New[*gen.ImmediateInfo]())
 	}
-	stk.Push(imm)
-	c.registerPushes.Push(reg)
+	c.registerPushes.Push(idx)
+	c.registerStacks[idx].Push(imm)
 }
 
 func (c *cpReachingConstants) pushBlock() {
-	c.registerPushes.Push(nil)
+	c.registerPushes.Push(cpBlockSeparator)
 }
 
 func (c *cpReachingConstants) popBlock() {
-	for c.registerPushes.Top() != nil {
-		reg := c.registerPushes.Top()
+	for c.registerPushes.Top() != cpBlockSeparator {
+		idx := c.registerPushes.Top()
 		c.registerPushes.Pop()
-		c.registerStacks[reg].Pop()
+		c.registerStacks[idx].Pop()
 	}
-	c.registerPushes.Pop() // pop the nil block separator itself
+	c.registerPushes.Pop() // pop the block separator itself
 }
 
 // cpProcessInstruction performs constant propagation for one instruction:
