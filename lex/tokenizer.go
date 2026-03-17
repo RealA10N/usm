@@ -27,6 +27,7 @@ func NewTokenizer() Tokenizer {
 			PrefixedTokenizer{".", LabelToken},
 			PrefixedTokenizer{"@", GlobalToken},
 			PrefixedTokenizer{"#", ImmediateToken},
+			PrefixedTokenizer{"&", VariableToken},
 			PrefixedTokenizer{"*", PointerToken},
 			PrefixedTokenizer{"^", RepeatToken},
 			KeywordTokenizer{"=", EqualToken},

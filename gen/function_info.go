@@ -11,6 +11,7 @@ type FunctionInfo struct {
 	EntryBlock *BasicBlockInfo
 	Registers  RegisterManager
 	Labels     LabelManager
+	Variables  VariableManager
 	Parameters []*RegisterInfo
 	Targets    []ReferencedTypeInfo
 }
@@ -64,6 +65,10 @@ func (i *FunctionInfo) String() string {
 
 	if i.IsDefined() {
 		s += "{\n"
+
+		for _, v := range i.Variables.GetAllVariables() {
+			s += v.Name + " " + v.Type.String() + "\n"
+		}
 
 		for block := i.EntryBlock; block != nil; block = block.NextBlock {
 			s += block.String()

@@ -69,7 +69,8 @@ func (info ReferencedTypeInfo) Equal(other ReferencedTypeInfo) bool {
 	}
 
 	for i := range info.Descriptors {
-		if info.Descriptors[i] != other.Descriptors[i] {
+		a, b := info.Descriptors[i], other.Descriptors[i]
+		if a.Type != b.Type || a.Amount.Cmp(b.Amount) != 0 {
 			return false
 		}
 	}

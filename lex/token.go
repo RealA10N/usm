@@ -14,6 +14,7 @@ const (
 	LabelToken
 	GlobalToken
 	ImmediateToken
+	VariableToken
 	EqualToken
 	LeftCurlyBraceToken
 	RightCurlyBraceToken
@@ -42,6 +43,7 @@ var tokenNames = map[TokenType]string{
 	LabelToken:           "Label",
 	GlobalToken:          "Global",
 	ImmediateToken:       "Immediate",
+	VariableToken:        "Variable",
 	EqualToken:           "Equal",
 	LeftCurlyBraceToken:  "Left Curly Brace",
 	RightCurlyBraceToken: "Right Curly Brace",

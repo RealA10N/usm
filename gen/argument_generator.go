@@ -11,6 +11,7 @@ type ArgumentGenerator struct {
 	ImmediateArgumentGenerator InstructionContextGenerator[parse.ImmediateNode, ArgumentInfo]
 	LabelArgumentGenerator     InstructionContextGenerator[parse.LabelNode, ArgumentInfo]
 	GlobalArgumentGenerator    InstructionContextGenerator[parse.GlobalNode, ArgumentInfo]
+	VariableArgumentGenerator  InstructionContextGenerator[parse.VariableNode, ArgumentInfo]
 }
 
 func NewArgumentGenerator() InstructionContextGenerator[parse.ArgumentNode, ArgumentInfo] {
@@ -20,6 +21,7 @@ func NewArgumentGenerator() InstructionContextGenerator[parse.ArgumentNode, Argu
 			ImmediateArgumentGenerator: NewImmediateArgumentGenerator(),
 			LabelArgumentGenerator:     NewLabelArgumentGenerator(),
 			GlobalArgumentGenerator:    NewGlobalArgumentGenerator(),
+			VariableArgumentGenerator:  NewVariableArgumentGenerator(),
 		},
 	)
 }
@@ -37,6 +39,8 @@ func (g *ArgumentGenerator) Generate(
 		return g.LabelArgumentGenerator.Generate(ctx, typedNode)
 	case parse.GlobalNode:
 		return g.GlobalArgumentGenerator.Generate(ctx, typedNode)
+	case parse.VariableNode:
+		return g.VariableArgumentGenerator.Generate(ctx, typedNode)
 	default:
 		v := node.View()
 		return nil, list.FromSingle(core.Result{{

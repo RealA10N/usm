@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"alon.kr/x/usm/gen"
+	usmmanagers "alon.kr/x/usm/usm/managers"
 )
 
 func NewManagerCreators() gen.ManagerCreators {
@@ -12,6 +13,7 @@ func NewManagerCreators() gen.ManagerCreators {
 		LabelManagerCreator:    gen.NewLabelMap,
 		TypeManagerCreator:     NewTypeManager,
 		GlobalManagerCreator:   gen.NewGlobalMap,
+		VariableManagerCreator: usmmanagers.NewVariableManager,
 	}
 }
 

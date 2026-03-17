@@ -5,6 +5,7 @@ import (
 
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
+	usmmanagers "alon.kr/x/usm/usm/managers"
 )
 
 // MARK: TypeMap
@@ -85,7 +86,8 @@ var testManagerCreators = gen.ManagerCreators{
 		manager.NewType(typ)
 		return manager
 	},
-	GlobalManagerCreator: gen.NewGlobalMap,
+	GlobalManagerCreator:   gen.NewGlobalMap,
+	VariableManagerCreator: usmmanagers.NewVariableManager,
 }
 
 var testGenerationContext = gen.GenerationContext{

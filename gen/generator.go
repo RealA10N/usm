@@ -14,6 +14,7 @@ type ManagerCreators struct {
 	LabelManagerCreator    func(*FileGenerationContext) LabelManager
 	TypeManagerCreator     func(*GenerationContext) TypeManager
 	GlobalManagerCreator   func(*GenerationContext) GlobalManager
+	VariableManagerCreator func(*FileGenerationContext) VariableManager
 }
 
 // This structure is the most broad level of generation context.
@@ -71,6 +72,7 @@ func (ctx *FileGenerationContext) NewFunctionGenerationContext() *FunctionGenera
 		FileGenerationContext: ctx,
 		Registers:             ctx.RegisterManagerCreator(ctx),
 		Labels:                ctx.LabelManagerCreator(ctx),
+		Variables:             ctx.VariableManagerCreator(ctx),
 	}
 }
 
@@ -85,6 +87,10 @@ type FunctionGenerationContext struct {
 
 	// A label manager, which stores and manages all labels defined in a function.
 	Labels LabelManager
+
+	// A variable manager, which stores and manages all named variables (local
+	// frame slots) declared in the function.
+	Variables VariableManager
 }
 
 type InstructionGenerationContext struct {

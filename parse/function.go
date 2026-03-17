@@ -8,6 +8,7 @@ import (
 type FunctionNode struct {
 	core.UnmanagedSourceView
 	Signature       FunctionSignatureNode
+	Variables       []VariableDeclarationNode
 	Instructions    *BlockNode[InstructionNode]
 	LeadingComments []lex.Comment
 }
@@ -20,26 +21,50 @@ func (n *FunctionNode) attachLeadingComments(c []lex.Comment) {
 	n.LeadingComments = c
 }
 
+func (n FunctionNode) stringBlock(ctx *StringContext) string {
+	hasVariables := len(n.Variables) > 0
+	hasInstructions := n.Instructions != nil && (len(n.Instructions.Nodes) > 0 || len(n.Instructions.TrailingComments) > 0)
+
+	if !hasVariables && !hasInstructions {
+		return "{ }"
+	}
+
+	s := "{\n"
+	ctx.Indent++
+	for i := range n.Variables {
+		s += n.Variables[i].String(ctx)
+	}
+	if n.Instructions != nil {
+		for _, instr := range n.Instructions.Nodes {
+			s += instr.String(ctx)
+		}
+		s += ctx.renderComments(n.Instructions.TrailingComments)
+	}
+	ctx.Indent--
+	s += ctx.indent() + "}"
+	return s
+}
+
 func (n FunctionNode) String(ctx *StringContext) string {
 	s := ctx.renderComments(n.LeadingComments)
 	s += "func " + n.Signature.String(ctx)
 	if n.Instructions != nil {
-		s += " " + n.Instructions.String(ctx)
+		s += " " + n.stringBlock(ctx)
 	}
 	return s
 }
 
 type FunctionParser struct {
-	FunctionSignatureParser FunctionSignatureParser
-	InstructionBlockParser  BlockParser[InstructionNode]
+	FunctionSignatureParser   FunctionSignatureParser
+	InstructionBlockParser    BlockParser[InstructionNode]
+	VariableDeclarationParser Parser[VariableDeclarationNode]
 }
 
 func NewFunctionParser() FunctionParser {
 	return FunctionParser{
-		FunctionSignatureParser: NewFunctionSignatureParser(),
-		InstructionBlockParser: BlockParser[InstructionNode]{
-			Parser: NewInstructionParser(),
-		},
+		FunctionSignatureParser:   NewFunctionSignatureParser(),
+		InstructionBlockParser:    BlockParser[InstructionNode]{Parser: NewInstructionParser()},
+		VariableDeclarationParser: NewVariableDeclarationParser(),
 	}
 }
 
@@ -53,14 +78,55 @@ func (FunctionParser) parseFunctionKeyword(v *TokenView, node *FunctionNode) cor
 	return nil
 }
 
-func (p FunctionParser) parseBlock(v *TokenView, node *FunctionNode) {
-	instructions, err := p.InstructionBlockParser.Parse(v)
-	if err == nil {
-		node.Instructions = &instructions
-		node.End = node.Instructions.View().End
-	} else {
-		node.End = node.Signature.View().End
+// parseVariablePreamble consumes variable declarations at the start of a
+// function body (after '{' has already been consumed). Stops as soon as the
+// next non-separator token is not a VariableToken.
+func (p FunctionParser) parseVariablePreamble(v *TokenView, node *FunctionNode) {
+	for {
+		// Skip separators only — leave comments for parseBlockNodes to attach
+		// as leading comments to the first instruction.
+		v.ConsumeManyTokens(lex.SeparatorToken)
+
+		front, err := v.At(0)
+		if err != nil || front.Type != lex.VariableToken {
+			return
+		}
+
+		varDecl, varErr := p.VariableDeclarationParser.Parse(v)
+		if varErr != nil {
+			return
+		}
+		node.Variables = append(node.Variables, varDecl)
 	}
+}
+
+func (p FunctionParser) parseBlock(v *TokenView, node *FunctionNode) {
+	leftCurly, err := v.ConsumeToken(lex.LeftCurlyBraceToken)
+	if err != nil {
+		node.End = node.Signature.View().End
+		return
+	}
+
+	p.parseVariablePreamble(v, node)
+
+	nodes, trailing := p.InstructionBlockParser.parseBlockNodes(v)
+
+	rightCurly, err := v.ConsumeTokenIgnoreSeparator(lex.RightCurlyBraceToken)
+	if err != nil {
+		node.End = leftCurly.View.End
+		return
+	}
+
+	block := &BlockNode[InstructionNode]{
+		UnmanagedSourceView: core.UnmanagedSourceView{
+			Start: leftCurly.View.Start,
+			End:   rightCurly.View.End,
+		},
+		Nodes:            nodes,
+		TrailingComments: trailing,
+	}
+	node.Instructions = block
+	node.End = rightCurly.View.End
 }
 
 func (p FunctionParser) Parse(v *TokenView) (node FunctionNode, err core.Result) {

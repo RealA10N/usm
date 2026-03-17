@@ -12,6 +12,7 @@ func NewManagerCreators() gen.ManagerCreators {
 		LabelManagerCreator:    gen.NewLabelMap,
 		TypeManagerCreator:     NewTypeManager,
 		GlobalManagerCreator:   gen.NewGlobalMap,
+		VariableManagerCreator: NewVariableManager,
 	}
 }
 

@@ -9,6 +9,7 @@ type ArgumentParser struct {
 	ImmediateParser *ImmediateParser
 	LabelParser     Parser[LabelNode]
 	GlobalParser    Parser[GlobalNode]
+	VariableParser  Parser[VariableNode]
 }
 
 func NewArgumentParser() Parser[ArgumentNode] {
@@ -17,6 +18,7 @@ func NewArgumentParser() Parser[ArgumentNode] {
 		ImmediateParser: NewImmediateParser(),
 		LabelParser:     NewLabelParser(),
 		GlobalParser:    NewGlobalParser(),
+		VariableParser:  NewVariableParser(),
 	}
 }
 
@@ -37,6 +39,10 @@ func (p ArgumentParser) Parse(v *TokenView) (node ArgumentNode, err core.Result)
 
 	// TODO: make global part of immediate?
 	if node, err := p.GlobalParser.Parse(v); err == nil {
+		return node, nil
+	}
+
+	if node, err := p.VariableParser.Parse(v); err == nil {
 		return node, nil
 	}
 
