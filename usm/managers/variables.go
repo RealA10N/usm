@@ -5,35 +5,29 @@ import (
 	"alon.kr/x/usm/gen"
 )
 
-// VariableList is the default implementation of gen.VariableManager.
-// It preserves declaration order via a slice and uses a map for O(1) lookup.
-type VariableList struct {
-	byName []*gen.VariableInfo
-	index  map[string]int
-}
+type VariableMap map[string]*gen.VariableInfo
 
-func (m *VariableList) GetVariable(name string) *gen.VariableInfo {
-	i, ok := m.index[name]
+func (m *VariableMap) GetVariable(name string) *gen.VariableInfo {
+	val, ok := (*m)[name]
 	if !ok {
 		return nil
 	}
-	return m.byName[i]
+	return val
 }
 
-func (m *VariableList) NewVariable(variable *gen.VariableInfo) core.ResultList {
-	m.index[variable.Name] = len(m.byName)
-	m.byName = append(m.byName, variable)
+func (m *VariableMap) NewVariable(variable *gen.VariableInfo) core.ResultList {
+	(*m)[variable.Name] = variable
 	return core.ResultList{}
 }
 
-func (m *VariableList) GetAllVariables() []*gen.VariableInfo {
-	result := make([]*gen.VariableInfo, len(m.byName))
-	copy(result, m.byName)
-	return result
+func (m *VariableMap) GetAllVariables() []*gen.VariableInfo {
+	variables := make([]*gen.VariableInfo, 0, len(*m))
+	for _, v := range *m {
+		variables = append(variables, v)
+	}
+	return variables
 }
 
 func NewVariableManager(*gen.FileGenerationContext) gen.VariableManager {
-	return &VariableList{
-		index: make(map[string]int),
-	}
+	return &VariableMap{}
 }
