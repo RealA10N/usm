@@ -1,38 +1,28 @@
 func @use $64 %reg
 
-; %k is defined only in .second_isolated (#99) and used in .first_isolated.
-; .second_isolated jumps to .first_isolated, which might suggest the constant
-; reaches the use — but CP must not propagate it across component boundaries.
+; %k is defined in .second_isolated (#99) and used in .first_isolated.
+; .first_isolated jumps to .second_isolated, which jumps to .noise.
 ;
-; Block ordering determines DFS component membership:
+; All three blocks belong to the same DFS component (rooted at .first_isolated).
+; However, .first_isolated is the root and is therefore processed first in the
+; DFS traversal — before .second_isolated defines %k. CP must not propagate
+; the constant backwards to the usage in .first_isolated.
 ;
-;   Component 0 (.entry):           reachable root; just returns.
-;   Component 1 (.first_isolated):  unreachable root; uses %k — but %k has no
-;                                   definition within this component.
-;   Component 2 (.noise):           unreachable self-loop; sits between the two
-;                                   isolated components so that .second_isolated
-;                                   is not adjacent to .first_isolated in DFS
-;                                   ordering, keeping them in separate trees.
-;   Component 3 (.second_isolated): unreachable root; defines %k = #99, uses
-;                                   %k, then jumps to .first_isolated. The jump
-;                                   is a cross-edge (.first_isolated was already
-;                                   visited as its own root), so the constant is
-;                                   never propagated into component 1.
-;
-; Expected: #99 is propagated to the use inside .second_isolated (same
-; component), but the use in .first_isolated remains unchanged.
+; Expected: #99 is propagated to the use inside .second_isolated (definition
+; precedes the use in DFS traversal order), but the use in .first_isolated
+; remains unchanged (processed before the definition is pushed).
 func @input {
 .entry
 	ret
 .first_isolated
 	call @use %k
-	j .first_isolated
+	j .second_isolated
 .noise
 	j .noise
 .second_isolated
 	$64 %k = $64 #99
 	call @use %k
-	j .first_isolated
+	j .noise
 }
 
 func @expected {
@@ -40,11 +30,11 @@ func @expected {
 	ret
 .first_isolated
 	call @use %k
-	j .first_isolated
+	j .second_isolated
 .noise
 	j .noise
 .second_isolated
 	$64 %k = $64 #99
 	call @use $64 #99
-	j .first_isolated
+	j .noise
 }
