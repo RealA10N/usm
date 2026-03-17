@@ -113,3 +113,43 @@ func TestLeaProducesPointer(t *testing.T) {
 	assert.Len(t, vars, 1)
 	assert.Equal(t, "$32", vars[0].Type.String())
 }
+
+// TestLeaNestedPointer verifies that lea on a variable of type $32 *1 produces
+// a $32 *2 target (incrementing the existing pointer descriptor, not appending).
+func TestLeaNestedPointer(t *testing.T) {
+	src := `func @foo $32 %n {
+	$32 * %ptr = lea &x
+	$32 *2 %pptr = lea &y
+	ret
+}
+`
+	function, results := generateFunctionFromSourceUSM(t, src)
+	assert.True(t, results.IsEmpty(), "unexpected errors: %v", results)
+	assert.NotNil(t, function)
+
+	vars := function.Variables.GetAllVariables()
+	assert.Len(t, vars, 2)
+
+	// &x inferred as $32, &y inferred as $32 *1
+	byName := make(map[string]string)
+	for _, v := range vars {
+		byName[v.Name] = v.Type.String()
+	}
+	assert.Equal(t, "$32", byName["&x"])
+	assert.Equal(t, "$32 *1", byName["&y"])
+}
+
+// TestLeaMismatchedPointer verifies that a lea with the wrong pointer level
+// produces an error when the variable type is already known.
+func TestLeaMismatchedPointer(t *testing.T) {
+	src := `func @foo $32 %n {
+	store &x %n
+	$32 *2 %pptr = lea &x
+	ret
+}
+`
+	// &x is inferred as $32 by store; lea expects $32 *1 but got $32 *2
+	function, results := generateFunctionFromSourceUSM(t, src)
+	assert.False(t, results.IsEmpty(), "expected pointer mismatch error")
+	assert.Nil(t, function)
+}

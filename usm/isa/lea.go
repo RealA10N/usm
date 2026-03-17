@@ -34,37 +34,79 @@ func (Lea) Operator(*gen.InstructionInfo) string {
 	return "lea"
 }
 
-// isPointerTo reports whether targetType is exactly varType with one additional
-// PointerTypeDescriptor appended (i.e. targetType == varType + one level of *).
+// isPointerTo reports whether targetType is exactly one pointer level deeper
+// than varType.
+//
+// Because the descriptor *N packs N consecutive pointer levels into a single
+// entry, adding one level of indirection to a type that already ends with *N
+// produces *{N+1}, not a separate *1 appended.  The two cases are therefore:
+//
+//   - varType ends with *N  →  targetType is identical except the last
+//     descriptor has Amount == N+1.
+//   - varType does not end with *  →  targetType has the same descriptors as
+//     varType plus a trailing *1.
 func isPointerTo(targetType, varType gen.ReferencedTypeInfo) bool {
 	if targetType.Base != varType.Base {
 		return false
 	}
 
-	if len(targetType.Descriptors) != len(varType.Descriptors)+1 {
-		return false
+	nVar := len(varType.Descriptors)
+	nTarget := len(targetType.Descriptors)
+
+	if nVar > 0 && varType.Descriptors[nVar-1].Type == gen.PointerTypeDescriptor {
+		// varType ends with *N: targetType must be identical but with *(N+1).
+		if nTarget != nVar {
+			return false
+		}
+		for i := 0; i < nVar-1; i++ {
+			if !targetType.Descriptors[i].Equal(varType.Descriptors[i]) {
+				return false
+			}
+		}
+		varLast := varType.Descriptors[nVar-1]
+		targetLast := targetType.Descriptors[nTarget-1]
+		expected := new(big.Int).Add(varLast.Amount, big.NewInt(1))
+		return targetLast.Type == gen.PointerTypeDescriptor &&
+			targetLast.Amount.Cmp(expected) == 0
 	}
 
-	last := targetType.Descriptors[len(targetType.Descriptors)-1]
-	if last.Type != gen.PointerTypeDescriptor || last.Amount.Cmp(big.NewInt(1)) != 0 {
+	// varType does not end with *: targetType must append a new *1.
+	if nTarget != nVar+1 {
 		return false
 	}
-
-	for i, d := range varType.Descriptors {
-		if !targetType.Descriptors[i].Equal(d) {
+	for i := 0; i < nVar; i++ {
+		if !targetType.Descriptors[i].Equal(varType.Descriptors[i]) {
 			return false
 		}
 	}
-
-	return true
+	last := targetType.Descriptors[nTarget-1]
+	return last.Type == gen.PointerTypeDescriptor &&
+		last.Amount.Cmp(big.NewInt(1)) == 0
 }
 
-// stripPointer returns t with the last (pointer) descriptor removed.
-// The caller must ensure t is a pointer type.
+// stripPointer returns t with one pointer level removed from the last
+// descriptor.  If the last descriptor has Amount == 1 the descriptor is
+// dropped entirely; otherwise its Amount is decremented by one.
+// The caller must ensure t ends with a pointer descriptor.
 func stripPointer(t gen.ReferencedTypeInfo) gen.ReferencedTypeInfo {
+	n := len(t.Descriptors)
+	last := t.Descriptors[n-1]
+
+	newDescriptors := make([]gen.TypeDescriptorInfo, n)
+	copy(newDescriptors, t.Descriptors)
+
+	if last.Amount.Cmp(big.NewInt(1)) == 0 {
+		newDescriptors = newDescriptors[:n-1]
+	} else {
+		newDescriptors[n-1] = gen.TypeDescriptorInfo{
+			Type:   gen.PointerTypeDescriptor,
+			Amount: new(big.Int).Sub(last.Amount, big.NewInt(1)),
+		}
+	}
+
 	return gen.ReferencedTypeInfo{
 		Base:        t.Base,
-		Descriptors: t.Descriptors[:len(t.Descriptors)-1],
+		Descriptors: newDescriptors,
 		Declaration: t.Declaration,
 	}
 }
@@ -92,12 +134,10 @@ func (Lea) Validate(info *gen.InstructionInfo) core.ResultList {
 	targetType := info.Targets[0].Register.Type
 
 	if varArg.Variable.Type.Base == nil {
-		// First use — infer variable type by stripping the pointer from the
-		// lea target type.
-		last := targetType.Descriptors[len(targetType.Descriptors)-1]
+		// First use — infer variable type by stripping one pointer level from
+		// the lea target type.
 		if len(targetType.Descriptors) == 0 ||
-			last.Type != gen.PointerTypeDescriptor ||
-			last.Amount.Cmp(big.NewInt(1)) != 0 {
+			targetType.Descriptors[len(targetType.Descriptors)-1].Type != gen.PointerTypeDescriptor {
 			return list.FromSingle(core.Result{
 				{
 					Type:     core.ErrorResult,
