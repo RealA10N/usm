@@ -39,7 +39,7 @@ func (g *LabelDefinitionGenerator) Generate(
 			{
 				Type:     core.HintResult,
 				Message:  "Previous definition here",
-				Location: &labelInfo.Declaration,
+				Location: labelInfo.Declaration,
 			},
 		})
 	}
@@ -47,7 +47,7 @@ func (g *LabelDefinitionGenerator) Generate(
 	newLabelInfo := &LabelInfo{
 		Name:        name,
 		BasicBlock:  nil, // Defined later in compilation.
-		Declaration: declaration,
+		Declaration: &declaration,
 	}
 
 	results := ctx.Labels.NewLabel(newLabelInfo)

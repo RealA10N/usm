@@ -29,10 +29,12 @@ func (n FunctionNode) stringBlock(ctx *StringContext) string {
 
 	s := "{\n"
 	ctx.Indent++
-	for _, instr := range n.Instructions.Nodes {
-		s += instr.String(ctx)
+	if n.Instructions != nil {
+		for _, instr := range n.Instructions.Nodes {
+			s += instr.String(ctx)
+		}
+		s += ctx.renderComments(n.Instructions.TrailingComments)
 	}
-	s += ctx.renderComments(n.Instructions.TrailingComments)
 	ctx.Indent--
 	s += ctx.indent() + "}"
 	return s
