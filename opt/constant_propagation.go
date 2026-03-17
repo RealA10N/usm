@@ -48,40 +48,31 @@ func newCPNotSupportedError(instruction *gen.InstructionInfo) core.ResultList {
 const cpBlockSeparator = ^uint(0)
 
 // cpReachingConstants tracks, for each register, the constant value of its
-// reaching definition at the current position in a DFS forest traversal.
-//
-// The design mirrors ReachingDefinitionsSet in opt/ssa: a per-register stack
-// holds the sequence of constant values introduced along the path from the
-// DFS tree root to the current block, and pushBlock/popBlock scope those
-// values to the block's DFS subtree.
+// reaching definition at the current position in a DFS traversal.
 type cpReachingConstants struct {
 	// Per-register stacks of reaching constant values. Indices are assigned
 	// lazily via registersToIndex the first time a register is defined.
 	registerStacks []stack.Stack[*gen.ImmediateInfo]
 
 	// Records which register indices were pushed in each block, with
-	// cpBlockSeparator values marking block boundaries. Mirrors
-	// ReachingDefinitionsSet.registerDefinitionPushes in opt/ssa.
+	// cpBlockSeparator values marking block boundaries.
 	registerPushes stack.Stack[uint]
 
 	// Maps each *RegisterInfo to its index in registerStacks. Entries are
 	// added on demand in define().
 	registersToIndex map[*gen.RegisterInfo]uint
 
-	// Maps each basic block to the index of its DFS tree root (its component
-	// ID). Used by define() to determine whether a definition belongs to the
-	// same connected component as the block currently being processed.
-	blockComponent map[*gen.BasicBlockInfo]uint
+	// Set of reachable blocks (from entry). Used by define() to ignore
+	// definitions in unreachable blocks when checking eligibility.
+	reachable map[*gen.BasicBlockInfo]bool
 }
 
-func newCPReachingConstants(
-	blockComponent map[*gen.BasicBlockInfo]uint,
-) cpReachingConstants {
+func newCPReachingConstants(reachable map[*gen.BasicBlockInfo]bool) cpReachingConstants {
 	return cpReachingConstants{
 		registerStacks:   []stack.Stack[*gen.ImmediateInfo]{},
 		registerPushes:   stack.New[uint](),
 		registersToIndex: make(map[*gen.RegisterInfo]uint),
-		blockComponent:   blockComponent,
+		reachable:        reachable,
 	}
 }
 
@@ -101,21 +92,16 @@ func (c *cpReachingConstants) get(reg *gen.RegisterInfo) *gen.ImmediateInfo {
 
 // define records a new constant reaching definition for reg in currentBlock.
 //
-// A constant is pushed onto reg's stack only when every definition of reg in
-// the same connected component as currentBlock is in currentBlock itself. This
-// covers two cases uniformly:
-//   - Exactly one in-component definition, in currentBlock: it dominates all
-//     uses in well-formed code, so the stack value is always the true reaching
-//     value.
-//   - Multiple in-component definitions, all in currentBlock: they are
-//     sequential redefinitions within the same block. Each define call pushes
-//     one value; later definitions shadow earlier ones on the stack, and all
-//     are popped together when the block is exited.
+// A constant is only pushed when every reachable definition of reg is in
+// currentBlock. Definitions in unreachable blocks are ignored. This covers
+// two cases:
+//   - Exactly one reachable definition, in currentBlock: it dominates all
+//     uses, so the stack value is the true reaching value.
+//   - Multiple reachable definitions, all in currentBlock: sequential
+//     redefinitions within the same block; later ones shadow earlier ones.
 //
-// Any in-component definition outside currentBlock disqualifies the register:
-// DFS ancestry does not imply domination at join points, so propagating such a
-// value would be unsound. Definitions in other components (dead code, isolated
-// loops) do not count and do not disqualify the register.
+// Any reachable definition in a different block disqualifies the register,
+// because DFS ancestry does not imply domination at join points.
 func (c *cpReachingConstants) define(
 	reg *gen.RegisterInfo,
 	imm *gen.ImmediateInfo,
@@ -125,9 +111,8 @@ func (c *cpReachingConstants) define(
 		return
 	}
 
-	currentComponent := c.blockComponent[currentBlock]
 	for _, def := range reg.Definitions {
-		if c.blockComponent[def.BasicBlockInfo] == currentComponent && def.BasicBlockInfo != currentBlock {
+		if c.reachable[def.BasicBlockInfo] && def.BasicBlockInfo != currentBlock {
 			return
 		}
 	}
@@ -180,9 +165,6 @@ func cpProcessInstruction(
 	}
 
 	// After substitution, record the reaching constant for each target.
-	// PropagateConstants is called after substitution so that instructions
-	// whose arguments just became constants (e.g. a move whose source was
-	// just replaced) can propagate the constant to their own targets.
 	for _, def := range cpInstruction.PropagateConstants(instruction) {
 		reaching.define(def.Register, def.Immediate, instruction.BasicBlockInfo)
 	}
@@ -193,47 +175,32 @@ func cpProcessInstruction(
 // ConstantPropagation replaces all uses of registers that are provably
 // assigned a constant immediate value with that immediate directly.
 //
-// The pass uses DfsForest to traverse all basic blocks in a single unified
-// DFS, covering every connected component of the CFG including unreachable
-// blocks (isolated loops, dead code). Within each DFS tree the
-// ancestor-before-descendant property ensures that any definition dominating
-// a use is on the DFS stack when that use is processed.
+// The pass performs a DFS from the entry block (block 0), visiting only
+// reachable blocks. Unreachable blocks are skipped entirely.
 //
-// define() only pushes a constant for a register when all of its definitions
-// in the same connected component are confined to the current block. This
-// keeps the analysis sound for both SSA and non-SSA code: registers with
-// definitions spanning multiple blocks in the same component are skipped
-// because DFS ancestry does not imply domination at join points.
+// Within the DFS tree, define() only pushes a constant for a register when
+// all of its definitions are confined to the current block. This keeps the
+// analysis sound: registers defined in multiple blocks are skipped because
+// DFS ancestry does not imply domination at join points.
 //
 // All instructions in the function must implement
 // ConstantPropagationSupportedInstruction.
 func ConstantPropagation(function *gen.FunctionInfo) core.ResultList {
 	cfInfo := gen.NewFunctionControlFlowInfo(function)
 	n := uint(len(cfInfo.BasicBlocks))
-	forest := cfInfo.ControlFlowGraph.DfsForest()
+	dfs := cfInfo.ControlFlowGraph.Dfs(0)
 
-	// Compute the component ID for each block: the index of its DFS tree root.
-	// Since parents always have a lower preorder than their children in a DFS
-	// tree, iterating in preorder lets us propagate component IDs in one pass.
-	componentOf := make([]uint, n)
-	for preorder := uint(0); preorder < n; preorder++ {
-		node := forest.PreOrderReversed[preorder]
-		if forest.Parent[node] == node {
-			componentOf[node] = node
-		} else {
-			componentOf[node] = componentOf[forest.Parent[node]]
+	reachable := make(map[*gen.BasicBlockInfo]bool, n)
+	for _, event := range dfs.Timeline {
+		if event < n {
+			reachable[cfInfo.BasicBlocks[event]] = true
 		}
 	}
 
-	blockComponent := make(map[*gen.BasicBlockInfo]uint, n)
-	for i, block := range cfInfo.BasicBlocks {
-		blockComponent[block] = componentOf[uint(i)]
-	}
-
-	reaching := newCPReachingConstants(blockComponent)
+	reaching := newCPReachingConstants(reachable)
 	results := core.ResultList{}
 
-	for _, event := range forest.Timeline {
+	for _, event := range dfs.Timeline {
 		if event >= n {
 			reaching.popBlock()
 			continue

@@ -1,15 +1,11 @@
 func @use $64 %reg
 
 ; %k has two definitions: #42 in .entry (reachable) and #0 in .isolated
-; (an isolated self-loop, never jumped to from outside). The two definitions
-; belong to different connected components, so each component's CP run sees
-; only its own reachable definitions.
+; (an isolated self-loop, never jumped to from outside).
 ;
-; Component 1 (.entry + .end): only %k = #42 is reachable, so CP propagates
-; #42 to "call @use %k" in .end.
-;
-; Component 2 (.isolated): only %k = #0 is reachable within this component,
-; so CP propagates #0 to "call @use %k" inside .isolated.
+; CP only processes reachable blocks (DFS from root). The .isolated block is
+; skipped entirely, so %k = #42 propagates to .end, but nothing changes in
+; .isolated.
 func @input {
 .entry
 	$64 %k = $64 #42
@@ -31,7 +27,7 @@ func @expected {
 .isolated
 	$64 %k = $64 #0
 	$64 %j = $64 #7
-	call @use $64 #0
+	call @use %k
 	j .isolated
 .end
 	call @use $64 #42
