@@ -59,9 +59,14 @@ func (Store) Validate(info *gen.InstructionInfo) core.ResultList {
 		return results
 	}
 
-	varType := varArg.Variable.Type
+	if varArg.Variable.Type.Base == nil {
+		// First use — infer variable type from the stored value.
+		varArg.Variable.Type = valueType
+		return core.ResultList{}
+	}
 
-	if !valueType.Equal(varType) {
+	if !valueType.Equal(varArg.Variable.Type) {
+		varType := varArg.Variable.Type
 		return list.FromSingle(core.Result{
 			{
 				Type:     core.ErrorResult,

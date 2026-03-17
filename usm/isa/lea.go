@@ -51,12 +51,22 @@ func isPointerTo(targetType, varType gen.ReferencedTypeInfo) bool {
 	}
 
 	for i, d := range varType.Descriptors {
-		if targetType.Descriptors[i] != d {
+		if !targetType.Descriptors[i].Equal(d) {
 			return false
 		}
 	}
 
 	return true
+}
+
+// stripPointer returns t with the last (pointer) descriptor removed.
+// The caller must ensure t is a pointer type.
+func stripPointer(t gen.ReferencedTypeInfo) gen.ReferencedTypeInfo {
+	return gen.ReferencedTypeInfo{
+		Base:        t.Base,
+		Descriptors: t.Descriptors[:len(t.Descriptors)-1],
+		Declaration: t.Declaration,
+	}
 }
 
 func (Lea) Validate(info *gen.InstructionInfo) core.ResultList {
@@ -80,9 +90,33 @@ func (Lea) Validate(info *gen.InstructionInfo) core.ResultList {
 	}
 
 	targetType := info.Targets[0].Register.Type
-	varType := varArg.Variable.Type
 
-	if !isPointerTo(targetType, varType) {
+	if varArg.Variable.Type.Base == nil {
+		// First use — infer variable type by stripping the pointer from the
+		// lea target type.
+		last := targetType.Descriptors[len(targetType.Descriptors)-1]
+		if len(targetType.Descriptors) == 0 ||
+			last.Type != gen.PointerTypeDescriptor ||
+			last.Amount.Cmp(big.NewInt(1)) != 0 {
+			return list.FromSingle(core.Result{
+				{
+					Type:     core.ErrorResult,
+					Message:  "lea target must be a pointer type",
+					Location: info.Declaration,
+				},
+				{
+					Type:     core.HintResult,
+					Message:  fmt.Sprintf("Target type is \"%s\"", targetType),
+					Location: targetType.Declaration,
+				},
+			})
+		}
+		varArg.Variable.Type = stripPointer(targetType)
+		return core.ResultList{}
+	}
+
+	if !isPointerTo(targetType, varArg.Variable.Type) {
+		varType := varArg.Variable.Type
 		return list.FromSingle(core.Result{
 			{
 				Type:     core.ErrorResult,

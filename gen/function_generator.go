@@ -12,23 +12,21 @@ type FunctionGenerationScheme interface {
 
 type FunctionGenerator struct {
 	FunctionGenerationScheme
-	InstructionGenerator         FunctionContextGenerator[parse.InstructionNode, *InstructionInfo]
-	ParameterGenerator           FunctionContextGenerator[parse.ParameterNode, *RegisterInfo]
-	LabelDefinitionGenerator     FunctionContextGenerator[parse.LabelNode, *LabelInfo]
-	ReferencedTypeGenerator      FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
-	TargetGenerator              FunctionContextGenerator[parse.TargetNode, *TargetInfo]
-	VariableDeclarationGenerator FunctionContextGenerator[parse.VariableDeclarationNode, *VariableInfo]
+	InstructionGenerator     FunctionContextGenerator[parse.InstructionNode, *InstructionInfo]
+	ParameterGenerator       FunctionContextGenerator[parse.ParameterNode, *RegisterInfo]
+	LabelDefinitionGenerator FunctionContextGenerator[parse.LabelNode, *LabelInfo]
+	ReferencedTypeGenerator  FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
+	TargetGenerator          FunctionContextGenerator[parse.TargetNode, *TargetInfo]
 }
 
 func NewFunctionGenerator() FileContextGenerator[parse.FunctionNode, *FunctionInfo] {
 	return FileContextGenerator[parse.FunctionNode, *FunctionInfo](
 		&FunctionGenerator{
-			InstructionGenerator:         NewInstructionGenerator(),
-			ParameterGenerator:           NewParameterGenerator(),
-			LabelDefinitionGenerator:     NewLabelDefinitionGenerator(),
-			ReferencedTypeGenerator:      NewReferencedTypeGenerator(),
-			TargetGenerator:              NewTargetGenerator(),
-			VariableDeclarationGenerator: NewVariableDeclarationGenerator(),
+			InstructionGenerator:     NewInstructionGenerator(),
+			ParameterGenerator:       NewParameterGenerator(),
+			LabelDefinitionGenerator: NewLabelDefinitionGenerator(),
+			ReferencedTypeGenerator:  NewReferencedTypeGenerator(),
+			TargetGenerator:          NewTargetGenerator(),
 		},
 	)
 }
@@ -97,20 +95,6 @@ func (g *FunctionGenerator) collectLabelDefinitions(
 		InstructionIndexToLabels: indexToLabels,
 		LabelToInstructionIndex:  labelToIndex,
 	}, results
-}
-
-// collectVariableDeclarations registers all declared variables in the function
-// context before instructions are generated, so that any instruction in the
-// body can reference them.
-func (g *FunctionGenerator) collectVariableDeclarations(
-	ctx *FunctionGenerationContext,
-	declarations []parse.VariableDeclarationNode,
-) (results core.ResultList) {
-	for _, decl := range declarations {
-		_, curResults := g.VariableDeclarationGenerator.Generate(ctx, decl)
-		results.Extend(&curResults)
-	}
-	return results
 }
 
 // Before actually generating the instructions, we iterate over instruction and
@@ -398,12 +382,6 @@ func (g *FunctionGenerator) Generate(
 		// If the function has no instructions, it means it is not defined, just
 		// declared. We can now just return.
 		return function, core.ResultList{}
-	}
-
-	curResults = g.collectVariableDeclarations(funcCtx, node.Variables)
-	results.Extend(&curResults)
-	if !results.IsEmpty() {
-		return nil, results
 	}
 
 	labels, curResults := g.collectLabelDefinitions(funcCtx, node.Instructions.Nodes)

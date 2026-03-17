@@ -1,7 +1,6 @@
 package gen
 
 import (
-	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/parse"
 )
@@ -41,20 +40,16 @@ func (g *VariableArgumentGenerator) Generate(
 	name := NodeToSourceString(ctx.FileGenerationContext, node)
 	variable := ctx.Variables.GetVariable(name)
 
+	v := node.View()
 	if variable == nil {
-		v := node.View()
-		return nil, list.FromSingle(core.Result{
-			{
-				Type:     core.ErrorResult,
-				Message:  "Undefined variable",
-				Location: &v,
-			},
-		})
+		// Lazily create the variable; its type will be inferred during
+		// instruction validation (see load / store / lea).
+		variable = &VariableInfo{Name: name, Declaration: v}
+		results := ctx.Variables.NewVariable(variable)
+		if !results.IsEmpty() {
+			return nil, results
+		}
 	}
 
-	v := node.View()
-	return &VariableArgumentInfo{
-		Variable:    variable,
-		declaration: &v,
-	}, core.ResultList{}
+	return &VariableArgumentInfo{Variable: variable, declaration: &v}, core.ResultList{}
 }

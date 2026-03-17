@@ -33,6 +33,10 @@ func (i TypeDescriptorInfo) String() string {
 	return i.Type.String() + i.Amount.String()
 }
 
+func (i TypeDescriptorInfo) Equal(other TypeDescriptorInfo) bool {
+	return i.Type == other.Type && i.Amount.Cmp(other.Amount) == 0
+}
+
 // A referenced type is a combination of a basic type with (possibly zero)
 // type decorators that wrap it.
 // For example, if `$32“ is a basic named type, then `$32 *`, which is a
@@ -69,8 +73,7 @@ func (info ReferencedTypeInfo) Equal(other ReferencedTypeInfo) bool {
 	}
 
 	for i := range info.Descriptors {
-		a, b := info.Descriptors[i], other.Descriptors[i]
-		if a.Type != b.Type || a.Amount.Cmp(b.Amount) != 0 {
+		if !info.Descriptors[i].Equal(other.Descriptors[i]) {
 			return false
 		}
 	}

@@ -52,9 +52,15 @@ func (Load) Validate(info *gen.InstructionInfo) core.ResultList {
 	}
 
 	targetType := info.Targets[0].Register.Type
-	varType := varArg.Variable.Type
 
-	if !targetType.Equal(varType) {
+	if varArg.Variable.Type.Base == nil {
+		// First use — infer variable type from the load target.
+		varArg.Variable.Type = targetType
+		return core.ResultList{}
+	}
+
+	if !targetType.Equal(varArg.Variable.Type) {
+		varType := varArg.Variable.Type
 		return list.FromSingle(core.Result{
 			{
 				Type:     core.ErrorResult,
