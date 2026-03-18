@@ -29,7 +29,7 @@ func (i Movz) Xd(info *gen.InstructionInfo) (registers.GPRegister, core.ResultLi
 		return registers.GPRegister(0), results
 	}
 
-	Xd, results := aarch64translation.TargetToAarch64GPRegister(info.Targets[0])
+	Xd, results := aarch64translation.ArgumentToAarch64GPRegister(info.Targets[0])
 	if !results.IsEmpty() {
 		return registers.GPRegister(0), results
 	}
