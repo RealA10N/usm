@@ -13,7 +13,7 @@ type ArgumentParser struct {
 
 func NewArgumentParser() Parser[ArgumentNode] {
 	return ArgumentParser{
-		RegisterParser:  NewAnnotatedRegisterParser(),
+		RegisterParser:  NewRegisterParser(),
 		ImmediateParser: NewImmediateParser(),
 		LabelParser:     NewLabelParser(),
 		GlobalParser:    NewGlobalParser(),

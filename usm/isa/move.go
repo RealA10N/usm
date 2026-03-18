@@ -47,7 +47,12 @@ func (Move) Validate(info *gen.InstructionInfo) core.ResultList {
 		return results
 	}
 
-	targetType := gen.TargetToType(info.Targets[0])
+	targetType, curResults := gen.ArgumentToType(info.Targets[0])
+	results.Extend(&curResults)
+
+	if !results.IsEmpty() {
+		return results
+	}
 
 	if !targetType.Equal(argumentType) {
 		return list.FromSingle(core.Result{
@@ -73,7 +78,7 @@ func (Move) Validate(info *gen.InstructionInfo) core.ResultList {
 }
 
 func (Move) Defines(info *gen.InstructionInfo) []*gen.RegisterInfo {
-	return gen.TargetsToRegisters(info.Targets)
+	return gen.ArgumentsToRegisters(info.Targets)
 }
 
 func (Move) Uses(info *gen.InstructionInfo) []*gen.RegisterInfo {

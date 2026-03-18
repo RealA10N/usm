@@ -69,7 +69,7 @@ func (Call) Validate(info *gen.InstructionInfo) core.ResultList {
 }
 
 func (Call) Defines(info *gen.InstructionInfo) []*gen.RegisterInfo {
-	return gen.TargetsToRegisters(info.Targets)
+	return gen.ArgumentsToRegisters(info.Targets)
 }
 
 func (Call) Uses(info *gen.InstructionInfo) []*gen.RegisterInfo {

@@ -72,7 +72,7 @@ func (UsesNothingInstruction) Uses(*gen.InstructionInfo) []*gen.RegisterInfo {
 type DefinesTargetsInstruction struct{}
 
 func (DefinesTargetsInstruction) Defines(info *gen.InstructionInfo) []*gen.RegisterInfo {
-	return gen.TargetsToRegisters(info.Targets)
+	return gen.ArgumentsToRegisters(info.Targets)
 }
 
 type DefinesNothingInstruction struct{}
