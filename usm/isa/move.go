@@ -47,7 +47,7 @@ func (Move) Validate(info *gen.InstructionInfo) core.ResultList {
 		return results
 	}
 
-	targetType := info.Targets[0].Register.Type
+	targetType := gen.TargetToType(info.Targets[0])
 
 	if !targetType.Equal(argumentType) {
 		return list.FromSingle(core.Result{

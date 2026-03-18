@@ -57,7 +57,7 @@ func (i Phi) Validate(info *gen.InstructionInfo) core.ResultList {
 		return results
 	}
 
-	targetType := info.Targets[0].Register.Type
+	targetType := gen.TargetToType(info.Targets[0])
 	incomingEdges := set.FromSlice(info.BasicBlockInfo.BackwardEdges)
 
 	for i := 0; i < len(info.Arguments); i += 2 {

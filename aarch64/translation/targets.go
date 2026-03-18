@@ -7,13 +7,13 @@ import (
 )
 
 func TargetToAarch64GPRegister(
-	target *gen.TargetInfo,
+	target gen.TargetInfo,
 ) (registers.GPRegister, core.ResultList) {
-	return RegisterToAarch64GPRegister(target.Register)
+	return RegisterToAarch64GPRegister(target.(*gen.RegisterTargetInfo).Register)
 }
 
 func TargetToAarch64GPorSPRegister(
-	target *gen.TargetInfo,
+	target gen.TargetInfo,
 ) (registers.GPorSPRegister, core.ResultList) {
-	return RegisterToAarch64GPOrSPRegister(target.Register)
+	return RegisterToAarch64GPOrSPRegister(target.(*gen.RegisterTargetInfo).Register)
 }
