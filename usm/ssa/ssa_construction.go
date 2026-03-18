@@ -64,13 +64,22 @@ func (s *ConstructionScheme) renameTarget(
 	reachingSet ssa.ReachingDefinitionsSet,
 ) core.ResultList {
 	if regArg, ok := target.(*gen.RegisterArgumentInfo); ok {
-		baseRegister := regArg.Register
-		renamedRegister := reachingSet.RenameDefinitionRegister(baseRegister)
-		regArg.Register.RemoveDefinition(instruction)
-		regArg.Register = renamedRegister
-		regArg.Register.AddDefinition(instruction)
+		renamedRegister := reachingSet.RenameDefinitionRegister(regArg.Register)
+		regArg.SwitchRegister(instruction, renamedRegister)
 	}
 	return core.ResultList{}
+}
+
+func (s *ConstructionScheme) IsDefinition(
+	instruction *gen.InstructionInfo,
+	register *gen.RegisterInfo,
+) bool {
+	for _, target := range instruction.Targets {
+		if regArg, ok := target.(*gen.RegisterArgumentInfo); ok && regArg.Register == register {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *ConstructionScheme) renameInstruction(

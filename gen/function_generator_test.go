@@ -61,28 +61,17 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 	assert.ElementsMatch(
 		t,
 		[][]*gen.InstructionInfo{
-			nil, // TODO: make this not implementation dependent.
-			{function.EntryBlock.Instructions[0]},
-			{function.EntryBlock.Instructions[1]},
-		},
-		[][]*gen.InstructionInfo{
-			registers[0].Definitions,
-			registers[1].Definitions,
-			registers[2].Definitions,
-		},
-	)
-
-	assert.ElementsMatch(
-		t,
-		[][]*gen.InstructionInfo{
+			// %a: used in both add instructions (no definition from an instruction)
 			{function.EntryBlock.Instructions[0], function.EntryBlock.Instructions[1]},
+			// %b: defined by Instructions[0], used by Instructions[1]
+			{function.EntryBlock.Instructions[0], function.EntryBlock.Instructions[1]},
+			// %c: only defined by Instructions[1], never used
 			{function.EntryBlock.Instructions[1]},
-			nil, // TODO: make this not implementation dependent.
 		},
 		[][]*gen.InstructionInfo{
-			registers[0].Usages,
-			registers[1].Usages,
-			registers[2].Usages,
+			registers[0].References,
+			registers[1].References,
+			registers[2].References,
 		},
 	)
 

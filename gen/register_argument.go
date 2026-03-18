@@ -28,23 +28,23 @@ func (i *RegisterArgumentInfo) Declaration() *core.UnmanagedSourceView {
 }
 
 func (i *RegisterArgumentInfo) OnAttach(instruction *InstructionInfo) {
-	i.Register.AddUsage(instruction)
+	i.Register.AddReference(instruction)
 }
 
 func (i *RegisterArgumentInfo) OnDetach(instruction *InstructionInfo) {
-	i.Register.RemoveUsage(instruction)
+	i.Register.RemoveReference(instruction)
 }
 
 // Switch the argument to use a different register, instead of the current one,
-// updating the Usages lists on both the old and new register accordingly.
+// updating the References lists on both the old and new register accordingly.
 // The instruction parameter must be the InstructionInfo that owns this argument.
 func (i *RegisterArgumentInfo) SwitchRegister(
 	instruction *InstructionInfo,
 	newRegister *RegisterInfo,
 ) {
-	i.Register.RemoveUsage(instruction)
+	i.Register.RemoveReference(instruction)
 	i.Register = newRegister
-	i.Register.AddUsage(instruction)
+	i.Register.AddReference(instruction)
 }
 
 // MARK: Generator
@@ -76,6 +76,5 @@ func (g *RegisterArgumentGenerator) Generate(
 		declaration: &v,
 	}
 
-	register.AddUsage(ctx.InstructionInfo)
 	return &argument, core.ResultList{}
 }

@@ -128,17 +128,24 @@ func collectUsefulInstructions(
 		usefulInstructions.Add(instruction)
 
 		for _, register := range dceInstruction.Uses(instruction) {
-			definitions := register.Definitions
-
 			// In SSA form, a register can have at most one definition, and thus
 			// in SSA form this optimization can be very effective.
 			// In the general sense however, we do not know what definition(s)
 			// actually reach the this useful use of the register, so the best
-			// we can do is to treat all definitions as potentially reaching the
-			// use.
-			for _, definition := range definitions {
-				if !processedInstructions.Contains(definition) {
-					unprocessedInstructions.Push(definition)
+			// we can do is to treat all references that define it as
+			// potentially reaching the use.
+			for _, ref := range register.References {
+				refDCE, ok := ref.Definition.(DCESupportedInstruction)
+				if !ok {
+					continue
+				}
+				for _, defReg := range refDCE.Defines(ref) {
+					if defReg == register {
+						if !processedInstructions.Contains(ref) {
+							unprocessedInstructions.Push(ref)
+						}
+						break
+					}
 				}
 			}
 		}

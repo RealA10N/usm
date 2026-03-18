@@ -132,8 +132,10 @@ func (i *FunctionSsaInfo) getDefinitions(
 	register *gen.RegisterInfo,
 ) set.Set[*gen.BasicBlockInfo] {
 	blocks := set.New[*gen.BasicBlockInfo]()
-	for _, instruction := range register.Definitions {
-		blocks.Add(instruction.BasicBlockInfo)
+	for _, instruction := range register.References {
+		if i.SsaConstructionScheme.IsDefinition(instruction, register) {
+			blocks.Add(instruction.BasicBlockInfo)
+		}
 	}
 
 	return blocks

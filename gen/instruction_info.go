@@ -36,19 +36,19 @@ func (i *InstructionInfo) Validate() core.ResultList {
 	return i.Definition.Validate(i)
 }
 
-// Appends the given argument(s) as target(s) of the instruction, including
-// updating the required instruction and register information fields.
 func (i *InstructionInfo) AppendTarget(targets ...ArgumentInfo) {
 	for _, target := range targets {
-		if regArg, ok := target.(*RegisterArgumentInfo); ok {
-			regArg.Register.AddDefinition(i)
-		}
+		target.OnAttach(i)
 	}
 
 	i.Targets = append(i.Targets, targets...)
 }
 
 func (i *InstructionInfo) AppendArgument(arguments ...ArgumentInfo) {
+	for _, argument := range arguments {
+		argument.OnAttach(i)
+	}
+
 	i.Arguments = append(i.Arguments, arguments...)
 }
 

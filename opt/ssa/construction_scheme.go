@@ -169,4 +169,9 @@ type SsaConstructionScheme interface {
 	// The caller does not grantee the order of basic blocks in which the calls
 	// to this method are made.
 	RenameBasicBlock(*gen.BasicBlockInfo, ReachingDefinitionsSet) core.ResultList
+
+	// Returns true if the provided instruction defines (writes to) the given
+	// register. Used to filter register.References when searching for
+	// definition sites during phi insertion.
+	IsDefinition(instruction *gen.InstructionInfo, register *gen.RegisterInfo) bool
 }
