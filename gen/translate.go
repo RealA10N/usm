@@ -84,16 +84,22 @@ func ArgumentToLabel(arg ArgumentInfo) (*LabelInfo, core.ResultList) {
 	})
 }
 
-func TargetsToRegisters(targets []*TargetInfo) []*RegisterInfo {
+func TargetsToRegisters(targets []ArgumentInfo) []*RegisterInfo {
 	registers := []*RegisterInfo{}
 
 	for _, target := range targets {
-		registers = append(registers, target.Register)
+		if regArg, ok := target.(*RegisterArgumentInfo); ok {
+			registers = append(registers, regArg.Register)
+		}
 	}
 
 	return registers
 }
 
-func TargetToType(target *TargetInfo) ReferencedTypeInfo {
-	return target.Register.Type
+func TargetToType(target ArgumentInfo) ReferencedTypeInfo {
+	if regArg, ok := target.(*RegisterArgumentInfo); ok {
+		return regArg.Register.Type
+	}
+
+	return ReferencedTypeInfo{}
 }

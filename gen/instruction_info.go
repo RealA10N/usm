@@ -6,8 +6,7 @@ type InstructionInfo struct {
 	*BasicBlockInfo
 
 	// The targets of the instruction.
-	// TODO: is a pointer reference really required here?
-	Targets []*TargetInfo
+	Targets []ArgumentInfo
 
 	// The arguments of the instruction.
 	Arguments []ArgumentInfo
@@ -26,7 +25,7 @@ func NewEmptyInstructionInfo(
 ) *InstructionInfo {
 	return &InstructionInfo{
 		BasicBlockInfo: nil,
-		Targets:        []*TargetInfo{},
+		Targets:        []ArgumentInfo{},
 		Arguments:      []ArgumentInfo{},
 		Definition:     nil,
 		Declaration:    declaration,
@@ -37,23 +36,16 @@ func (i *InstructionInfo) Validate() core.ResultList {
 	return i.Definition.Validate(i)
 }
 
-// Appends the given register(s) as a target(s) of the instruction,
-// including updating the required instruction and register information fields.
-func (i *InstructionInfo) AppendTarget(targets ...*TargetInfo) {
+// Appends the given argument(s) as target(s) of the instruction, including
+// updating the required instruction and register information fields.
+func (i *InstructionInfo) AppendTarget(targets ...ArgumentInfo) {
 	for _, target := range targets {
-		target.Register.AddDefinition(i)
+		if regArg, ok := target.(*RegisterArgumentInfo); ok {
+			regArg.Register.AddDefinition(i)
+		}
 	}
 
 	i.Targets = append(i.Targets, targets...)
-}
-
-func (i *InstructionInfo) SwitchTarget(
-	target *TargetInfo,
-	newRegister *RegisterInfo,
-) {
-	target.Register.RemoveDefinition(i)
-	target.Register = newRegister
-	target.Register.AddDefinition(i)
 }
 
 func (i *InstructionInfo) AppendArgument(arguments ...ArgumentInfo) {
@@ -84,7 +76,11 @@ func (i *InstructionInfo) String() string {
 
 	if len(i.Targets) > 0 {
 		for _, target := range i.Targets {
-			s += target.String() + " "
+			if regArg, ok := target.(*RegisterArgumentInfo); ok {
+				s += regArg.Register.Type.String() + " " + regArg.Register.String() + " "
+			} else {
+				s += target.String() + " "
+			}
 		}
 		s += "="
 

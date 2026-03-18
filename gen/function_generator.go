@@ -16,7 +16,7 @@ type FunctionGenerator struct {
 	ParameterGenerator       FunctionContextGenerator[parse.ParameterNode, *RegisterInfo]
 	LabelDefinitionGenerator FunctionContextGenerator[parse.LabelNode, *LabelInfo]
 	ReferencedTypeGenerator  FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
-	TargetGenerator          FunctionContextGenerator[parse.TargetNode, *TargetInfo]
+	TargetGenerator          FunctionContextGenerator[parse.TargetNode, ArgumentInfo]
 }
 
 func NewFunctionGenerator() FileContextGenerator[parse.FunctionNode, *FunctionInfo] {

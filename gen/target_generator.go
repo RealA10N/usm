@@ -10,8 +10,8 @@ type TargetGenerator struct {
 	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewTargetGenerator() FunctionContextGenerator[parse.TargetNode, *TargetInfo] {
-	return FunctionContextGenerator[parse.TargetNode, *TargetInfo](
+func NewTargetGenerator() FunctionContextGenerator[parse.TargetNode, ArgumentInfo] {
+	return FunctionContextGenerator[parse.TargetNode, ArgumentInfo](
 		&TargetGenerator{
 			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
@@ -39,12 +39,12 @@ func NewRegisterTypeMismatchResult(
 // The target generator creates returns the register information that matches
 // the provided target node.
 //
-// If the targe node does not have an explicit type, and the register has not
+// If the target node does not have an explicit type, and the register has not
 // been defined and processed yet, the generator will return nil.
 func (g *TargetGenerator) Generate(
 	ctx *FunctionGenerationContext,
 	node parse.TargetNode,
-) (*TargetInfo, core.ResultList) {
+) (ArgumentInfo, core.ResultList) {
 	registerName := NodeToSourceString(ctx.FileGenerationContext, node.Register)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	nodeView := node.View()
@@ -54,9 +54,13 @@ func (g *TargetGenerator) Generate(
 		// If an explicit type is not provided, the best we can do is to return
 		// the previously defined register information. If it is not have been
 		// defined yet, we return nil here.
-		return &TargetInfo{
+		if registerInfo == nil {
+			return nil, core.ResultList{}
+		}
+
+		return &RegisterArgumentInfo{
 			Register:    registerInfo,
-			Declaration: &nodeView,
+			declaration: &nodeView,
 		}, core.ResultList{}
 
 	} else {
@@ -80,9 +84,9 @@ func (g *TargetGenerator) Generate(
 				)
 			}
 
-			return &TargetInfo{
+			return &RegisterArgumentInfo{
 				Register:    registerInfo,
-				Declaration: &nodeView,
+				declaration: &nodeView,
 			}, core.ResultList{}
 
 		} else {
@@ -98,9 +102,9 @@ func (g *TargetGenerator) Generate(
 				return nil, results
 			}
 
-			return &TargetInfo{
+			return &RegisterArgumentInfo{
 				Register:    registerInfo,
-				Declaration: &nodeView,
+				declaration: &nodeView,
 			}, core.ResultList{}
 		}
 	}

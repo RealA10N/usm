@@ -8,7 +8,7 @@ import (
 
 type InstructionGenerator struct {
 	ArgumentGenerator InstructionContextGenerator[parse.ArgumentNode, ArgumentInfo]
-	TargetGenerator   FunctionContextGenerator[parse.TargetNode, *TargetInfo]
+	TargetGenerator   FunctionContextGenerator[parse.TargetNode, ArgumentInfo]
 }
 
 func NewInstructionGenerator() FunctionContextGenerator[
@@ -18,12 +18,10 @@ func NewInstructionGenerator() FunctionContextGenerator[
 	return FunctionContextGenerator[
 		parse.InstructionNode,
 		*InstructionInfo,
-	](
-		&InstructionGenerator{
-			ArgumentGenerator: NewArgumentGenerator(),
-			TargetGenerator:   NewTargetGenerator(),
-		},
-	)
+	](&InstructionGenerator{
+		ArgumentGenerator: NewArgumentGenerator(),
+		TargetGenerator:   NewTargetGenerator(),
+	})
 }
 
 func (g *InstructionGenerator) generateArguments(
@@ -48,8 +46,8 @@ func (g *InstructionGenerator) generateArguments(
 func (g *InstructionGenerator) generateTargets(
 	ctx *InstructionGenerationContext,
 	node parse.InstructionNode,
-) ([]*TargetInfo, core.ResultList) {
-	targets := make([]*TargetInfo, len(node.Targets))
+) ([]ArgumentInfo, core.ResultList) {
+	targets := make([]ArgumentInfo, len(node.Targets))
 	results := core.ResultList{}
 
 	for i, target := range node.Targets {
@@ -63,7 +61,7 @@ func (g *InstructionGenerator) generateTargets(
 			continue
 		}
 
-		if targetInfo.Register == nil {
+		if targetInfo == nil {
 			curResults := UndefinedRegisterResult(target.Register)
 			results.Extend(&curResults)
 		}
