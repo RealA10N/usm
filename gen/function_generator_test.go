@@ -37,6 +37,13 @@ func generateFunctionFromSource(
 func TestSimpleFunctionGeneration(t *testing.T) {
 	src := `func $32 @add $32 %a {
 .entry
+	$32 %b = add %a $32 #1
+	$32 %c = add %b %a
+	ret
+}
+`
+	expected := `func $32 @add $32 %a {
+.entry
 	$32 %b = add $32 %a $32 #1
 	$32 %c = add $32 %b $32 %a
 	ret
@@ -84,13 +91,13 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 	assert.True(t, target.IsPure())
 	assert.Equal(t, "$32", target.Base.Name)
 
-	assert.Equal(t, src, function.String())
+	assert.Equal(t, expected, function.String())
 }
 
 func TestIfElseFunctionGeneration(t *testing.T) {
 	src := `func @toBool $32 %n {
 .entry
-	jz $32 %n .zero
+	jz %n .zero
 .nonzero
 	$32 %bool = add $32 #1 $32 #0
 	j .end
@@ -118,7 +125,19 @@ func TestIfElseFunctionGeneration(t *testing.T) {
 		[]*gen.BasicBlockInfo{nonzeroBlock, zeroBlock},
 	)
 
-	assert.Equal(t, src, function.String())
+	expected := `func @toBool $32 %n {
+.entry
+	jz $32 %n .zero
+.nonzero
+	$32 %bool = add $32 #1 $32 #0
+	j .end
+.zero
+	$32 %bool = add $32 #0 $32 #0
+.end
+	ret
+}
+`
+	assert.Equal(t, expected, function.String())
 }
 
 func TestEmptyFunctionGeneration(t *testing.T) {
