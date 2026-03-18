@@ -76,11 +76,7 @@ func (i *InstructionInfo) String() string {
 
 	if len(i.Targets) > 0 {
 		for _, target := range i.Targets {
-			if regArg, ok := target.(*RegisterArgumentInfo); ok {
-				s += regArg.Register.Type.String() + " " + regArg.Register.String() + " "
-			} else {
-				s += target.String() + " "
-			}
+			s += target.String() + " "
 		}
 		s += "="
 

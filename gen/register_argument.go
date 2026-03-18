@@ -20,7 +20,7 @@ func NewRegisterArgumentInfo(register *RegisterInfo) *RegisterArgumentInfo {
 }
 
 func (i *RegisterArgumentInfo) String() string {
-	return i.Register.String()
+	return i.Register.Type.String() + " " + i.Register.String()
 }
 
 func (i *RegisterArgumentInfo) Declaration() *core.UnmanagedSourceView {
