@@ -76,11 +76,3 @@ func (Move) Validate(info *gen.InstructionInfo) core.ResultList {
 
 	return core.ResultList{}
 }
-
-func (Move) Defines(info *gen.InstructionInfo) []*gen.RegisterInfo {
-	return gen.ArgumentsToRegisters(info.Targets)
-}
-
-func (Move) Uses(info *gen.InstructionInfo) []*gen.RegisterInfo {
-	return gen.ArgumentsToRegisters(info.Arguments)
-}
