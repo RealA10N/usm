@@ -70,18 +70,6 @@ func (s *ConstructionScheme) renameTarget(
 	return core.ResultList{}
 }
 
-func (s *ConstructionScheme) IsDefinition(
-	instruction *gen.InstructionInfo,
-	register *gen.RegisterInfo,
-) bool {
-	for _, target := range instruction.Targets {
-		if regArg, ok := target.(*gen.RegisterArgumentInfo); ok && regArg.Register == register {
-			return true
-		}
-	}
-	return false
-}
-
 func (s *ConstructionScheme) renameInstruction(
 	instruction *gen.InstructionInfo,
 	reachingSet ssa.ReachingDefinitionsSet,

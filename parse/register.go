@@ -29,11 +29,8 @@ func NewRegisterParser() Parser[RegisterNode] {
 // parses the register token. This allows both "%name" and "$type %name"
 // syntax in argument position.
 func (p RegisterParser) Parse(v *TokenView) (RegisterNode, core.Result) {
-	// If the next two tokens are ($type, %register), consume the type annotation.
-	if _, err := v.PeekToken(lex.TypeToken); err == nil {
-		if tkn1, err := v.At(1); err == nil && tkn1.Type == lex.RegisterToken {
-			p.TypeParser.Parse(v) // consume and discard
-		}
+	if v.PeekTokens(lex.TypeToken, lex.RegisterToken) {
+		p.TypeParser.Parse(v) // consume and discard the type prefix
 	}
 	return p.TokenParser.Parse(v)
 }

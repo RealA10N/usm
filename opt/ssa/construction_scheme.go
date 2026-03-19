@@ -136,6 +136,20 @@ type PhiInstructionDefinition interface {
 	) core.ResultList
 }
 
+// SSASupportedInstruction is an optional trait that instruction definitions
+// may implement to declare which registers they define. It is used during
+// phi insertion to filter register.References down to definition sites.
+//
+// Any instruction that already implements DCESupportedInstruction (which
+// also has a Defines method with the same signature) automatically satisfies
+// this interface.
+type SSASupportedInstruction interface {
+	gen.InstructionDefinition
+
+	// Returns the registers that the instruction defines (writes to).
+	Defines(info *gen.InstructionInfo) []*gen.RegisterInfo
+}
+
 // This interface defines the process of renaming registers in the SSA
 // construction process. Each ISA should implement this interface to provide
 // support for the SSA construction process.
@@ -169,9 +183,4 @@ type SsaConstructionScheme interface {
 	// The caller does not grantee the order of basic blocks in which the calls
 	// to this method are made.
 	RenameBasicBlock(*gen.BasicBlockInfo, ReachingDefinitionsSet) core.ResultList
-
-	// Returns true if the provided instruction defines (writes to) the given
-	// register. Used to filter register.References when searching for
-	// definition sites during phi insertion.
-	IsDefinition(instruction *gen.InstructionInfo, register *gen.RegisterInfo) bool
 }
