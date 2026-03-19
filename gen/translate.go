@@ -83,4 +83,3 @@ func ArgumentToLabel(arg ArgumentInfo) (*LabelInfo, core.ResultList) {
 		},
 	})
 }
-
