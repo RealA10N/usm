@@ -133,12 +133,8 @@ func (i *FunctionSsaInfo) getDefinitions(
 ) set.Set[*gen.BasicBlockInfo] {
 	blocks := set.New[*gen.BasicBlockInfo]()
 	for _, instruction := range register.References {
-		ssaInstr, ok := instruction.Definition.(SSASupportedInstruction)
-		if !ok {
-			continue
-		}
-		for _, defReg := range ssaInstr.Defines(instruction) {
-			if defReg == register {
+		for _, target := range instruction.Targets {
+			if regArg, ok := target.(*gen.RegisterArgumentInfo); ok && regArg.Register == register {
 				blocks.Add(instruction.BasicBlockInfo)
 				break
 			}
