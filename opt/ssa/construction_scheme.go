@@ -126,6 +126,20 @@ func (s *ReachingDefinitionsSet) popBlock() {
 	s.registerDefinitionPushes.Pop()
 }
 
+// SSASupportedInstruction is a trait that instruction definitions must
+// implement to declare which registers they define. It is used during phi
+// insertion to filter register.References down to definition sites.
+//
+// Any instruction that already implements DCESupportedInstruction (which
+// also has a Defines method with the same signature) automatically satisfies
+// this interface.
+type SSASupportedInstruction interface {
+	gen.InstructionDefinition
+
+	// Returns the registers that the instruction defines (writes to).
+	Defines(info *gen.InstructionInfo) []*gen.RegisterInfo
+}
+
 type PhiInstructionDefinition interface {
 	gen.InstructionDefinition
 

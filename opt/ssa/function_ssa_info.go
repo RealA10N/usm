@@ -10,6 +10,14 @@ import (
 	"alon.kr/x/usm/gen"
 )
 
+func newSSANotSupportedError(instruction *gen.InstructionInfo) core.ResultList {
+	return list.FromSingle(core.Result{{
+		Type:     core.InternalErrorResult,
+		Message:  "Instruction does not support SSA construction",
+		Location: instruction.Declaration,
+	}})
+}
+
 type forwardingRegisterDescriptor struct {
 	block   *gen.BasicBlockInfo
 	renamed *gen.RegisterInfo
@@ -130,18 +138,22 @@ func createMappingToIndex[T comparable](
 // Returns all the basic blocks in which the provided register is defined.
 func (i *FunctionSsaInfo) getDefinitions(
 	register *gen.RegisterInfo,
-) set.Set[*gen.BasicBlockInfo] {
+) (set.Set[*gen.BasicBlockInfo], core.ResultList) {
 	blocks := set.New[*gen.BasicBlockInfo]()
 	for _, instruction := range register.References {
-		for _, target := range instruction.Targets {
-			if regArg, ok := target.(*gen.RegisterArgumentInfo); ok && regArg.Register == register {
+		ssaInstr, ok := instruction.Definition.(SSASupportedInstruction)
+		if !ok {
+			return nil, newSSANotSupportedError(instruction)
+		}
+		for _, defReg := range ssaInstr.Defines(instruction) {
+			if defReg == register {
 				blocks.Add(instruction.BasicBlockInfo)
 				break
 			}
 		}
 	}
 
-	return blocks
+	return blocks, core.ResultList{}
 }
 
 func (i *FunctionSsaInfo) blockInfosToIndices(
@@ -166,16 +178,22 @@ func (i *FunctionSsaInfo) blockIndicesToBlockInfos(
 
 func (i *FunctionSsaInfo) getRegisterPhiInsertionPoints(
 	register *gen.RegisterInfo,
-) []*gen.BasicBlockInfo {
-	definitions := i.getDefinitions(register)
+) ([]*gen.BasicBlockInfo, core.ResultList) {
+	definitions, results := i.getDefinitions(register)
+	if !results.IsEmpty() {
+		return nil, results
+	}
 	definitionsIndices := i.blockInfosToIndices(definitions)
 	phiBlocksIndices := i.DominatorJoinGraph.IteratedDominatorFrontier(definitionsIndices)
-	return i.blockIndicesToBlockInfos(phiBlocksIndices)
+	return i.blockIndicesToBlockInfos(phiBlocksIndices), core.ResultList{}
 }
 
 func (i *FunctionSsaInfo) InsertPhiInstructions() core.ResultList {
 	for _, register := range i.BaseRegisters {
-		phiBlocks := i.getRegisterPhiInsertionPoints(register)
+		phiBlocks, results := i.getRegisterPhiInsertionPoints(register)
+		if !results.IsEmpty() {
+			return results
+		}
 		for _, block := range phiBlocks {
 			blockIndex := i.BasicBlocksToIndex[block]
 			phi, results := i.SsaConstructionScheme.NewPhiInstruction(block, register)
