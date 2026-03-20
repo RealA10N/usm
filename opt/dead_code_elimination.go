@@ -137,7 +137,7 @@ func collectUsefulInstructions(
 			for _, ref := range register.References {
 				refDCE, ok := ref.Definition.(DCESupportedInstruction)
 				if !ok {
-					continue
+					return nil, newDCENotSupportedError(ref)
 				}
 				for _, defReg := range refDCE.Defines(ref) {
 					if defReg == register {
