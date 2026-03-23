@@ -37,6 +37,12 @@ var targets = transform.NewTargetCollection(
 				Transform:   usmssa.TransformFileToSsaForm,
 			},
 			&transform.Transformation{
+				Names:       []string{"out-of-ssa"},
+				Description: "Removes phi instructions by inserting copy instructions in predecessor blocks",
+				TargetName:  "usm",
+				Transform:   usmssa.TransformFileOutOfSsaForm,
+			},
+			&transform.Transformation{
 				Names:       []string{"aarch64", "arm64"},
 				Description: "Converts the universal assembly to matching machine specific AArch64 assembly",
 				TargetName:  "aarch64",

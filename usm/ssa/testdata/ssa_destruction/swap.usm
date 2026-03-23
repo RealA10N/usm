@@ -1,0 +1,25 @@
+func $64 @input {
+.entry
+	$64 %x = $64 #0
+	$64 %y = $64 #1
+	j .loop
+.loop
+	$64 %a = phi .entry %x .loop %b
+	$64 %b = phi .entry %y .loop %a
+	j .loop
+}
+
+func $64 @expected {
+.entry
+	$64 %x = $64 #0
+	$64 %y = $64 #1
+	$64 %a = %x
+	$64 %b = %y
+	j .loop
+.loop
+	$64 %phi_tmp_0 = %b
+	$64 %phi_tmp_1 = %a
+	$64 %a = %phi_tmp_0
+	$64 %b = %phi_tmp_1
+	j .loop
+}

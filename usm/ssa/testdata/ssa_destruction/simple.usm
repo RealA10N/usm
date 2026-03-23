@@ -1,0 +1,26 @@
+func $64 @input {
+.entry
+	$64 %n = $64 #1
+	jz %n .zero
+.nonzero
+	j .end
+.zero
+	j .end
+.end
+	$64 %m = phi .zero $64 #1 .nonzero $64 #0
+	ret %m
+}
+
+func $64 @expected {
+.entry
+	$64 %n = $64 #1
+	jz %n .zero
+.nonzero
+	$64 %m = $64 #0
+	j .end
+.zero
+	$64 %m = $64 #1
+	j .end
+.end
+	ret %m
+}

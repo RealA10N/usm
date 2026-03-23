@@ -83,6 +83,19 @@ func (b *BasicBlockInfo) AppendBasicBlock(otherBlock *BasicBlockInfo) {
 	b.NextBlock = otherBlock
 }
 
+// InsertBeforeTerminator inserts an instruction before the last instruction
+// (terminator) in the basic block. If the block is empty, the instruction is
+// appended as the only instruction.
+func (b *BasicBlockInfo) InsertBeforeTerminator(instruction *InstructionInfo) {
+	instruction.BasicBlockInfo = b
+	n := len(b.Instructions)
+	if n == 0 {
+		b.Instructions = append(b.Instructions, instruction)
+		return
+	}
+	b.Instructions = slices.Insert(b.Instructions, n-1, instruction)
+}
+
 func (b *BasicBlockInfo) AppendForwardEdge(otherBlock *BasicBlockInfo) {
 	b.ForwardEdges = append(b.ForwardEdges, otherBlock)
 	otherBlock.BackwardEdges = append(otherBlock.BackwardEdges, b)

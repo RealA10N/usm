@@ -1,0 +1,24 @@
+func $64 @input {
+.entry
+	$64 %cond = $64 #1
+	jz %cond .end
+.mid
+	j .end
+.end
+	$64 %x = phi .entry $64 #0 .mid $64 #1
+	ret %x
+}
+
+func $64 @expected {
+.entry
+	$64 %cond = $64 #1
+	jz %cond .ssa_split_0
+.mid
+	$64 %x = $64 #1
+	j .end
+.ssa_split_0
+	$64 %x = $64 #0
+	j .end
+.end
+	ret %x
+}
