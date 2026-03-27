@@ -13,11 +13,9 @@ import (
 func TestTargetRegisterAlreadyDefined(t *testing.T) {
 	src := core.NewSourceView("$32 %a")
 	unmanaged := src.Unmanaged()
-	node := parse.TargetNode{
-		Register: parse.RegisterNode{
-			TokenNode: parse.TokenNode{
-				UnmanagedSourceView: unmanaged.Subview(4, 6),
-			},
+	node := parse.RegisterNode{
+		TokenNode: parse.TokenNode{
+			UnmanagedSourceView: unmanaged.Subview(4, 6),
 		},
 		Type: &parse.TypeNode{
 			Identifier: unmanaged.Subview(0, 3),
@@ -44,7 +42,7 @@ func TestTargetRegisterAlreadyDefined(t *testing.T) {
 		Registers: &registers,
 	}
 
-	generator := gen.NewTypedRegisterGenerator()
+	generator := gen.NewRegisterDeclarationGenerator()
 	info, results := generator.Generate(ctx, node)
 	assert.True(t, results.IsEmpty())
 	assert.Equal(t, intType, info.(*gen.RegisterArgumentInfo).Register.Type.Base)

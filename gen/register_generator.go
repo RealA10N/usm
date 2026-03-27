@@ -36,7 +36,7 @@ func (g *RegisterGenerator) Generate(
 	ctx *FunctionGenerationContext,
 	node parse.RegisterNode,
 ) (*RegisterInfo, core.ResultList) {
-	name := NodeToSourceString(ctx.FileGenerationContext, node)
+	name := NodeToSourceString(ctx.FileGenerationContext, node.TokenNode)
 	register := ctx.Registers.GetRegister(name)
 
 	if register == nil {

@@ -9,10 +9,17 @@ type RegisterNode struct {
 	TokenNode
 
 	// Optional explicit type annotation (e.g. "$32" in "$32 %a").
-	// Present when the register appears with an explicit type in argument
-	// position.  Always nil inside TargetNode.Register (the target parser
-	// stores the type in TargetNode.Type instead).
+	// Set whenever a type token immediately precedes the register token,
+	// whether the register appears as an instruction target or as an argument.
 	Type *TypeNode
+}
+
+func (n RegisterNode) View() core.UnmanagedSourceView {
+	v := n.TokenNode.View()
+	if n.Type != nil {
+		v = v.MergeStart(n.Type.View())
+	}
+	return v
 }
 
 type RegisterParser struct {

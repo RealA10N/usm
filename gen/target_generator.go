@@ -6,13 +6,13 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-type TypedRegisterGenerator struct {
+type RegisterDeclarationGenerator struct {
 	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewTypedRegisterGenerator() FunctionContextGenerator[parse.TargetNode, ArgumentInfo] {
-	return FunctionContextGenerator[parse.TargetNode, ArgumentInfo](
-		&TypedRegisterGenerator{
+func NewRegisterDeclarationGenerator() FunctionContextGenerator[parse.RegisterNode, ArgumentInfo] {
+	return FunctionContextGenerator[parse.RegisterNode, ArgumentInfo](
+		&RegisterDeclarationGenerator{
 			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
 	)
@@ -36,16 +36,16 @@ func NewRegisterTypeMismatchResult(
 	})
 }
 
-// The target generator creates returns the register information that matches
-// the provided target node.
+// Generate creates or validates the register described by node.
 //
-// If the target node does not have an explicit type, and the register has not
-// been defined and processed yet, the generator will return nil.
-func (g *TypedRegisterGenerator) Generate(
+// If node has no explicit type and the register has not been seen yet, nil is
+// returned (no error) — the caller is responsible for reporting the missing
+// type if needed.
+func (g *RegisterDeclarationGenerator) Generate(
 	ctx *FunctionGenerationContext,
-	node parse.TargetNode,
+	node parse.RegisterNode,
 ) (ArgumentInfo, core.ResultList) {
-	registerName := NodeToSourceString(ctx.FileGenerationContext, node.Register)
+	registerName := NodeToSourceString(ctx.FileGenerationContext, node.TokenNode)
 	registerInfo := ctx.Registers.GetRegister(registerName)
 	nodeView := node.View()
 

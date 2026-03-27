@@ -51,8 +51,8 @@ func TestSingleFunction(t *testing.T) {
 							},
 							Targets: []parse.TargetNode{
 								{
-									Type:     &parse.TypeNode{Identifier: srcView.Subview(31, 34)},
-									Register: parse.RegisterNode{TokenNode: parse.TokenNode{srcView.Subview(35, 39)}},
+									TokenNode: parse.TokenNode{srcView.Subview(35, 39)},
+									Type:      &parse.TypeNode{Identifier: srcView.Subview(31, 34)},
 								},
 							},
 						},
