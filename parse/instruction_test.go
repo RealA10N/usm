@@ -20,12 +20,12 @@ func TestInstructionParserMultipleTargets(t *testing.T) {
 			parse.RegisterNode{TokenNode: parse.TokenNode{unmanaged.Subview(27, 29)}},
 			parse.RegisterNode{TokenNode: parse.TokenNode{unmanaged.Subview(30, 32)}},
 		},
-		Targets: []parse.TargetNode{
-			{
+		Targets: []parse.ArgumentNode{
+			parse.RegisterNode{
 				TokenNode: parse.TokenNode{unmanaged.Subview(4, 8)},
 				Type:      &parse.TypeNode{Identifier: unmanaged.Subview(0, 3)},
 			},
-			{
+			parse.RegisterNode{
 				TokenNode: parse.TokenNode{unmanaged.Subview(13, 17)},
 				Type:      &parse.TypeNode{Identifier: unmanaged.Subview(9, 12)},
 			},
@@ -55,8 +55,8 @@ func TestInstructionWithImmediateValuesAndLabel(t *testing.T) {
 			},
 			parse.LabelNode{parse.TokenNode{unmanaged.Subview(32, 36)}},
 		},
-		Targets: []parse.TargetNode{
-			{
+		Targets: []parse.ArgumentNode{
+			parse.RegisterNode{
 				TokenNode: parse.TokenNode{unmanaged.Subview(11, 15)},
 				Type:      &parse.TypeNode{Identifier: unmanaged.Subview(7, 10)},
 			},

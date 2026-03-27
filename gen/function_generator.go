@@ -109,13 +109,8 @@ func (g *FunctionGenerator) collectRegisterDefinitions(
 	instructions []parse.InstructionNode,
 ) (results core.ResultList) {
 	for _, instruction := range instructions {
-		for _, target := range instruction.Targets {
-			_, curResults := g.ArgumentGenerator.Generate(ctx, target)
-			results.Extend(&curResults)
-		}
-
-		for _, argument := range instruction.Arguments {
-			regNode, ok := argument.(parse.RegisterNode)
+		for _, node := range append(instruction.Targets, instruction.Arguments...) {
+			regNode, ok := node.(parse.RegisterNode)
 			if !ok || regNode.Type == nil {
 				continue
 			}

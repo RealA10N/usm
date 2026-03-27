@@ -8,7 +8,6 @@ import (
 
 type InstructionGenerator struct {
 	ArgumentGenerator InstructionContextGenerator[parse.ArgumentNode, ArgumentInfo]
-	TargetGenerator   FunctionContextGenerator[parse.RegisterNode, ArgumentInfo]
 }
 
 func NewInstructionGenerator() FunctionContextGenerator[
@@ -20,7 +19,6 @@ func NewInstructionGenerator() FunctionContextGenerator[
 		*InstructionInfo,
 	](&InstructionGenerator{
 		ArgumentGenerator: NewArgumentGenerator(),
-		TargetGenerator:   NewRegisterDeclarationGenerator(),
 	})
 }
 
@@ -51,21 +49,8 @@ func (g *InstructionGenerator) generateTargets(
 	results := core.ResultList{}
 
 	for i, target := range node.Targets {
-		targetInfo, curResults := g.TargetGenerator.Generate(
-			ctx.FunctionGenerationContext,
-			target,
-		)
-
-		if !curResults.IsEmpty() {
-			results.Extend(&curResults)
-			continue
-		}
-
-		if targetInfo == nil {
-			curResults := UndefinedRegisterResult(target)
-			results.Extend(&curResults)
-		}
-
+		targetInfo, curResults := g.ArgumentGenerator.Generate(ctx, target)
+		results.Extend(&curResults)
 		targets[i] = targetInfo
 	}
 

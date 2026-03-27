@@ -10,7 +10,7 @@ import (
 type InstructionNode struct {
 	Operator  core.UnmanagedSourceView
 	Arguments []ArgumentNode
-	Targets   []TargetNode
+	Targets   []ArgumentNode
 	Labels    []LabelNode
 	// LeadingComments holds whole-line comments before this instruction.
 	LeadingComments []lex.Comment
@@ -85,14 +85,14 @@ func (n InstructionNode) String(ctx *StringContext) string {
 
 type InstructionParser struct {
 	LabelParser    Parser[LabelNode]
-	TargetParser   Parser[TargetNode]
+	RegisterParser Parser[RegisterNode]
 	ArgumentParser Parser[ArgumentNode]
 }
 
 func NewInstructionParser() InstructionParser {
 	return InstructionParser{
 		LabelParser:    NewLabelParser(),
-		TargetParser:   NewTargetParser(),
+		RegisterParser: NewRegisterParser(),
 		ArgumentParser: NewArgumentParser(),
 	}
 }
@@ -133,7 +133,13 @@ func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) core
 // by BlockParser.parseBlockNodes and attached via attachLeadingComments.
 func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err core.Result) {
 	node.Labels, _ = ParseManyIgnoreSeparators(p.LabelParser, v)
-	node.Targets = ParseMany(p.TargetParser, v)
+	for {
+		target, err := p.RegisterParser.Parse(v)
+		if err != nil {
+			break
+		}
+		node.Targets = append(node.Targets, target)
+	}
 
 	err = p.parseEquals(v, &node)
 	if err != nil {

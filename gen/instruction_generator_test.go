@@ -165,6 +165,14 @@ func TestInstructionCreateTarget(t *testing.T) {
 	src := core.NewSourceView("$32 %c = add %a %b\n")
 	node, ctx := PrepareTestForInstructionGeneration(src, t)
 
+	// Register declaration is a pre-pass responsibility; simulate it here.
+	prePass := gen.NewRegisterDeclarationGenerator()
+	for _, target := range node.Targets {
+		if regNode, ok := target.(parse.RegisterNode); ok {
+			prePass.Generate(ctx, regNode)
+		}
+	}
+
 	generator := gen.NewInstructionGenerator()
 	_, results := generator.Generate(ctx, node)
 	assert.True(t, results.IsEmpty())
