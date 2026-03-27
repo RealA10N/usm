@@ -161,6 +161,23 @@ func TestNoExplicitRegisterType(t *testing.T) {
 	assert.Contains(t, details[0].Message, "untyped register")
 }
 
+// TestRegisterTypeFromArgument verifies that a register's type can be declared
+// by a typed reference in an argument position (e.g. "$32 %a" as an argument),
+// without ever appearing as an explicitly-typed target.
+func TestRegisterTypeFromArgument(t *testing.T) {
+	src := `func @main {
+				%a = add $32 #0 $32 #0
+				ret $32 %a
+			}`
+	function, results := generateFunctionFromSource(t, src)
+	assert.True(t, results.IsEmpty())
+	assert.NotNil(t, function)
+
+	a := function.Registers.GetRegister("%a")
+	assert.NotNil(t, a)
+	assert.Equal(t, "$32", a.Type.String())
+}
+
 func TestExplicitRegisterDefinitionNotOnSecondSight(t *testing.T) {
 	src := `func @main {
 				%a = add $32 #0 $32 #0

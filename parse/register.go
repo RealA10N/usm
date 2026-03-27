@@ -24,6 +24,13 @@ func RegisterNodeCreator(tkn lex.Token) RegisterNode {
 	return RegisterNode{TokenNode: TokenNode{tkn.View}}
 }
 
+func (n RegisterNode) String(ctx *StringContext) string {
+	if n.Type != nil {
+		return n.Type.String(ctx) + " " + n.TokenNode.String(ctx)
+	}
+	return n.TokenNode.String(ctx)
+}
+
 func NewRegisterParser() Parser[RegisterNode] {
 	return RegisterParser{
 		TokenParser: TokenParser[RegisterNode]{

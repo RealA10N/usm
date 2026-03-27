@@ -16,7 +16,7 @@ type FunctionGenerator struct {
 	ParameterGenerator       FunctionContextGenerator[parse.ParameterNode, *RegisterInfo]
 	LabelDefinitionGenerator FunctionContextGenerator[parse.LabelNode, *LabelInfo]
 	ReferencedTypeGenerator  FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
-	TargetGenerator          FunctionContextGenerator[parse.TargetNode, ArgumentInfo]
+	TypedRegisterGenerator   FunctionContextGenerator[parse.TargetNode, ArgumentInfo]
 }
 
 func NewFunctionGenerator() FileContextGenerator[parse.FunctionNode, *FunctionInfo] {
@@ -26,7 +26,7 @@ func NewFunctionGenerator() FileContextGenerator[parse.FunctionNode, *FunctionIn
 			ParameterGenerator:       NewParameterGenerator(),
 			LabelDefinitionGenerator: NewLabelDefinitionGenerator(),
 			ReferencedTypeGenerator:  NewReferencedTypeGenerator(),
-			TargetGenerator:          NewTargetGenerator(),
+			TypedRegisterGenerator:   NewTypedRegisterGenerator(),
 		},
 	)
 }
@@ -110,7 +110,7 @@ func (g *FunctionGenerator) collectRegisterDefinitions(
 ) (results core.ResultList) {
 	for _, instruction := range instructions {
 		for _, target := range instruction.Targets {
-			_, curResults := g.TargetGenerator.Generate(ctx, target)
+			_, curResults := g.TypedRegisterGenerator.Generate(ctx, target)
 			results.Extend(&curResults)
 		}
 
@@ -119,14 +119,14 @@ func (g *FunctionGenerator) collectRegisterDefinitions(
 			if !ok || regNode.Type == nil {
 				continue
 			}
-			// Re-use TargetGenerator: a typed register in argument position
+			// Re-use TypedRegisterGenerator: a typed register in argument position
 			// declares (or validates) the register's type, the same as a typed
 			// target would.
 			syntheticTarget := parse.TargetNode{
 				Type:     regNode.Type,
 				Register: parse.RegisterNode{TokenNode: regNode.TokenNode},
 			}
-			_, curResults := g.TargetGenerator.Generate(ctx, syntheticTarget)
+			_, curResults := g.TypedRegisterGenerator.Generate(ctx, syntheticTarget)
 			results.Extend(&curResults)
 		}
 	}

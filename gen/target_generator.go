@@ -6,13 +6,13 @@ import (
 	"alon.kr/x/usm/parse"
 )
 
-type TargetGenerator struct {
+type TypedRegisterGenerator struct {
 	ReferencedTypeGenerator FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
 }
 
-func NewTargetGenerator() FunctionContextGenerator[parse.TargetNode, ArgumentInfo] {
+func NewTypedRegisterGenerator() FunctionContextGenerator[parse.TargetNode, ArgumentInfo] {
 	return FunctionContextGenerator[parse.TargetNode, ArgumentInfo](
-		&TargetGenerator{
+		&TypedRegisterGenerator{
 			ReferencedTypeGenerator: NewReferencedTypeGenerator(),
 		},
 	)
@@ -41,7 +41,7 @@ func NewRegisterTypeMismatchResult(
 //
 // If the target node does not have an explicit type, and the register has not
 // been defined and processed yet, the generator will return nil.
-func (g *TargetGenerator) Generate(
+func (g *TypedRegisterGenerator) Generate(
 	ctx *FunctionGenerationContext,
 	node parse.TargetNode,
 ) (ArgumentInfo, core.ResultList) {

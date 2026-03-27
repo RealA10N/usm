@@ -7,8 +7,8 @@ import (
 )
 
 type InstructionGenerator struct {
-	ArgumentGenerator InstructionContextGenerator[parse.ArgumentNode, ArgumentInfo]
-	TargetGenerator   FunctionContextGenerator[parse.TargetNode, ArgumentInfo]
+	ArgumentGenerator      InstructionContextGenerator[parse.ArgumentNode, ArgumentInfo]
+	TypedRegisterGenerator FunctionContextGenerator[parse.TargetNode, ArgumentInfo]
 }
 
 func NewInstructionGenerator() FunctionContextGenerator[
@@ -19,8 +19,8 @@ func NewInstructionGenerator() FunctionContextGenerator[
 		parse.InstructionNode,
 		*InstructionInfo,
 	](&InstructionGenerator{
-		ArgumentGenerator: NewArgumentGenerator(),
-		TargetGenerator:   NewTargetGenerator(),
+		ArgumentGenerator:      NewArgumentGenerator(),
+		TypedRegisterGenerator: NewTypedRegisterGenerator(),
 	})
 }
 
@@ -51,7 +51,7 @@ func (g *InstructionGenerator) generateTargets(
 	results := core.ResultList{}
 
 	for i, target := range node.Targets {
-		targetInfo, curResults := g.TargetGenerator.Generate(
+		targetInfo, curResults := g.TypedRegisterGenerator.Generate(
 			ctx.FunctionGenerationContext,
 			target,
 		)

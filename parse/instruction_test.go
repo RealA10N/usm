@@ -86,6 +86,27 @@ func TestInstructionWithTrailingComment(t *testing.T) {
 	testExpectedInstruction(t, srcView, expected, "\tret ; done\n")
 }
 
+// TestInstructionWithTypedRegisterArgument verifies that a type annotation
+// before a register in argument position is parsed and stored in
+// RegisterNode.Type (not discarded).
+func TestInstructionWithTypedRegisterArgument(t *testing.T) {
+	srcView := core.NewSourceView("ret $32 %x\n")
+	unmanaged := srcView.Unmanaged()
+
+	typeNode := parse.TypeNode{Identifier: unmanaged.Subview(4, 7)}
+	expected := parse.InstructionNode{
+		Operator: unmanaged.Subview(0, 3),
+		Arguments: []parse.ArgumentNode{
+			parse.RegisterNode{
+				TokenNode: parse.TokenNode{unmanaged.Subview(8, 10)},
+				Type:      &typeNode,
+			},
+		},
+	}
+
+	testExpectedInstruction(t, srcView, expected, "\tret $32 %x\n")
+}
+
 // MARK: Helpers
 
 func testExpectedInstruction(
