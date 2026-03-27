@@ -53,6 +53,10 @@ func (i Phi) Validate(info *gen.InstructionInfo) core.ResultList {
 	curResults = i.validateEvenArguments(info)
 	results.Extend(&curResults)
 
+	if !results.IsEmpty() {
+		return results
+	}
+
 	var targetType gen.ReferencedTypeInfo
 	if len(info.Targets) > 0 {
 		targetType, curResults = gen.ArgumentToType(info.Targets[0])
