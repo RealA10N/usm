@@ -5,7 +5,15 @@ import (
 	"alon.kr/x/usm/lex"
 )
 
-type RegisterNode struct{ TokenNode }
+type RegisterNode struct {
+	TokenNode
+
+	// Optional explicit type annotation (e.g. "$32" in "$32 %a").
+	// Present when the register appears with an explicit type in argument
+	// position.  Always nil inside TargetNode.Register (the target parser
+	// stores the type in TargetNode.Type instead).
+	Type *TypeNode
+}
 
 type RegisterParser struct {
 	TypeParser
@@ -13,7 +21,7 @@ type RegisterParser struct {
 }
 
 func RegisterNodeCreator(tkn lex.Token) RegisterNode {
-	return RegisterNode{TokenNode{tkn.View}}
+	return RegisterNode{TokenNode: TokenNode{tkn.View}}
 }
 
 func NewRegisterParser() Parser[RegisterNode] {
@@ -25,12 +33,19 @@ func NewRegisterParser() Parser[RegisterNode] {
 	}
 }
 
-// Parse optionally consumes a preceding type annotation (discarded), then
-// parses the register token. This allows both "%name" and "$type %name"
-// syntax in argument position.
+// Parse optionally consumes a preceding type annotation, then parses the
+// register token. This allows both "%name" and "$type %name" syntax in
+// argument position.  The type annotation is preserved in RegisterNode.Type.
 func (p RegisterParser) Parse(v *TokenView) (RegisterNode, core.Result) {
+	var typ *TypeNode
 	if v.PeekTokens(lex.TypeToken, lex.RegisterToken) {
-		p.TypeParser.Parse(v) // consume and discard the type prefix
+		t, err := p.TypeParser.Parse(v)
+		if err != nil {
+			return RegisterNode{}, err
+		}
+		typ = &t
 	}
-	return p.TokenParser.Parse(v)
+	node, err := p.TokenParser.Parse(v)
+	node.Type = typ
+	return node, err
 }

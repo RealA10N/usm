@@ -75,10 +75,24 @@ func (DefinesTargetsInstruction) Defines(info *gen.InstructionInfo) []*gen.Regis
 	return gen.ArgumentsToRegisters(info.Targets)
 }
 
+func (DefinesTargetsInstruction) DefinitionArguments(info *gen.InstructionInfo) []*gen.RegisterArgumentInfo {
+	result := make([]*gen.RegisterArgumentInfo, 0, len(info.Targets))
+	for _, t := range info.Targets {
+		if regArg, ok := t.(*gen.RegisterArgumentInfo); ok {
+			result = append(result, regArg)
+		}
+	}
+	return result
+}
+
 type DefinesNothingInstruction struct{}
 
 func (DefinesNothingInstruction) Defines(*gen.InstructionInfo) []*gen.RegisterInfo {
 	return []*gen.RegisterInfo{}
+}
+
+func (DefinesNothingInstruction) DefinitionArguments(*gen.InstructionInfo) []*gen.RegisterArgumentInfo {
+	return []*gen.RegisterArgumentInfo{}
 }
 
 func collectCriticalInstructions(

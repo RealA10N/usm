@@ -27,7 +27,7 @@ func UndefinedRegisterResult(node parse.RegisterNode) core.ResultList {
 		},
 		{
 			Type:    core.HintResult,
-			Message: "A register must be defined with an explicit type at least once",
+			Message: "A register must appear with an explicit type at least once (as a target or typed argument)",
 		},
 	})
 }

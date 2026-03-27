@@ -3,12 +3,21 @@ package usmssa
 import (
 	"fmt"
 
+	"alon.kr/x/list"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 	"alon.kr/x/usm/opt/ssa"
 	"alon.kr/x/usm/transform"
 	usmisa "alon.kr/x/usm/usm/isa"
 )
+
+func newSSANotSupportedError(instruction *gen.InstructionInfo) core.ResultList {
+	return list.FromSingle(core.Result{{
+		Type:     core.InternalErrorResult,
+		Message:  "Instruction does not support SSA construction",
+		Location: instruction.Declaration,
+	}})
+}
 
 type ConstructionScheme struct {
 	RenamesPerRegister map[*gen.RegisterInfo]uint
@@ -58,23 +67,11 @@ func (s *ConstructionScheme) renameArgument(
 	return core.ResultList{}
 }
 
-func (s *ConstructionScheme) renameTarget(
-	instruction *gen.InstructionInfo,
-	target gen.ArgumentInfo,
-	reachingSet ssa.ReachingDefinitionsSet,
-) core.ResultList {
-	if regArg, ok := target.(*gen.RegisterArgumentInfo); ok {
-		renamedRegister := reachingSet.RenameDefinitionRegister(regArg.Register)
-		regArg.SwitchRegister(instruction, renamedRegister)
-	}
-	return core.ResultList{}
-}
-
 func (s *ConstructionScheme) renameInstruction(
 	instruction *gen.InstructionInfo,
 	reachingSet ssa.ReachingDefinitionsSet,
 ) core.ResultList {
-	// First, we rename the arguments.
+	// First, we rename the uses (arguments).
 	for _, argument := range instruction.Arguments {
 		results := s.renameArgument(instruction, argument, reachingSet)
 		if !results.IsEmpty() {
@@ -82,12 +79,16 @@ func (s *ConstructionScheme) renameInstruction(
 		}
 	}
 
-	// Then, we define the new registers (targets).
-	for _, target := range instruction.Targets {
-		results := s.renameTarget(instruction, target, reachingSet)
-		if !results.IsEmpty() {
-			return results
-		}
+	// Then rename the definitions.  We ask the instruction itself which
+	// ArgumentInfo objects it defines — this allows ISAs that write registers
+	// via arguments (not just via targets) to participate in SSA renaming.
+	ssaInstr, ok := instruction.Definition.(ssa.SSASupportedInstruction)
+	if !ok {
+		return newSSANotSupportedError(instruction)
+	}
+	for _, defArg := range ssaInstr.DefinitionArguments(instruction) {
+		renamedRegister := reachingSet.RenameDefinitionRegister(defArg.Register)
+		defArg.SwitchRegister(instruction, renamedRegister)
 	}
 
 	return core.ResultList{}

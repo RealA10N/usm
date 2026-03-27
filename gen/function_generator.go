@@ -97,11 +97,13 @@ func (g *FunctionGenerator) collectLabelDefinitions(
 	}, results
 }
 
-// Before actually generating the instructions, we iterate over instruction and
-// only collect information about target registers.
-// Since USM requires all registers to be defined at least once with an explicit
-// type, after collecting all register definitions the register manager should
-// contain all registers with the required information.
+// Before actually generating the instructions, we iterate over instructions
+// and collect register type information from two sources:
+//  1. Instruction targets with an explicit type (e.g. "$32 %result = ...")
+//  2. Instruction arguments that are typed register references (e.g. "add $32 %x ...")
+//
+// A register must appear with an explicit type at least once (in either
+// position) inside a function before it can be used.
 func (g *FunctionGenerator) collectRegisterDefinitions(
 	ctx *FunctionGenerationContext,
 	instructions []parse.InstructionNode,
@@ -109,6 +111,22 @@ func (g *FunctionGenerator) collectRegisterDefinitions(
 	for _, instruction := range instructions {
 		for _, target := range instruction.Targets {
 			_, curResults := g.TargetGenerator.Generate(ctx, target)
+			results.Extend(&curResults)
+		}
+
+		for _, argument := range instruction.Arguments {
+			regNode, ok := argument.(parse.RegisterNode)
+			if !ok || regNode.Type == nil {
+				continue
+			}
+			// Re-use TargetGenerator: a typed register in argument position
+			// declares (or validates) the register's type, the same as a typed
+			// target would.
+			syntheticTarget := parse.TargetNode{
+				Type:     regNode.Type,
+				Register: parse.RegisterNode{TokenNode: regNode.TokenNode},
+			}
+			_, curResults := g.TargetGenerator.Generate(ctx, syntheticTarget)
 			results.Extend(&curResults)
 		}
 	}
