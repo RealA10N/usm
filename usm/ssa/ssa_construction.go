@@ -53,39 +53,24 @@ func (s *ConstructionScheme) NewRenamedRegister(
 	return gen.NewRegisterInfo(renamedName, register.Type)
 }
 
-func (s *ConstructionScheme) renameArgument(
-	instruction *gen.InstructionInfo,
-	argument gen.ArgumentInfo,
-	reachingSet ssa.ReachingDefinitionsSet,
-) core.ResultList {
-	if argument, ok := argument.(*gen.RegisterArgumentInfo); ok {
-		baseRegister := argument.Register
-		renamedRegister := reachingSet.GetReachingDefinition(baseRegister)
-		argument.SwitchRegister(instruction, renamedRegister)
-	}
-
-	return core.ResultList{}
-}
-
 func (s *ConstructionScheme) renameInstruction(
 	instruction *gen.InstructionInfo,
 	reachingSet ssa.ReachingDefinitionsSet,
 ) core.ResultList {
-	// First, we rename the uses (arguments).
-	for _, argument := range instruction.Arguments {
-		results := s.renameArgument(instruction, argument, reachingSet)
-		if !results.IsEmpty() {
-			return results
-		}
-	}
-
-	// Then rename the definitions.  We ask the instruction itself which
-	// ArgumentInfo objects it defines — this allows ISAs that write registers
-	// via arguments (not just via targets) to participate in SSA renaming.
 	ssaInstr, ok := instruction.Definition.(ssa.SSASupportedInstruction)
 	if !ok {
 		return newSSANotSupportedError(instruction)
 	}
+
+	// Rename uses first: each used register is replaced with the current
+	// reaching renamed definition.
+	for _, useArg := range ssaInstr.UsesArguments(instruction) {
+		renamedRegister := reachingSet.GetReachingDefinition(useArg.Register)
+		useArg.SwitchRegister(instruction, renamedRegister)
+	}
+
+	// Then rename definitions: each defined register gets a fresh name and
+	// becomes the new reaching definition for downstream uses.
 	for _, defArg := range ssaInstr.DefinitionArguments(instruction) {
 		renamedRegister := reachingSet.RenameDefinitionRegister(defArg.Register)
 		defArg.SwitchRegister(instruction, renamedRegister)

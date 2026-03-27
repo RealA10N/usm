@@ -130,14 +130,14 @@ func (s *ReachingDefinitionsSet) popBlock() {
 // implement to support SSA construction.
 //
 // Defines is used during phi insertion to find all basic blocks that define a
-// register (required to be implemented by every instruction).
+// register.
 //
-// DefinitionArguments is used during register renaming to obtain the concrete
-// *RegisterArgumentInfo objects that this instruction writes.  ISAs that write
-// registers via instruction arguments (not only via targets) must implement
-// this method accordingly.  The two helpers in the opt package —
-// DefinesTargetsInstruction and DefinesNothingInstruction — provide the
-// default target-based implementations.
+// DefinitionArguments and UsesArguments are used during register renaming.
+// ISAs where register writes or reads occur via instruction arguments (not
+// only via targets) must implement these accordingly.  The helpers in the opt
+// package — DefinesTargetsInstruction, DefinesNothingInstruction,
+// UsesArgumentsInstruction, and UsesNothingInstruction — provide default
+// target/argument-based implementations.
 type SSASupportedInstruction interface {
 	gen.InstructionDefinition
 
@@ -145,9 +145,12 @@ type SSASupportedInstruction interface {
 	Defines(info *gen.InstructionInfo) []*gen.RegisterInfo
 
 	// Returns the RegisterArgumentInfo objects that the instruction writes.
-	// These may live in info.Targets, in info.Arguments, or anywhere else,
-	// depending on the ISA.
+	// These may live in info.Targets, info.Arguments, or elsewhere.
 	DefinitionArguments(info *gen.InstructionInfo) []*gen.RegisterArgumentInfo
+
+	// Returns the RegisterArgumentInfo objects that the instruction reads.
+	// These may live in info.Arguments, info.Targets, or elsewhere.
+	UsesArguments(info *gen.InstructionInfo) []*gen.RegisterArgumentInfo
 }
 
 type PhiInstructionDefinition interface {

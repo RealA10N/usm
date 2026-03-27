@@ -63,10 +63,24 @@ func (UsesArgumentsInstruction) Uses(info *gen.InstructionInfo) []*gen.RegisterI
 	return gen.ArgumentsToRegisters(info.Arguments)
 }
 
+func (UsesArgumentsInstruction) UsesArguments(info *gen.InstructionInfo) []*gen.RegisterArgumentInfo {
+	result := make([]*gen.RegisterArgumentInfo, 0, len(info.Arguments))
+	for _, a := range info.Arguments {
+		if regArg, ok := a.(*gen.RegisterArgumentInfo); ok {
+			result = append(result, regArg)
+		}
+	}
+	return result
+}
+
 type UsesNothingInstruction struct{}
 
 func (UsesNothingInstruction) Uses(*gen.InstructionInfo) []*gen.RegisterInfo {
 	return []*gen.RegisterInfo{}
+}
+
+func (UsesNothingInstruction) UsesArguments(*gen.InstructionInfo) []*gen.RegisterArgumentInfo {
+	return []*gen.RegisterArgumentInfo{}
 }
 
 type DefinesTargetsInstruction struct{}
