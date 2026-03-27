@@ -10,6 +10,7 @@ import (
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
 	"alon.kr/x/usm/lex"
+	"alon.kr/x/usm/opt"
 	"alon.kr/x/usm/parse"
 	"alon.kr/x/usm/transform"
 	usmmanagers "alon.kr/x/usm/usm/managers"
@@ -28,7 +29,7 @@ var targets = transform.NewTargetCollection(
 				Names:       []string{"dead-code-elimination", "dce"},
 				Description: "An optimization pass that eliminates unnecessary instructions",
 				TargetName:  "usm",
-				// Transform: ,
+				Transform:   opt.TransformFileToDeadCodeElimination,
 			},
 			&transform.Transformation{
 				Names:       []string{"static-single-assignment", "ssa"},

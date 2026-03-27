@@ -6,6 +6,7 @@ import (
 	"alon.kr/x/stack"
 	"alon.kr/x/usm/core"
 	"alon.kr/x/usm/gen"
+	"alon.kr/x/usm/transform"
 )
 
 // An instruction is considered useful if it is critical.
@@ -145,6 +146,26 @@ func collectUsefulInstructions(
 	}
 
 	return usefulInstructions, core.ResultList{}
+}
+
+func FileToDeadCodeElimination(file *gen.FileInfo) core.ResultList {
+	results := core.ResultList{}
+
+	for _, function := range file.Functions {
+		if function.IsDefined() {
+			curResults := DeadCodeElimination(function)
+			results.Extend(&curResults)
+		}
+	}
+
+	return results
+}
+
+func TransformFileToDeadCodeElimination(
+	data *transform.TargetData,
+) (*transform.TargetData, core.ResultList) {
+	results := FileToDeadCodeElimination(data.Code)
+	return data, results
 }
 
 func DeadCodeElimination(function *gen.FunctionInfo) core.ResultList {
