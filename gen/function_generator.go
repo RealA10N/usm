@@ -16,7 +16,6 @@ type FunctionGenerator struct {
 	ParameterGenerator       FunctionContextGenerator[parse.ParameterNode, *RegisterInfo]
 	LabelDefinitionGenerator FunctionContextGenerator[parse.LabelNode, *LabelInfo]
 	ReferencedTypeGenerator  FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
-	ArgumentGenerator        FunctionContextGenerator[parse.RegisterNode, ArgumentInfo]
 }
 
 func NewFunctionGenerator() FileContextGenerator[parse.FunctionNode, *FunctionInfo] {
@@ -26,7 +25,6 @@ func NewFunctionGenerator() FileContextGenerator[parse.FunctionNode, *FunctionIn
 			ParameterGenerator:       NewParameterGenerator(),
 			LabelDefinitionGenerator: NewLabelDefinitionGenerator(),
 			ReferencedTypeGenerator:  NewReferencedTypeGenerator(),
-			ArgumentGenerator:        NewRegisterDeclarationGenerator(),
 		},
 	)
 }
@@ -104,6 +102,33 @@ func (g *FunctionGenerator) collectLabelDefinitions(
 //
 // A register must appear with an explicit type at least once (in either
 // position) inside a function before it can be used.
+func (g *FunctionGenerator) declareRegister(
+	ctx *FunctionGenerationContext,
+	regNode parse.RegisterNode,
+) core.ResultList {
+	name := NodeToSourceString(ctx.FileGenerationContext, regNode.TokenNode)
+	existing := ctx.Registers.GetRegister(name)
+	nodeView := regNode.View()
+
+	declaredType, results := g.ReferencedTypeGenerator.Generate(ctx.FileGenerationContext, *regNode.Type)
+	if !results.IsEmpty() {
+		return results
+	}
+
+	if existing != nil {
+		if !existing.Type.Equal(declaredType) {
+			return NewRegisterTypeMismatchResult(nodeView, existing.Declaration)
+		}
+		return core.ResultList{}
+	}
+
+	return ctx.Registers.NewRegister(&RegisterInfo{
+		Name:        name,
+		Type:        declaredType,
+		Declaration: nodeView,
+	})
+}
+
 func (g *FunctionGenerator) collectRegisterDefinitions(
 	ctx *FunctionGenerationContext,
 	instructions []parse.InstructionNode,
@@ -114,7 +139,7 @@ func (g *FunctionGenerator) collectRegisterDefinitions(
 			if !ok || regNode.Type == nil {
 				continue
 			}
-			_, curResults := g.ArgumentGenerator.Generate(ctx, regNode)
+			curResults := g.declareRegister(ctx, regNode)
 			results.Extend(&curResults)
 		}
 	}

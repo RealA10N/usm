@@ -17,6 +17,24 @@ func NewRegisterGenerator() FunctionContextGenerator[parse.RegisterNode, *Regist
 	)
 }
 
+func NewRegisterTypeMismatchResult(
+	newDeclaration core.UnmanagedSourceView,
+	firstDeclaration core.UnmanagedSourceView,
+) core.ResultList {
+	return list.FromSingle(core.Result{
+		{
+			Type:     core.ErrorResult,
+			Message:  "Explicit register type does not match previous declaration",
+			Location: &newDeclaration,
+		},
+		{
+			Type:     core.HintResult,
+			Message:  "Previous declaration here",
+			Location: &firstDeclaration,
+		},
+	})
+}
+
 func UndefinedRegisterResult(node parse.RegisterNode) core.ResultList {
 	v := node.View()
 	return list.FromSingle(core.Result{
