@@ -97,3 +97,15 @@ func TargetsToRegisters(targets []*TargetInfo) []*RegisterInfo {
 func TargetToType(target *TargetInfo) ReferencedTypeInfo {
 	return target.Register.Type
 }
+
+func ArgumentToVariable(arg ArgumentInfo) (*VariableArgumentInfo, core.ResultList) {
+	if varArg, ok := arg.(*VariableArgumentInfo); ok {
+		return varArg, core.ResultList{}
+	}
+
+	return nil, list.FromSingle(core.Result{{
+		Type:     core.ErrorResult,
+		Message:  "Expected a variable argument",
+		Location: arg.Declaration(),
+	}})
+}

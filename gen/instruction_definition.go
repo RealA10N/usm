@@ -23,9 +23,10 @@ type InstructionDefinition interface {
 	// Validate the instruction information structure, according to the
 	// expected arguments, targets, and other related information.
 	//
-	// Instruction validation should as one of the last steps in the compilation
-	// process, and you should be able to assume that all relevant information
-	// in the structures is filled in and propagated correctly.
+	// Validation runs as a read-only pass after IR generation is complete.
+	// Implementations must not mutate any IR nodes or infer missing information —
+	// those concerns belong in the generation phase. Validate should only inspect
+	// the already-built IR and return errors if it is inconsistent.
 	Validate(*InstructionInfo) core.ResultList
 }
 

@@ -363,6 +363,7 @@ func (g *FunctionGenerator) Generate(
 	funcCtx := ctx.NewFunctionGenerationContext()
 	function.Registers = funcCtx.Registers
 	function.Labels = funcCtx.Labels
+	function.Variables = funcCtx.Variables
 
 	parameters, curResults := g.createParameterRegisters(funcCtx, node.Signature.Parameters)
 	results.Extend(&curResults)

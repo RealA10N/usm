@@ -19,7 +19,10 @@ type BasicBlockInfo struct {
 }
 
 func (i *BasicBlockInfo) String() string {
-	s := i.Label.String() + "\n"
+	s := ""
+	if i.Label.Declaration != nil {
+		s += i.Label.String() + "\n"
+	}
 	for _, instruction := range i.Instructions {
 		s += "\t" + instruction.String() + "\n"
 	}

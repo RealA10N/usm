@@ -35,6 +35,11 @@ func NewInstructionManager() gen.InstructionManager {
 
 			// Static Single Assignment (SSA)
 			{Key: "phi", Value: usmisa.NewPhi()},
+
+			// Variables
+			{Key: "load", Value: usmisa.NewLoad()},
+			{Key: "store", Value: usmisa.NewStore()},
+			{Key: "lea", Value: usmisa.NewLea()},
 		},
 		false,
 	)

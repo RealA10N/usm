@@ -52,7 +52,8 @@ All common tasks are managed with [just](https://github.com/casey/just).
 | `just setup`  | Install dev tools (`richgo`, `mdformat`)      |
 | `just cloc`   | Count lines of code (non-test files)          |
 
-Before committing, run `just fmt` and `just test`.
+Before committing, run `just fmt` and `just test`. If `just` is not in PATH,
+check `justfile` for the equivalent raw commands.
 
 ## CLI Usage
 
@@ -105,6 +106,13 @@ All errors propagate as `core.ResultList`. Each `Result` contains one or more
 
 Special constructors: `core.InternalErrorResult(...)`, `core.DebugResult(...)`.
 
+### Generation vs. Validation
+
+Generation and validation are separate phases. `Validate()` is purely
+read-only; IR construction and type inference belong in the generation phase.
+See `gen/function_generator.go` for the generation flow and the pre-pass
+pattern used to collect information before instructions are generated.
+
 ### Pipeline (`transform`)
 
 `Target` → `Transformation` → `Target` forms a linear pipeline. Each
@@ -145,6 +153,9 @@ package.
 - `opt` — operates on `gen` IR only; ISA-agnostic.
 - ISA packages (`usm/`, `aarch64/`) import `gen` but not each other.
 
+Before placing logic in an ISA-specific package, ask whether it operates on
+`gen` types and could be reused across ISAs — if so, it belongs in `gen`.
+
 ### Error Messages
 
 - Include source location wherever possible.
@@ -156,6 +167,19 @@ package.
 - Go: `gofmt` (enforced by pre-commit hook).
 - Markdown: `mdformat` with GFM plugin, 80-char line wrap.
 - Run `just fmt` before committing.
+
+## Working Effectively in This Codebase
+
+- **Read relevant source before implementing.** Understand existing types,
+  interfaces, and patterns first — non-obvious semantics are often only visible
+  in the generators and tests.
+- **Find the right abstraction layer before writing new logic.** Logic that
+  operates on `gen` types should live in `gen`, even if first needed in an
+  ISA-specific package.
+- **Keep generation and validation separate.** `Validate()` is read-only;
+  mutations and type inference belong in the generation phase.
+- **Keep diffs minimal.** Only change code that the task requires. Don't
+  restructure or clean up adjacent code in the same PR.
 
 ## Adding a New ISA Backend
 
@@ -227,4 +251,4 @@ func $64 @fib $64 %n {
 ```
 
 Token sigils: `%` register, `$` type/size, `@` global/function, `#` immediate,
-`.` label, `*` pointer, `^` repeat.
+`.` label, `*` pointer, `^` repeat, `&` variable (mutable stack slot).

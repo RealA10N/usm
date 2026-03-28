@@ -11,6 +11,7 @@ type FunctionInfo struct {
 	EntryBlock *BasicBlockInfo
 	Registers  RegisterManager
 	Labels     LabelManager
+	Variables  VariableManager
 	Parameters []*RegisterInfo
 	Targets    []ReferencedTypeInfo
 }
