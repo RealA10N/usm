@@ -145,7 +145,7 @@ func (i *FunctionSsaInfo) getDefinitions(
 		if !ok {
 			return nil, newSSANotSupportedError(instruction)
 		}
-		for _, defArg := range ssaInstr.DefinitionArguments(instruction) {
+		for _, defArg := range ssaInstr.Defines(instruction) {
 			if defArg.Register == register {
 				blocks.Add(instruction.BasicBlockInfo)
 				break

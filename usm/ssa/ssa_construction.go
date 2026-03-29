@@ -64,14 +64,14 @@ func (s *ConstructionScheme) renameInstruction(
 
 	// Rename uses first: each used register is replaced with the current
 	// reaching renamed definition.
-	for _, useArg := range ssaInstr.UsesArguments(instruction) {
+	for _, useArg := range ssaInstr.Uses(instruction) {
 		renamedRegister := reachingSet.GetReachingDefinition(useArg.Register)
 		useArg.SwitchRegister(instruction, renamedRegister)
 	}
 
 	// Then rename definitions: each defined register gets a fresh name and
 	// becomes the new reaching definition for downstream uses.
-	for _, defArg := range ssaInstr.DefinitionArguments(instruction) {
+	for _, defArg := range ssaInstr.Defines(instruction) {
 		renamedRegister := reachingSet.RenameDefinitionRegister(defArg.Register)
 		defArg.SwitchRegister(instruction, renamedRegister)
 	}

@@ -14,7 +14,7 @@ type Phi struct {
 
 	// Dead Code Elimination
 	opt.NonCriticalInstruction
-	opt.UsesArgumentsInstruction
+	opt.UsesInstruction
 	opt.DefinesTargetsInstruction
 }
 

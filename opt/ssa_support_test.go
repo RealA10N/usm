@@ -30,26 +30,26 @@ func buildTestInstruction() (*gen.InstructionInfo, *gen.RegisterArgumentInfo, *g
 	return info, argA, argB
 }
 
-func TestUsesArgumentsInstruction(t *testing.T) {
+func TestUsesInstruction(t *testing.T) {
 	info, _, argB := buildTestInstruction()
-	args := opt.UsesArgumentsInstruction{}.UsesArguments(info)
+	args := opt.UsesInstruction{}.Uses(info)
 	assert.Len(t, args, 1)
 	assert.Equal(t, argB, args[0])
 }
 
 func TestUsesNothingInstruction(t *testing.T) {
 	info, _, _ := buildTestInstruction()
-	assert.Empty(t, opt.UsesNothingInstruction{}.UsesArguments(info))
+	assert.Empty(t, opt.UsesNothingInstruction{}.Uses(info))
 }
 
-func TestDefinesTargetsInstructionDefinitionArguments(t *testing.T) {
+func TestDefinesTargetsInstructionDefines(t *testing.T) {
 	info, argA, _ := buildTestInstruction()
-	defArgs := opt.DefinesTargetsInstruction{}.DefinitionArguments(info)
+	defArgs := opt.DefinesTargetsInstruction{}.Defines(info)
 	assert.Len(t, defArgs, 1)
 	assert.Equal(t, argA, defArgs[0])
 }
 
 func TestDefinesNothingInstruction(t *testing.T) {
 	info, _, _ := buildTestInstruction()
-	assert.Empty(t, opt.DefinesNothingInstruction{}.DefinitionArguments(info))
+	assert.Empty(t, opt.DefinesNothingInstruction{}.Defines(info))
 }

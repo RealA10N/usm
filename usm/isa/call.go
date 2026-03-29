@@ -14,7 +14,7 @@ type Call struct {
 
 	// Dead Code Elimination
 	opt.CriticalInstruction
-	opt.UsesArgumentsInstruction
+	opt.UsesInstruction
 	opt.DefinesTargetsInstruction
 }
 
