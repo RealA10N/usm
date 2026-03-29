@@ -39,9 +39,7 @@ func TestUsesArgumentsInstruction(t *testing.T) {
 
 func TestUsesNothingInstruction(t *testing.T) {
 	info, _, _ := buildTestInstruction()
-	uses := opt.UsesNothingInstruction{}
-	assert.Empty(t, uses.Uses(info))
-	assert.Empty(t, uses.UsesArguments(info))
+	assert.Empty(t, opt.UsesNothingInstruction{}.UsesArguments(info))
 }
 
 func TestDefinesTargetsInstructionDefinitionArguments(t *testing.T) {
@@ -53,7 +51,5 @@ func TestDefinesTargetsInstructionDefinitionArguments(t *testing.T) {
 
 func TestDefinesNothingInstruction(t *testing.T) {
 	info, _, _ := buildTestInstruction()
-	defines := opt.DefinesNothingInstruction{}
-	assert.Empty(t, defines.Defines(info))
-	assert.Empty(t, defines.DefinitionArguments(info))
+	assert.Empty(t, opt.DefinesNothingInstruction{}.DefinitionArguments(info))
 }

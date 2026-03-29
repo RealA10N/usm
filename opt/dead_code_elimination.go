@@ -30,11 +30,11 @@ type DCESupportedInstruction interface {
 	// with a side effect, etc.
 	IsCritical(info *gen.InstructionInfo) bool
 
-	// Returns the registers that the instruction defines, directly or indirectly.
-	Defines(info *gen.InstructionInfo) []*gen.RegisterInfo
+	// Returns the register argument slots that the instruction writes.
+	DefinitionArguments(info *gen.InstructionInfo) []*gen.RegisterArgumentInfo
 
-	// Returns the registers that the instruction uses, directly or indirectly.
-	Uses(info *gen.InstructionInfo) []*gen.RegisterInfo
+	// Returns the register argument slots that the instruction reads.
+	UsesArguments(info *gen.InstructionInfo) []*gen.RegisterArgumentInfo
 }
 
 func newDCENotSupportedError(instruction *gen.InstructionInfo) core.ResultList {
@@ -59,10 +59,6 @@ func (NonCriticalInstruction) IsCritical(*gen.InstructionInfo) bool {
 
 type UsesArgumentsInstruction struct{}
 
-func (UsesArgumentsInstruction) Uses(info *gen.InstructionInfo) []*gen.RegisterInfo {
-	return gen.ArgumentsToRegisters(info.Arguments)
-}
-
 func (UsesArgumentsInstruction) UsesArguments(info *gen.InstructionInfo) []*gen.RegisterArgumentInfo {
 	result := make([]*gen.RegisterArgumentInfo, 0, len(info.Arguments))
 	for _, a := range info.Arguments {
@@ -75,19 +71,11 @@ func (UsesArgumentsInstruction) UsesArguments(info *gen.InstructionInfo) []*gen.
 
 type UsesNothingInstruction struct{}
 
-func (UsesNothingInstruction) Uses(*gen.InstructionInfo) []*gen.RegisterInfo {
-	return []*gen.RegisterInfo{}
-}
-
 func (UsesNothingInstruction) UsesArguments(*gen.InstructionInfo) []*gen.RegisterArgumentInfo {
 	return []*gen.RegisterArgumentInfo{}
 }
 
 type DefinesTargetsInstruction struct{}
-
-func (DefinesTargetsInstruction) Defines(info *gen.InstructionInfo) []*gen.RegisterInfo {
-	return gen.ArgumentsToRegisters(info.Targets)
-}
 
 func (DefinesTargetsInstruction) DefinitionArguments(info *gen.InstructionInfo) []*gen.RegisterArgumentInfo {
 	result := make([]*gen.RegisterArgumentInfo, 0, len(info.Targets))
@@ -100,10 +88,6 @@ func (DefinesTargetsInstruction) DefinitionArguments(info *gen.InstructionInfo) 
 }
 
 type DefinesNothingInstruction struct{}
-
-func (DefinesNothingInstruction) Defines(*gen.InstructionInfo) []*gen.RegisterInfo {
-	return []*gen.RegisterInfo{}
-}
 
 func (DefinesNothingInstruction) DefinitionArguments(*gen.InstructionInfo) []*gen.RegisterArgumentInfo {
 	return []*gen.RegisterArgumentInfo{}
@@ -155,7 +139,8 @@ func collectUsefulInstructions(
 
 		usefulInstructions.Add(instruction)
 
-		for _, register := range dceInstruction.Uses(instruction) {
+		for _, useArg := range dceInstruction.UsesArguments(instruction) {
+			register := useArg.Register
 			// In SSA form, a register can have at most one definition, and thus
 			// in SSA form this optimization can be very effective.
 			// In the general sense however, we do not know what definition(s)
@@ -167,8 +152,8 @@ func collectUsefulInstructions(
 				if !ok {
 					return nil, newDCENotSupportedError(ref)
 				}
-				for _, defReg := range refDCE.Defines(ref) {
-					if defReg == register {
+				for _, defArg := range refDCE.DefinitionArguments(ref) {
+					if defArg.Register == register {
 						if !processedInstructions.Contains(ref) {
 							unprocessedInstructions.Push(ref)
 						}

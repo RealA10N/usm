@@ -85,23 +85,14 @@ func (n InstructionNode) String(ctx *StringContext) string {
 
 type InstructionParser struct {
 	LabelParser    Parser[LabelNode]
-	RegisterParser Parser[RegisterNode]
 	ArgumentParser Parser[ArgumentNode]
 }
 
 func NewInstructionParser() InstructionParser {
 	return InstructionParser{
 		LabelParser:    NewLabelParser(),
-		RegisterParser: NewRegisterParser(),
 		ArgumentParser: NewArgumentParser(),
 	}
-}
-
-func (InstructionParser) parseEquals(v *TokenView, node *InstructionNode) (err core.Result) {
-	if len(node.Targets) > 0 {
-		_, err = v.ConsumeToken(lex.EqualToken)
-	}
-	return
 }
 
 func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) core.Result {
@@ -127,23 +118,27 @@ func (InstructionParser) parseOperator(v *TokenView, node *InstructionNode) core
 
 // Parsing of the following regular expression:
 //
-// > Lbl* ((Type? Reg)+ Eql)? Opr? Arg+ !Arg \n+
+// > Lbl* (Arg+ Eql)? Opr? Arg* \n+
+//
+// Targets are parsed by greedily consuming arguments and committing them as
+// targets only if an '=' token immediately follows. If '=' is absent the view
+// is restored and the instruction is treated as having no targets.
 //
 // Note: leading whole-line comments are NOT consumed here; they are captured
 // by BlockParser.parseBlockNodes and attached via attachLeadingComments.
 func (p InstructionParser) Parse(v *TokenView) (node InstructionNode, err core.Result) {
 	node.Labels, _ = ParseManyIgnoreSeparators(p.LabelParser, v)
-	for {
-		target, err := p.RegisterParser.Parse(v)
-		if err != nil {
-			break
-		}
-		node.Targets = append(node.Targets, target)
-	}
 
-	err = p.parseEquals(v, &node)
-	if err != nil {
-		return
+	// Speculatively parse arguments as potential targets. Commit them as
+	// targets only when followed by '='; otherwise restore the view.
+	saved := *v
+	candidates := ParseMany(p.ArgumentParser, v)
+	if len(candidates) > 0 {
+		if _, eqErr := v.ConsumeToken(lex.EqualToken); eqErr == nil {
+			node.Targets = candidates
+		} else {
+			*v = saved
+		}
 	}
 
 	err = p.parseOperator(v, &node)

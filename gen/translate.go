@@ -5,20 +5,6 @@ import (
 	"alon.kr/x/usm/core"
 )
 
-func ArgumentsToRegisters(
-	arguments []ArgumentInfo,
-) []*RegisterInfo {
-	registers := []*RegisterInfo{}
-
-	for _, arg := range arguments {
-		if regArg, ok := arg.(*RegisterArgumentInfo); ok {
-			registers = append(registers, regArg.Register)
-		}
-	}
-
-	return registers
-}
-
 func ArgumentsToLabels(arguments []ArgumentInfo) []*LabelInfo {
 	labels := []*LabelInfo{}
 
