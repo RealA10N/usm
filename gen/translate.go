@@ -5,20 +5,6 @@ import (
 	"alon.kr/x/usm/core"
 )
 
-func ArgumentsToRegisters(
-	arguments []ArgumentInfo,
-) []*RegisterInfo {
-	registers := []*RegisterInfo{}
-
-	for _, arg := range arguments {
-		if regArg, ok := arg.(*RegisterArgumentInfo); ok {
-			registers = append(registers, regArg.Register)
-		}
-	}
-
-	return registers
-}
-
 func ArgumentsToLabels(arguments []ArgumentInfo) []*LabelInfo {
 	labels := []*LabelInfo{}
 
@@ -82,18 +68,4 @@ func ArgumentToLabel(arg ArgumentInfo) (*LabelInfo, core.ResultList) {
 			Location: arg.Declaration(),
 		},
 	})
-}
-
-func TargetsToRegisters(targets []*TargetInfo) []*RegisterInfo {
-	registers := []*RegisterInfo{}
-
-	for _, target := range targets {
-		registers = append(registers, target.Register)
-	}
-
-	return registers
-}
-
-func TargetToType(target *TargetInfo) ReferencedTypeInfo {
-	return target.Register.Type
 }

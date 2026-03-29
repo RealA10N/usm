@@ -12,7 +12,7 @@ type ConditionalJump struct {
 
 	// Dead Code Elimination
 	opt.CriticalInstruction
-	opt.UsesArgumentsInstruction
+	opt.UsesInstruction
 	opt.DefinesNothingInstruction
 }
 

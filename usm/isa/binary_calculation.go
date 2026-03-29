@@ -12,7 +12,7 @@ type BinaryCalculation struct {
 
 	// Dead Code Elimination
 	opt.NonCriticalInstruction
-	opt.UsesArgumentsInstruction
+	opt.UsesInstruction
 	opt.DefinesTargetsInstruction
 }
 
@@ -37,7 +37,8 @@ func (BinaryCalculation) Validate(info *gen.InstructionInfo) core.ResultList {
 	rightType, curResults := gen.ArgumentToType(info.Arguments[1])
 	results.Extend(&curResults)
 
-	targetType := gen.TargetToType(info.Targets[0])
+	targetType, curResults := gen.ArgumentToType(info.Targets[0])
+	results.Extend(&curResults)
 
 	if !results.IsEmpty() {
 		return results

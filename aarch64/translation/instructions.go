@@ -26,7 +26,7 @@ func ValidateBinaryInstruction(
 func BinaryInstructionToAarch64(
 	info *gen.InstructionInfo,
 ) (Xd, Xn, Xm registers.GPRegister, results core.ResultList) {
-	Xd, curResults := TargetToAarch64GPRegister(info.Targets[0])
+	Xd, curResults := ArgumentToAarch64GPRegister(info.Targets[0])
 	results.Extend(&curResults)
 
 	Xn, curResults = ArgumentToAarch64GPRegister(info.Arguments[0])
@@ -45,7 +45,7 @@ func Immediate12InstructionToAarch64(
 	imm immediates.Immediate12,
 	results core.ResultList,
 ) {
-	Xd, curResults := TargetToAarch64GPorSPRegister(info.Targets[0])
+	Xd, curResults := ArgumentToAarch64GPorSPRegister(info.Targets[0])
 	results.Extend(&results)
 
 	Xn, curResults = ArgumentToAarch64GPorSPRegister(info.Arguments[0])
@@ -72,7 +72,7 @@ func Immediate12GPRegisterTargetInstructionToAarch64(
 	imm immediates.Immediate12,
 	results core.ResultList,
 ) {
-	Xd, curResults := TargetToAarch64GPRegister(info.Targets[0])
+	Xd, curResults := ArgumentToAarch64GPRegister(info.Targets[0])
 	results.Extend(&curResults)
 
 	Xn, curResults = ArgumentToAarch64GPorSPRegister(info.Arguments[0])

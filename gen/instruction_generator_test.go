@@ -165,19 +165,26 @@ func TestInstructionCreateTarget(t *testing.T) {
 	src := core.NewSourceView("$32 %c = add %a %b\n")
 	node, ctx := PrepareTestForInstructionGeneration(src, t)
 
+	// Register declaration is a FunctionGenerator pre-pass responsibility.
+	// Simulate it by pre-registering %c with its declaration span.
+	intType := ctx.Types.GetType("$32")
+	assert.NotNil(t, intType)
+	decl := src.Unmanaged().Subview(0, 6)
+	ctx.Registers.NewRegister(&gen.RegisterInfo{
+		Name:        "%c",
+		Type:        gen.ReferencedTypeInfo{Base: intType},
+		Declaration: decl,
+	})
+
 	generator := gen.NewInstructionGenerator()
 	_, results := generator.Generate(ctx, node)
 	assert.True(t, results.IsEmpty())
 
-	registers := ctx.Registers
-	intType := ctx.Types.GetType("$32")
-	assert.NotNil(t, intType)
-
-	target := registers.GetRegister("%c")
+	target := ctx.Registers.GetRegister("%c")
 	assert.NotNil(t, target)
 	assert.Equal(t, "%c", target.Name)
 	assert.Equal(t, intType, target.Type.Base)
-	assert.Equal(t, src.Unmanaged().Subview(0, 6), target.Declaration)
+	assert.Equal(t, decl, target.Declaration)
 }
 
 func TestUndefinedTargetType(t *testing.T) {

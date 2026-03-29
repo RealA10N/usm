@@ -14,7 +14,7 @@ type Call struct {
 
 	// Dead Code Elimination
 	opt.CriticalInstruction
-	opt.UsesArgumentsInstruction
+	opt.UsesInstruction
 	opt.DefinesTargetsInstruction
 }
 
@@ -66,12 +66,4 @@ func (Call) Validate(info *gen.InstructionInfo) core.ResultList {
 	}
 
 	return core.ResultList{}
-}
-
-func (Call) Defines(info *gen.InstructionInfo) []*gen.RegisterInfo {
-	return gen.TargetsToRegisters(info.Targets)
-}
-
-func (Call) Uses(info *gen.InstructionInfo) []*gen.RegisterInfo {
-	return gen.ArgumentsToRegisters(info.Arguments)
 }

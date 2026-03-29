@@ -14,7 +14,7 @@ type Phi struct {
 
 	// Dead Code Elimination
 	opt.NonCriticalInstruction
-	opt.UsesArgumentsInstruction
+	opt.UsesInstruction
 	opt.DefinesTargetsInstruction
 }
 
@@ -57,7 +57,13 @@ func (i Phi) Validate(info *gen.InstructionInfo) core.ResultList {
 		return results
 	}
 
-	targetType := info.Targets[0].Register.Type
+	targetType, curResults := gen.ArgumentToType(info.Targets[0])
+	results.Extend(&curResults)
+
+	if !results.IsEmpty() {
+		return results
+	}
+
 	incomingEdges := set.FromSlice(info.BasicBlockInfo.BackwardEdges)
 
 	for i := 0; i < len(info.Arguments); i += 2 {

@@ -126,6 +126,32 @@ func (s *ReachingDefinitionsSet) popBlock() {
 	s.registerDefinitionPushes.Pop()
 }
 
+// SSASupportedInstruction is a trait that instruction definitions must
+// implement to support SSA construction.
+//
+// Defines is used during phi insertion to find all basic blocks
+// that define a register, and during register renaming to update definition
+// slots in-place.
+//
+// Uses is used during register renaming to redirect each use to the
+// current reaching definition.
+//
+// The helpers in the opt package — DefinesTargetsInstruction,
+// DefinesNothingInstruction, UsesInstruction, and
+// UsesNothingInstruction — provide default target/argument-based
+// implementations.
+type SSASupportedInstruction interface {
+	gen.InstructionDefinition
+
+	// Returns the RegisterArgumentInfo objects that the instruction writes.
+	// These may live in info.Targets, info.Arguments, or elsewhere.
+	Defines(info *gen.InstructionInfo) []*gen.RegisterArgumentInfo
+
+	// Returns the RegisterArgumentInfo objects that the instruction reads.
+	// These may live in info.Arguments, info.Targets, or elsewhere.
+	Uses(info *gen.InstructionInfo) []*gen.RegisterArgumentInfo
+}
+
 type PhiInstructionDefinition interface {
 	gen.InstructionDefinition
 

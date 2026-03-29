@@ -16,7 +16,6 @@ type FunctionGenerator struct {
 	ParameterGenerator       FunctionContextGenerator[parse.ParameterNode, *RegisterInfo]
 	LabelDefinitionGenerator FunctionContextGenerator[parse.LabelNode, *LabelInfo]
 	ReferencedTypeGenerator  FileContextGenerator[parse.TypeNode, ReferencedTypeInfo]
-	TargetGenerator          FunctionContextGenerator[parse.TargetNode, *TargetInfo]
 }
 
 func NewFunctionGenerator() FileContextGenerator[parse.FunctionNode, *FunctionInfo] {
@@ -26,7 +25,6 @@ func NewFunctionGenerator() FileContextGenerator[parse.FunctionNode, *FunctionIn
 			ParameterGenerator:       NewParameterGenerator(),
 			LabelDefinitionGenerator: NewLabelDefinitionGenerator(),
 			ReferencedTypeGenerator:  NewReferencedTypeGenerator(),
-			TargetGenerator:          NewTargetGenerator(),
 		},
 	)
 }
@@ -97,18 +95,51 @@ func (g *FunctionGenerator) collectLabelDefinitions(
 	}, results
 }
 
-// Before actually generating the instructions, we iterate over instruction and
-// only collect information about target registers.
-// Since USM requires all registers to be defined at least once with an explicit
-// type, after collecting all register definitions the register manager should
-// contain all registers with the required information.
+// Before actually generating the instructions, we iterate over instructions
+// and collect register type information from two sources:
+//  1. Instruction targets with an explicit type (e.g. "$32 %result = ...")
+//  2. Instruction arguments that are typed register references (e.g. "add $32 %x ...")
+//
+// A register must appear with an explicit type at least once (in either
+// position) inside a function before it can be used.
+func (g *FunctionGenerator) declareRegister(
+	ctx *FunctionGenerationContext,
+	regNode parse.RegisterNode,
+) core.ResultList {
+	name := NodeToSourceString(ctx.FileGenerationContext, regNode.TokenNode)
+	existing := ctx.Registers.GetRegister(name)
+	nodeView := regNode.View()
+
+	declaredType, results := g.ReferencedTypeGenerator.Generate(ctx.FileGenerationContext, *regNode.Type)
+	if !results.IsEmpty() {
+		return results
+	}
+
+	if existing != nil {
+		if !existing.Type.Equal(declaredType) {
+			return NewRegisterTypeMismatchResult(nodeView, existing.Declaration)
+		}
+		return core.ResultList{}
+	}
+
+	return ctx.Registers.NewRegister(&RegisterInfo{
+		Name:        name,
+		Type:        declaredType,
+		Declaration: nodeView,
+	})
+}
+
 func (g *FunctionGenerator) collectRegisterDefinitions(
 	ctx *FunctionGenerationContext,
 	instructions []parse.InstructionNode,
 ) (results core.ResultList) {
 	for _, instruction := range instructions {
-		for _, target := range instruction.Targets {
-			_, curResults := g.TargetGenerator.Generate(ctx, target)
+		for _, node := range append(instruction.Targets, instruction.Arguments...) {
+			regNode, ok := node.(parse.RegisterNode)
+			if !ok || regNode.Type == nil {
+				continue
+			}
+			curResults := g.declareRegister(ctx, regNode)
 			results.Extend(&curResults)
 		}
 	}

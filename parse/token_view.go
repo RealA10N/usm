@@ -13,6 +13,19 @@ func NewTokenView(tkns []lex.Token) TokenView {
 	return TokenView{view.NewView[lex.Token, uint32](tkns)}
 }
 
+// PeekTokens returns true if the next len(expectedTypes) tokens match
+// the given types in order, without consuming any tokens. Each token at
+// position i must have type expectedTypes[i].
+func (v *TokenView) PeekTokens(expectedTypes ...lex.TokenType) bool {
+	for i, expectedType := range expectedTypes {
+		tkn, err := v.At(uint32(i))
+		if err != nil || tkn.Type != expectedType {
+			return false
+		}
+	}
+	return true
+}
+
 func (v *TokenView) PeekToken(expectedTypes ...lex.TokenType) (tkn lex.Token, result core.Result) {
 	tkn, err := v.At(0)
 

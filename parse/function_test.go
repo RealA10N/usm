@@ -53,10 +53,10 @@ func TestFunctionOneLine(t *testing.T) {
 			Nodes: []parse.InstructionNode{
 				{
 					Operator: core.UnmanagedSourceView{Start: 21, End: 24},
-					Targets: []parse.TargetNode{
-						{
-							Type:     &parse.TypeNode{Identifier: core.UnmanagedSourceView{Start: 12, End: 15}},
-							Register: parse.RegisterNode{parse.TokenNode{core.UnmanagedSourceView{Start: 16, End: 18}}},
+					Targets: []parse.ArgumentNode{
+						parse.RegisterNode{
+							TokenNode: parse.TokenNode{core.UnmanagedSourceView{Start: 16, End: 18}},
+							Type:      &parse.TypeNode{Identifier: core.UnmanagedSourceView{Start: 12, End: 15}},
 						},
 					},
 				},

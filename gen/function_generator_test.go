@@ -42,6 +42,13 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 	ret
 }
 `
+	expected := `func $32 @add $32 %a {
+.entry
+	$32 %b = add $32 %a $32 #1
+	$32 %c = add $32 %b $32 %a
+	ret
+}
+`
 
 	function, results := generateFunctionFromSource(t, src)
 	assert.True(t, results.IsEmpty())
@@ -54,28 +61,17 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 	assert.ElementsMatch(
 		t,
 		[][]*gen.InstructionInfo{
-			nil, // TODO: make this not implementation dependent.
-			{function.EntryBlock.Instructions[0]},
-			{function.EntryBlock.Instructions[1]},
-		},
-		[][]*gen.InstructionInfo{
-			registers[0].Definitions,
-			registers[1].Definitions,
-			registers[2].Definitions,
-		},
-	)
-
-	assert.ElementsMatch(
-		t,
-		[][]*gen.InstructionInfo{
+			// %a: used in both add instructions (no definition from an instruction)
 			{function.EntryBlock.Instructions[0], function.EntryBlock.Instructions[1]},
+			// %b: defined by Instructions[0], used by Instructions[1]
+			{function.EntryBlock.Instructions[0], function.EntryBlock.Instructions[1]},
+			// %c: only defined by Instructions[1], never used
 			{function.EntryBlock.Instructions[1]},
-			nil, // TODO: make this not implementation dependent.
 		},
 		[][]*gen.InstructionInfo{
-			registers[0].Usages,
-			registers[1].Usages,
-			registers[2].Usages,
+			registers[0].References,
+			registers[1].References,
+			registers[2].References,
 		},
 	)
 
@@ -84,7 +80,7 @@ func TestSimpleFunctionGeneration(t *testing.T) {
 	assert.True(t, target.IsPure())
 	assert.Equal(t, "$32", target.Base.Name)
 
-	assert.Equal(t, src, function.String())
+	assert.Equal(t, expected, function.String())
 }
 
 func TestIfElseFunctionGeneration(t *testing.T) {
@@ -118,7 +114,19 @@ func TestIfElseFunctionGeneration(t *testing.T) {
 		[]*gen.BasicBlockInfo{nonzeroBlock, zeroBlock},
 	)
 
-	assert.Equal(t, src, function.String())
+	expected := `func @toBool $32 %n {
+.entry
+	jz $32 %n .zero
+.nonzero
+	$32 %bool = add $32 #1 $32 #0
+	j .end
+.zero
+	$32 %bool = add $32 #0 $32 #0
+.end
+	ret
+}
+`
+	assert.Equal(t, expected, function.String())
 }
 
 func TestEmptyFunctionGeneration(t *testing.T) {
@@ -151,6 +159,23 @@ func TestNoExplicitRegisterType(t *testing.T) {
 	assert.Nil(t, function)
 	details := results.Head.Value
 	assert.Contains(t, details[0].Message, "untyped register")
+}
+
+// TestRegisterTypeFromArgument verifies that a register's type can be declared
+// by a typed reference in an argument position (e.g. "$32 %a" as an argument),
+// without ever appearing as an explicitly-typed target.
+func TestRegisterTypeFromArgument(t *testing.T) {
+	src := `func @main {
+				%a = add $32 #0 $32 #0
+				ret $32 %a
+			}`
+	function, results := generateFunctionFromSource(t, src)
+	assert.True(t, results.IsEmpty())
+	assert.NotNil(t, function)
+
+	a := function.Registers.GetRegister("%a")
+	assert.NotNil(t, a)
+	assert.Equal(t, "$32", a.Type.String())
 }
 
 func TestExplicitRegisterDefinitionNotOnSecondSight(t *testing.T) {

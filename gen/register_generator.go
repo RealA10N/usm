@@ -17,6 +17,24 @@ func NewRegisterGenerator() FunctionContextGenerator[parse.RegisterNode, *Regist
 	)
 }
 
+func NewRegisterTypeMismatchResult(
+	newDeclaration core.UnmanagedSourceView,
+	firstDeclaration core.UnmanagedSourceView,
+) core.ResultList {
+	return list.FromSingle(core.Result{
+		{
+			Type:     core.ErrorResult,
+			Message:  "Explicit register type does not match previous declaration",
+			Location: &newDeclaration,
+		},
+		{
+			Type:     core.HintResult,
+			Message:  "Previous declaration here",
+			Location: &firstDeclaration,
+		},
+	})
+}
+
 func UndefinedRegisterResult(node parse.RegisterNode) core.ResultList {
 	v := node.View()
 	return list.FromSingle(core.Result{
@@ -27,7 +45,7 @@ func UndefinedRegisterResult(node parse.RegisterNode) core.ResultList {
 		},
 		{
 			Type:    core.HintResult,
-			Message: "A register must be defined with an explicit type at least once",
+			Message: "A register must appear with an explicit type at least once",
 		},
 	})
 }
@@ -36,7 +54,7 @@ func (g *RegisterGenerator) Generate(
 	ctx *FunctionGenerationContext,
 	node parse.RegisterNode,
 ) (*RegisterInfo, core.ResultList) {
-	name := NodeToSourceString(ctx.FileGenerationContext, node)
+	name := NodeToSourceString(ctx.FileGenerationContext, node.TokenNode)
 	register := ctx.Registers.GetRegister(name)
 
 	if register == nil {

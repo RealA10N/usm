@@ -13,21 +13,16 @@ type RegisterInfo struct {
 	// The type of the register.
 	Type ReferencedTypeInfo
 
-	// Instructions in which the register is a target, and is defined or
-	// assigned a new value.
+	// All instructions that reference this register, either as a target or as
+	// an argument. An instruction appears once per argument/target position that
+	// references this register (e.g. "add %x %x" adds two entries).
 	//
-	// Note: This list is not a complete representation of all locations in which
-	// the register is defined, since it can be defined as a function parameter.
-	Definitions []*InstructionInfo
-
-	// Instructions in which the register appears as a source, i.e. as an
-	// read only argument.
-	Usages []*InstructionInfo
-
-	// TODO: for quicker updates of the data structure, both `Definitions` and
-	// `Usages` fields should be a linked list, where each entry points to the
-	// exact target/argument in the relevant instruction, and not to the whole
-	// instruction information struct.
+	// Note: this list does not include references via function parameters.
+	//
+	// TODO: for quicker updates of the data structure, this field should be a
+	// linked list where each entry points to the exact target/argument slot in
+	// the relevant instruction, not to the whole instruction struct.
+	References []*InstructionInfo
 
 	// The first location in the source code in which the register is declared
 	// or assigned a value.
@@ -48,26 +43,16 @@ func (i *RegisterInfo) String() string {
 	return i.Name
 }
 
-func (i *RegisterInfo) AddDefinition(info *InstructionInfo) {
-	i.Definitions = append(i.Definitions, info)
+func (i *RegisterInfo) AddReference(info *InstructionInfo) {
+	i.References = append(i.References, info)
 }
 
-func (i *RegisterInfo) RemoveDefinition(info *InstructionInfo) {
-	if idx := slices.Index(i.Definitions, info); idx != -1 {
-		i.Definitions = slices.Delete(i.Definitions, idx, idx+1)
-	}
-}
-
-func (i *RegisterInfo) AddUsage(info *InstructionInfo) {
-	i.Usages = append(i.Usages, info)
-}
-
-// RemoveUsage removes one occurrence of info from the Usages list.
-// If the same instruction appears multiple times (e.g. "add %x %x" adds two
-// entries), each call removes exactly one entry — matching one argument
-// position being detached — so the count stays consistent.
-func (i *RegisterInfo) RemoveUsage(info *InstructionInfo) {
-	if idx := slices.Index(i.Usages, info); idx != -1 {
-		i.Usages = slices.Delete(i.Usages, idx, idx+1)
+// RemoveReference removes one occurrence of info from the References list.
+// If the same instruction appears multiple times (e.g. "add %x %x"), each
+// call removes exactly one entry, matching one argument/target position being
+// detached.
+func (i *RegisterInfo) RemoveReference(info *InstructionInfo) {
+	if idx := slices.Index(i.References, info); idx != -1 {
+		i.References = slices.Delete(i.References, idx, idx+1)
 	}
 }

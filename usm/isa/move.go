@@ -15,7 +15,7 @@ type Move struct {
 
 	// Dead Code Elimination
 	opt.NonCriticalInstruction
-	opt.UsesArgumentsInstruction
+	opt.UsesInstruction
 	opt.DefinesTargetsInstruction
 }
 
@@ -47,7 +47,12 @@ func (Move) Validate(info *gen.InstructionInfo) core.ResultList {
 		return results
 	}
 
-	targetType := info.Targets[0].Register.Type
+	targetType, curResults := gen.ArgumentToType(info.Targets[0])
+	results.Extend(&curResults)
+
+	if !results.IsEmpty() {
+		return results
+	}
 
 	if !targetType.Equal(argumentType) {
 		return list.FromSingle(core.Result{
@@ -70,12 +75,4 @@ func (Move) Validate(info *gen.InstructionInfo) core.ResultList {
 	}
 
 	return core.ResultList{}
-}
-
-func (Move) Defines(info *gen.InstructionInfo) []*gen.RegisterInfo {
-	return gen.TargetsToRegisters(info.Targets)
-}
-
-func (Move) Uses(info *gen.InstructionInfo) []*gen.RegisterInfo {
-	return gen.ArgumentsToRegisters(info.Arguments)
 }
