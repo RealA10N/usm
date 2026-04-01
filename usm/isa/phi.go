@@ -18,6 +18,33 @@ type Phi struct {
 	opt.DefinesTargetsInstruction
 }
 
+// PropagateConstants returns the shared constant if all incoming value arguments
+// of the phi are the same immediate, otherwise nil.
+// Phi arguments alternate: label, value, label, value, ...
+// Value arguments are at odd indices (1, 3, 5, ...).
+func (Phi) PropagateConstants(info *gen.InstructionInfo) []opt.ConstantDefinition {
+	if len(info.Arguments) < 2 || len(info.Targets) != 1 {
+		return nil
+	}
+
+	first, ok := info.Arguments[1].(*gen.ImmediateInfo)
+	if !ok {
+		return nil
+	}
+
+	for i := 3; i < len(info.Arguments); i += 2 {
+		imm, ok := info.Arguments[i].(*gen.ImmediateInfo)
+		if !ok || imm.Value.Cmp(first.Value) != 0 {
+			return nil
+		}
+	}
+
+	return []opt.ConstantDefinition{{
+		Register:  info.Targets[0].Register,
+		Immediate: first,
+	}}
+}
+
 func NewPhi() gen.InstructionDefinition {
 	return Phi{}
 }

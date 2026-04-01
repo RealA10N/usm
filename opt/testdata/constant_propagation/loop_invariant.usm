@@ -1,0 +1,34 @@
+func @use $64 %reg
+
+; %k = #42 is defined once in .entry and is loop-invariant. CP propagates it
+; into the loop body across basic blocks via DFS ancestry.
+; %i is defined by a phi (not a constant), so it is not propagated.
+func @input {
+.entry
+	$64 %k = $64 #42
+	j .header
+.header
+	$64 %i = phi .entry $64 #0 .body %next
+	jz %i .exit
+.body
+	call @use %k
+	$64 %next = add %i $64 #1
+	j .header
+.exit
+	ret
+}
+
+func @expected {
+.entry
+	$64 %k = $64 #42
+	j .header
+.header
+	$64 %i = phi .entry $64 #0 .body %next
+	jz %i .exit
+.body
+	call @use $64 #42
+	$64 %next = add %i $64 #1
+	j .header
+.exit
+	ret
+}

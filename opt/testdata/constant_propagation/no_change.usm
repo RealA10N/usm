@@ -1,0 +1,17 @@
+func $64 @getval
+
+func @use $64 %reg
+
+func @input {
+.entry
+	$64 %x = call @getval
+	call @use %x
+	ret
+}
+
+func @expected {
+.entry
+	$64 %x = call @getval
+	call @use %x
+	ret
+}

@@ -1,0 +1,31 @@
+func @use $64 %reg
+
+; %x = #5 (non-zero) is a constant. CP substitutes it into the jnz condition
+; and into both branch arms.
+func @input {
+.entry
+	$64 %x = $64 #5
+	jnz %x .left
+.right
+	call @use %x
+	j .exit
+.left
+	call @use %x
+	j .exit
+.exit
+	ret
+}
+
+func @expected {
+.entry
+	$64 %x = $64 #5
+	jnz $64 #5 .left
+.right
+	call @use $64 #5
+	j .exit
+.left
+	call @use $64 #5
+	j .exit
+.exit
+	ret
+}

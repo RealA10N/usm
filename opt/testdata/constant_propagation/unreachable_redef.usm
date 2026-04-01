@@ -1,0 +1,35 @@
+func @use $64 %reg
+
+; %k has two definitions: #42 in .entry (reachable) and #0 in .isolated
+; (an isolated self-loop, never jumped to from outside).
+;
+; CP only processes reachable blocks (DFS from root). The .isolated block is
+; skipped entirely, so %k = #42 propagates to .end, but nothing changes in
+; .isolated.
+func @input {
+.entry
+	$64 %k = $64 #42
+	j .end
+.isolated
+	$64 %k = $64 #0
+	$64 %j = $64 #7
+	call @use %k
+	j .isolated
+.end
+	call @use %k
+	ret
+}
+
+func @expected {
+.entry
+	$64 %k = $64 #42
+	j .end
+.isolated
+	$64 %k = $64 #0
+	$64 %j = $64 #7
+	call @use %k
+	j .isolated
+.end
+	call @use $64 #42
+	ret
+}

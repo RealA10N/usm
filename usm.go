@@ -26,6 +26,19 @@ var targets = transform.NewTargetCollection(
 		GenerationContext: usmmanagers.NewGenerationContext(),
 		Transformations: *transform.NewTransformationCollection(
 			&transform.Transformation{
+				Names:       []string{"constant-propagation", "cp"},
+				Description: "An optimization pass that propagates and folds constant expressions",
+				TargetName:  "usm",
+				Transform: func(data *transform.TargetData) (*transform.TargetData, core.ResultList) {
+					results := core.ResultList{}
+					for _, function := range data.Code.Functions {
+						curResults := opt.ConstantPropagation(function)
+						results.Extend(&curResults)
+					}
+					return data, results
+				},
+			},
+			&transform.Transformation{
 				Names:       []string{"dead-code-elimination", "dce"},
 				Description: "An optimization pass that eliminates unnecessary instructions",
 				TargetName:  "usm",

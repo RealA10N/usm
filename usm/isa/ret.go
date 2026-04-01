@@ -16,6 +16,9 @@ type Ret struct {
 	opt.CriticalInstruction
 	opt.UsesArgumentsInstruction
 	opt.DefinesNothingInstruction
+
+	// Constant Propagation
+	opt.PropagatesNoConstants
 }
 
 func NewRet() gen.InstructionDefinition {

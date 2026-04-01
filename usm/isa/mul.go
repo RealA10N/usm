@@ -1,7 +1,10 @@
 package usmisa
 
 import (
+	"math/big"
+
 	"alon.kr/x/usm/gen"
+	"alon.kr/x/usm/opt"
 )
 
 type Mul struct {
@@ -15,4 +18,10 @@ func NewMul() gen.InstructionDefinition {
 
 func (Mul) Operator(*gen.InstructionInfo) string {
 	return "mul"
+}
+
+func (Mul) PropagateConstants(info *gen.InstructionInfo) []opt.ConstantDefinition {
+	return foldBinaryConstants(info, func(l, r *big.Int) *big.Int {
+		return new(big.Int).Mul(l, r)
+	})
 }
